@@ -1,10 +1,10 @@
-package com.ccl3_id.wanderquest.viewModel
+package com.ccl3_id.wanderquest.viewModels
 
 import androidx.lifecycle.ViewModel
-import com.ccl3_id.wanderquest.Screen
-import com.ccl3_id.wanderquest.data.Item
-import com.ccl3_id.wanderquest.data.ItemHandler
-import com.ccl3_id.wanderquest.stateModel.MainViewState
+import com.ccl3_id.wanderquest.ui.views.Screen
+import com.ccl3_id.wanderquest.data.DatabaseHandler
+import com.ccl3_id.wanderquest.data.models.items.Item
+import com.ccl3_id.wanderquest.viewModels.states.MainViewState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 
-class ItemViewModel(private val db: ItemHandler) : ViewModel()  {
+class ItemViewModel(private val db: DatabaseHandler) : ViewModel()  {
     private val _mainViewState = MutableStateFlow(MainViewState())
     val mainViewState: StateFlow<MainViewState> = _mainViewState.asStateFlow()
 

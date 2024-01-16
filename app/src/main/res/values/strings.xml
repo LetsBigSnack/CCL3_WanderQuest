@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Wander Quest</string>
+    <string name="title_activity_login">LoginActivity</string>
+    <string name="title_activity_characters">CharactersActivity</string>
+    <string name="title_activity_creation">CreationActivity</string>
+    <string name="title_activity_level_up">LevelUpActivity</string>
 </resources>

@@ -1,4 +1,4 @@
-package com.ccl3_id.wanderquest.data
+package com.ccl3_id.wanderquest.data.models.items
 
 
 data class Item(
