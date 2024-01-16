@@ -3,6 +3,7 @@ package com.ccl3_id.wanderquest.viewModels
 import androidx.lifecycle.ViewModel
 import com.ccl3_id.wanderquest.ui.views.Screen
 import com.ccl3_id.wanderquest.data.DatabaseHandler
+import com.ccl3_id.wanderquest.data.models.items.EquipedItem
 import com.ccl3_id.wanderquest.data.models.items.Item
 import com.ccl3_id.wanderquest.viewModels.states.MainViewState
 import kotlinx.coroutines.flow.Flow
@@ -16,42 +17,38 @@ class ItemViewModel(private val db: DatabaseHandler) : ViewModel()  {
     private val _mainViewState = MutableStateFlow(MainViewState())
     val mainViewState: StateFlow<MainViewState> = _mainViewState.asStateFlow()
 
-    private val _itemsState = MutableStateFlow<List<Item>>(emptyList())
-    val getItemsState: StateFlow<List<Item>> = _itemsState.asStateFlow()
-
     // Function to fetch items from the database
     fun getItems() {
         val items = db.getAllItems()
-        _itemsState.value = items
+        _mainViewState.update { it.copy(allItems = items) }
     }
 
-    private val _selectedItems = MutableStateFlow<Set<Item>>(emptySet())
-    val selectedItems: StateFlow<Set<Item>> = _selectedItems.asStateFlow()
-
-    // Function to check if an item is selected
-    fun isItemSelected(item: Item): Flow<Boolean> {
-        return selectedItems.map { selectedItemsSet ->
-            selectedItemsSet.contains(item)
-        }
+    fun selcetItem(item: Item){
+        _mainViewState.update { it.copy(itemClicked = true, clickedItem = item) }
     }
 
-    // Function to get the selected items
-    fun getSelectedItems(): List<Item> {
-        return _selectedItems.value.toList()
+    fun selcetEquipedItem(equipedItem: EquipedItem){
+        _mainViewState.update { it.copy(equipedItemClicked = true, clickedEquipedItem = equipedItem) }
     }
 
-    // Function to toggle the selection state of an item
-    fun toggleItemSelection(item: Item, isSelected: Boolean) {
-        _selectedItems.value = if (isSelected) {
-            _selectedItems.value + item
-        } else {
-            _selectedItems.value - item
-        }
+    fun deselectItem(){
+        _mainViewState.update { it.copy(itemClicked = false) }
+        _mainViewState.update { it.copy(equipedItemClicked = false) }
     }
 
-    // Select a screen in the UI.
-    fun selectScreen(screen: Screen) {
-        _mainViewState.update { it.copy(selectedScreen = screen) }
+    fun equipItem(itemId: Int, playerId: Int){
+        db.equipItem(itemId, playerId)
+        getEquipItems(playerId)
+    }
+
+    fun unequipItem(itemId: Int, playerId: Int){
+        db.unequipItem(itemId)
+        getEquipItems(playerId)
+    }
+
+    fun getEquipItems(playerId: Int){
+        val equipedItems = db.getEquipItems(playerId)
+        _mainViewState.update { it.copy(allEquipedItem = equipedItems) }
     }
 
 }

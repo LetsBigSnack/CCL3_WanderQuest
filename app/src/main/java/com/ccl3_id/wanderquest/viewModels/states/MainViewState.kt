@@ -2,6 +2,7 @@ package com.ccl3_id.wanderquest.viewModels.states
 
 import com.ccl3_id.wanderquest.data.models.entities.Enemy
 import com.ccl3_id.wanderquest.data.models.entities.Player
+import com.ccl3_id.wanderquest.data.models.items.EquipedItem
 import com.ccl3_id.wanderquest.ui.views.Screen
 import com.ccl3_id.wanderquest.data.models.items.Item
 
@@ -16,5 +17,10 @@ data class MainViewState (
     val battleCompleteText : String = "",
     val currentPlayerHealth : Int = 1,
     val currentEnemyHealth : Int = 1,
-    val allItems: List<Item> = emptyList(),  // List of Items in the view.
+    val allItems: List<Item> = emptyList(),
+    val itemClicked: Boolean = false,
+    val clickedItem: Item? = null,
+    val allEquipedItem: List<EquipedItem> = emptyList(),
+    val equipedItemClicked: Boolean = false,
+    val clickedEquipedItem: EquipedItem? = null,
 )
