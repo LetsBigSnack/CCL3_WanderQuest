@@ -23,7 +23,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
 
     companion object DatabaseConfig {
         private const val dbName : String = "WanderQuest"
-        private const val dbVersion : Int = 6
+        private const val dbVersion : Int = 7
 
         private const val playerTableName = "Player"
         private const val playerId = "playerId"
@@ -425,45 +425,6 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
     }
 
     // Dungeon
-
-
-    fun getDungeons() : List<Dungeon>{
-        val db = this.readableDatabase
-        val dungeons = mutableListOf<Dungeon>()
-        val cursor = db.rawQuery("SELECT * FROM $dungeonTableName;", null)
-
-        while(cursor.moveToNext()){
-            val idId = cursor.getColumnIndex(dungeonId)
-            val dungeonNameId = cursor.getColumnIndex(dungeonName)
-            val dungeonTotalDistanceId = cursor.getColumnIndex(dungeonTotalDistance)
-            val dungeonWalkedDistanceId = cursor.getColumnIndex(dungeonWalkedDistance)
-            val dungeonActiveId = cursor.getColumnIndex(dungeonActive)
-            val dungeonCompletedId = cursor.getColumnIndex(dungeonCompleted)
-            val dungeonCreatedAtId= cursor.getColumnIndex(dungeonCreatedAt)
-            val dungeonExpiresInId= cursor.getColumnIndex(dungeonExpiresIn)
-            val dungeonPlayerId= cursor.getColumnIndex(dungeonPlayerId)
-            //
-            if(dungeonNameId >= 0){
-
-                var tempDungeon = Dungeon(
-                    cursor.getString(dungeonNameId),
-                    cursor.getInt(dungeonTotalDistanceId),
-                    cursor.getInt(dungeonWalkedDistanceId),
-                    cursor.getInt(dungeonActiveId) > 0,
-                    cursor.getInt(dungeonCompletedId) > 0,
-                    cursor.getString(dungeonCreatedAtId),
-                    cursor.getString(dungeonExpiresInId),
-                    cursor.getInt(idId),
-                    cursor.getInt(dungeonPlayerId),
-                )
-
-                dungeons.add(tempDungeon)
-            }
-
-        }
-        return dungeons;
-    }
-
     fun getActiveDungeons(playerID : Int) : List<Dungeon> {
         val db = this.readableDatabase
         val dungeons = mutableListOf<Dungeon>()
@@ -541,7 +502,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
     fun getExpiredDungeons(playerID : Int) : List<Dungeon> {
         val db = this.readableDatabase
         val dungeons = mutableListOf<Dungeon>()
-        val cursor = db.rawQuery("SELECT * FROM $dungeonTableName WHERE $dungeonActive = FALSE AND $dungeonPlayerId = $playerID AND $dungeonExpiresIn < strftime('%s', 'now');", null)
+        val cursor = db.rawQuery("SELECT * FROM $dungeonTableName WHERE $dungeonActive = FALSE AND $dungeonPlayerId = $playerID AND  strftime('%s',$dungeonExpiresIn) < strftime('%s',datetime('now', 'localtime'));", null)
 
         while(cursor.moveToNext()){
             val idId = cursor.getColumnIndex(dungeonId)

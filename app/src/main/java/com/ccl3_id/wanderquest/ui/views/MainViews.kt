@@ -25,7 +25,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.LinearProgressIndicator
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -534,7 +537,7 @@ fun displayDungeons(mainViewModel: MainViewModel){
             .padding(top = 10.dp, start = 5.dp, end = 5.dp)
     ) {
         Text(
-            text = "Active Dungeons",
+            text = "Active Dungeons ${activeDungeon.size}/3",
             fontSize = 25.sp,
             style = TextStyle(fontFamily = FontFamily.Monospace)
         )
@@ -566,25 +569,31 @@ fun displayOpenDungeons(openDungeon: List<Dungeon>, mainViewModel: MainViewModel
 
 @Composable
 fun displayActiveDungeons(openDungeon: List<Dungeon>, mainViewModel: MainViewModel) {
-    
-    LazyColumn(
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        items(openDungeon) {
-            ActiveDungeonItem(it, mainViewModel)
-        }
+
+
+    for (dungeon in openDungeon){
+        ActiveDungeonItem(dungeon, mainViewModel)
     }
+
+    for(i in openDungeon.size+1..3){
+        ActiveDungeonItem(null, mainViewModel)
+    }
+
 }
 
 
 
 @Composable
 fun OpenDungeonItem(dungeon: Dungeon, mainViewModel: MainViewModel) {
+
+    val state = mainViewModel.mainViewState.collectAsState()
+    val context= LocalContext.current;
+    val activeDungeonNumber = state.value.allActiveDungeon.size;
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(10.dp),
+            .padding(10.dp)
+            .background(Color(128, 128, 128)),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column( modifier = Modifier.weight(1f)){
@@ -592,9 +601,9 @@ fun OpenDungeonItem(dungeon: Dungeon, mainViewModel: MainViewModel) {
             Text(text = "Distance: ${dungeon.displayTotalDistance()}", fontSize = 20.sp)
             CountdownTimer(convertDateStringToMillis(dungeon.dungeonExpiresIn),dungeon.id)
         }
-
         Button(
-            onClick = { mainViewModel.enterDungeon(dungeon) },
+            onClick = { mainViewModel.enterDungeon(dungeon,context) },
+            enabled = activeDungeonNumber < 3
         ) {
             Text(text = "Enter")
         }
@@ -602,22 +611,32 @@ fun OpenDungeonItem(dungeon: Dungeon, mainViewModel: MainViewModel) {
 }
 
 @Composable
-fun ActiveDungeonItem(dungeon: Dungeon, mainViewModel: MainViewModel) {
+fun ActiveDungeonItem(dungeon: Dungeon? = null, mainViewModel: MainViewModel) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(10.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .height(75.dp)
+            .padding(10.dp)
+            .background(Color(128, 128, 128)),
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Column( modifier = Modifier.weight(1f)){
-            Text(text = dungeon.dungeonName, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-            Text(text = "Distance:  ${dungeon.displayWalkedDistance()} / ${dungeon.displayTotalDistance()}", fontSize = 20.sp)
-        }
-
-        Button(
-            onClick = { mainViewModel.enterDungeon(dungeon) },
-        ) {
-            Text(text = "Enter")
+        if(dungeon != null){
+            Column( modifier = Modifier.weight(1f)){
+                Text(text = dungeon.dungeonName, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text(text = "Distance:  ${dungeon.displayWalkedDistance()} / ${dungeon.displayTotalDistance()}", fontSize = 20.sp)
+            }
+            //TODO add Dialog if you are sure
+            IconButton(onClick = { mainViewModel.leaveDungeon(dungeon) }) {
+                Icon(Icons.Default.Delete,"Delete")
+            }
+            Button(
+                             onClick = { },
+                         ) {
+                             Text(text = "Enter")
+                         }
+            /**
+             *
+             */
         }
     }
 }

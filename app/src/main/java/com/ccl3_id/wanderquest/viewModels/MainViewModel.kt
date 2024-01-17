@@ -1,5 +1,8 @@
 package com.ccl3_id.wanderquest.viewModels
 
+import android.content.Context
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import com.ccl3_id.wanderquest.data.DatabaseHandler
 import com.ccl3_id.wanderquest.data.models.dungeons.Dungeon
@@ -24,6 +27,7 @@ class MainViewModel (val db: DatabaseHandler) : ViewModel() {
     }
 
     fun getOpenDungeons(){
+        checkExpiredDungeon();
         _mainViewState.update { it.copy(allOpenDungeons = db.getOpenDungeons(_mainViewState.value.selectedPlayer!!.id)) }
     }
 
@@ -97,11 +101,25 @@ class MainViewModel (val db: DatabaseHandler) : ViewModel() {
 
         db.generateDungeons(playerID.toLong(), expiredDungeons.size)
     }
-    fun enterDungeon(dungeon: Dungeon){
+    fun enterDungeon(dungeon: Dungeon, context : Context){
+        if(_mainViewState.value.allActiveDungeon.size >= 3){
+            val text = "You can only have 3 Dungeons activate at once"
+            val duration = Toast.LENGTH_SHORT
+            val toast = Toast.makeText(context , text, duration) // in Activity
+            toast.show()
+            return;
+        }
+
         val playerID = _mainViewState.value.selectedPlayer!!.id
         dungeon.dungeonActive = true;
         db.updateDungeon(dungeon)
         db.generateDungeons(playerID.toLong(), 1)
+        getOpenDungeons()
+        getActiveDungeons()
+    }
+
+    fun leaveDungeon(dungeon: Dungeon){
+        db.deleteDungeon(dungeon)
         getOpenDungeons()
         getActiveDungeons()
     }
