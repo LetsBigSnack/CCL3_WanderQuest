@@ -85,6 +85,7 @@ class MainViewModel (val db: DatabaseHandler) : ViewModel() {
             _mainViewState.value.selectedPlayer!!.earnXP(xpGain)
             _mainViewState.update { it.copy(battleCompleteText = "Enemy defeated earned $xpGain XP")}
             db.updatePlayer(_mainViewState.value.selectedPlayer!!)
+            db.generateItem(_mainViewState.value.selectedPlayer!!.id, 1)
         }else if(!_mainViewState.value.selectedPlayer!!.isAlive){
             _mainViewState.update { it.copy(battleComplete = true)}
             _mainViewState.update { it.copy(battleCompleteText = "Player defeated")}

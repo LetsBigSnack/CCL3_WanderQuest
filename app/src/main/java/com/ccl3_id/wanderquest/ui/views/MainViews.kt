@@ -110,7 +110,7 @@ fun MainView(mainViewModel : MainViewModel, itemViewModel: ItemViewModel) {
             }
             composable(Screen.Items.route){
                 //mainViewModel.selectScreen(Screen.Items);
-                itemViewModel.getItems()
+                itemViewModel.getItems(state.value.selectedPlayer!!.id)
                 itemViewModel.getEquipItems(state.value.selectedPlayer!!.id)
                 itemsScreen(itemViewModel, mainViewModel)
             }
@@ -119,8 +119,8 @@ fun MainView(mainViewModel : MainViewModel, itemViewModel: ItemViewModel) {
                 mainViewModel.getPlayer();
                 mainViewModel.getOpenDungeons()
                 mainViewModel.getActiveDungeons()
-                displayDungeons(mainViewModel)
-                //displayBattleScreen(mainViewModel);
+                //displayDungeons(mainViewModel)
+                displayBattleScreen(mainViewModel);
             }
         }
     }
@@ -276,7 +276,7 @@ fun ItemPopUp(itemViewModel : ItemViewModel, mainViewModel: MainViewModel){
             confirmButton = {
                 Button(
                     onClick = {
-                        itemViewModel.equipItem(mainViewState.value.clickedItem!!.id, mainMainViewState.value.selectedPlayer!!.id)
+                        itemViewModel.equipItem(mainViewState.value.clickedItem!!, mainMainViewState.value.selectedPlayer!!.id)
                         itemViewModel.deselectItem()
                     }
                 ) {
@@ -315,7 +315,7 @@ fun EquipedItemPopUp(itemViewModel : ItemViewModel, mainViewModel: MainViewModel
             confirmButton = {
                 Button(
                     onClick = {
-                        itemViewModel.unequipItem(mainViewState.value.clickedEquipedItem!!.equipedItemId, mainMainViewState.value.selectedPlayer!!.id)
+                        itemViewModel.unequipItem(mainViewState.value.clickedEquipedItem!!, mainMainViewState.value.selectedPlayer!!.id)
                         itemViewModel.deselectItem()
                     },
                 ) {

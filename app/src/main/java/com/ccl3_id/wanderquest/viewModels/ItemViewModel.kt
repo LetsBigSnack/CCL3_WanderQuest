@@ -18,8 +18,8 @@ class ItemViewModel(private val db: DatabaseHandler) : ViewModel()  {
     val mainViewState: StateFlow<MainViewState> = _mainViewState.asStateFlow()
 
     // Function to fetch items from the database
-    fun getItems() {
-        val items = db.getAllItems()
+    fun getItems(playerId: Int) {
+        val items = db.getAllItems(playerId)
         _mainViewState.update { it.copy(allItems = items) }
     }
 
@@ -36,14 +36,16 @@ class ItemViewModel(private val db: DatabaseHandler) : ViewModel()  {
         _mainViewState.update { it.copy(equipedItemClicked = false) }
     }
 
-    fun equipItem(itemId: Int, playerId: Int){
-        db.equipItem(itemId, playerId)
+    fun equipItem(item: Item, playerId: Int){
+        db.equipItem(item)
         getEquipItems(playerId)
+        getItems(playerId)
     }
 
-    fun unequipItem(equippedItemId: Int, playerId: Int){
-        db.unequipItem(equippedItemId)
+    fun unequipItem(equippedItem: Item, playerId: Int){
+        db.unequipItem(equippedItem)
         getEquipItems(playerId)
+        getItems(playerId)
     }
 
     fun getEquipItems(playerId: Int){

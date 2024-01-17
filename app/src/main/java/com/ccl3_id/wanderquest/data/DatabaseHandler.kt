@@ -43,8 +43,9 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
         private const val itemId = "itemId"
         private const val itemName = "itemName"
         private const val itemType = "itemType"
-        private const val itemDescription = "itemDescription"
         private const val itemImg = "itemImg"
+        private const val itemPlayerId = "itemPlayerId"
+        private const val itemIsEquipped = "itemIsEquipped"
 
         private const val dungeonTableName = "Dungeons"
         private const val dungeonId = "dungeonId"
@@ -57,9 +58,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
         private const val dungeonCreatedAt = "dungeonCreated"
         private const val dungeonExpiresIn = "dungeonExpiresIn"
 
-
         private const val itemPlayerTableName = "ItemPlayer"
-        private const val itemPlayerId = "itemPlayerId"
         private const val _itemId = "itemId"
         private const val _playerId = "playerId"
 
@@ -99,9 +98,10 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
                 "$itemId INTEGER PRIMARY KEY, " +
                 "$itemName VARCHAR(64), " +
                 "$itemType VARCHAR(64), " +
-                "$itemDescription VARCHAR(256), " +
-                "$itemImg VARCHAR(256))" +
-                ";")
+                "$itemImg VARCHAR(256)," +
+                "$itemPlayerId INTEGER, " +
+                "$itemIsEquipped BOOLEAN " +
+                ");")
 
         db?.execSQL("CREATE TABLE IF NOT EXISTS $itemPlayerTableName(" +
                 "$itemPlayerId INTEGER PRIMARY KEY," +
@@ -111,7 +111,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
                 "FOREIGN KEY ($_playerId) REFERENCES $playerTableName ($playerId) ON DELETE CASCADE" +
                 ");")
 
-        insertItemsData(db);
+        //insertItemsData(db);
 
         db?.execSQL("CREATE TABLE IF NOT EXISTS $dungeonTableName (" +
                 "$dungeonId INTEGER PRIMARY KEY, " +
@@ -130,48 +130,48 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
     private fun insertItemsData(db: SQLiteDatabase?){
         val items = listOf(
             // Sportswear - Headpiece
-            Item(name = "Head Band", type = "Headpiece", disc = "Sportswear accessory", img = "head_band"),
-            Item(name = "Cap", type = "Headpiece", disc = "Sportswear accessory", img = "cap"),
-            Item(name = "Beanie", type = "Headpiece", disc = "Sportswear accessory", img = "beanie"),
-            Item(name = "Sun Glasses", type = "Headpiece", disc = "Sportswear accessory", img = "sun_glasses"),
+            Item(name = "Head Band", type = "Headpiece", img = "head_band", itemPlayerId = 0, itemIsEquipped = false),
+            Item(name = "Cap", type = "Headpiece", img = "cap", itemPlayerId = 0, itemIsEquipped = false),
+            Item(name = "Beanie", type = "Headpiece", img = "beanie", itemPlayerId = 0, itemIsEquipped = false),
+            Item(name = "Sun Glasses", type = "Headpiece", img = "sun_glasses", itemPlayerId = 0, itemIsEquipped = false),
 
             // Sportswear - Handheld
-            Item(name = "Dumbbells", type = "Handheld", disc = "Sportswear accessory", img = "dumbbell"),
-            Item(name = "Protein Shake", type = "Handheld", disc = "Sportswear accessory", img = "protein"),
-            Item(name = "Jumping Rope", type = "Handheld", disc = "Sportswear accessory", img = "jump_rope"),
-            Item(name = "Member Card", type = "Handheld", disc = "Sportswear accessory", img = "member_card"),
+            Item(name = "Dumbbells", type = "Handheld", img = "dumbbell", itemPlayerId = 0, itemIsEquipped = false),
+            Item(name = "Protein Shake", type = "Handheld", img = "protein", itemPlayerId = 0, itemIsEquipped = false),
+            Item(name = "Jumping Rope", type = "Handheld", img = "jump_rope", itemPlayerId = 0, itemIsEquipped = false),
+            Item(name = "Member Card", type = "Handheld", img = "member_card", itemPlayerId = 0, itemIsEquipped = false),
 
             // Sportswear - Upper Body
-            Item(name = "Muscle Shirt", type = "Upper Body", disc = "Sportswear clothing", img = "tank_top"),
-            Item(name = "Grey Hoodie", type = "Upper Body", disc = "Sportswear clothing", img = "hoodie"),
-            Item(name = "Weightlift Belt", type = "Upper Body", disc = "Sportswear accessory", img = "weight_belt"),
-            Item(name = "Natural", type = "Upper Body", disc = "Sportswear option", img = "natural"),
+            Item(name = "Muscle Shirt", type = "Upper Body", img = "tank_top", itemPlayerId = 0, itemIsEquipped = false),
+            Item(name = "Grey Hoodie", type = "Upper Body", img = "hoodie", itemPlayerId = 0, itemIsEquipped = false),
+            Item(name = "Weightlift Belt", type = "Upper Body", img = "weight_belt", itemPlayerId = 0, itemIsEquipped = false),
+            Item(name = "Natural", type = "Upper Body", img = "natural", itemPlayerId = 0, itemIsEquipped = false),
 
             // Sportswear - Lower Body
-            Item(name = "Shorts", type = "Lower Body", disc = "Sportswear clothing", img = "shorts"),
-            Item(name = "Sweat Pants", type = "Lower Body", disc = "Sportswear clothing", img = "sweat_pants"),
-            Item(name = "Leg Warmers", type = "Lower Body", disc = "Sportswear accessory", img = "socks"),
-            Item(name = "Leggings", type = "Lower Body", disc = "Sportswear clothing", img = "leggings")
+            Item(name = "Shorts", type = "Lower Body", img = "shorts", itemPlayerId = 0, itemIsEquipped = false),
+            Item(name = "Sweat Pants", type = "Lower Body", img = "sweat_pants", itemPlayerId = 0, itemIsEquipped = false),
+            Item(name = "Leg Warmers", type = "Lower Body", img = "socks", itemPlayerId = 0, itemIsEquipped = false),
+            Item(name = "Leggings", type = "Lower Body", img = "leggings", itemPlayerId = 0, itemIsEquipped = false)
         )
 
         // Insert each item into the database
         items.forEach { item ->
             db?.execSQL(
-                "INSERT INTO $itemTableName ($itemName, $itemType, $itemDescription, $itemImg) VALUES (?, ?, ?, ?)",
-                arrayOf(item.name, item.type, item.disc, item.img)
+                "INSERT INTO $itemTableName ($itemName, $itemType, $itemImg) VALUES (?, ?, ?, ?)",
+                arrayOf(item.name, item.type, item.img)
             )
         }
     }
 
-    fun getAllItems(): List<Item> {
+    fun getAllItems(playerId: Int): List<Item> {
+        println("GET ALL ITEMS")
         val items = mutableListOf<Item>()
         val db = readableDatabase
 
-        // Define the columns to retrieve
-        val columns = arrayOf(itemId, itemName, itemType, itemDescription, itemImg)
-
         // Query the database to get all items
-        val cursor = db.query(itemTableName, columns, null, null, null, null, null)
+        val cursor = db.rawQuery("SELECT * FROM $itemTableName " +
+                "WHERE $itemPlayerId = $playerId " +
+                "AND $itemIsEquipped = 0", null)
 
         // Process the cursor and create Item objects
         with(cursor) {
@@ -179,10 +179,12 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
                 val itemId = getInt(getColumnIndexOrThrow(itemId))
                 val itemName = getString(getColumnIndexOrThrow(itemName))
                 val itemType = getString(getColumnIndexOrThrow(itemType))
-                val itemDisc = getString(getColumnIndexOrThrow(itemDescription))
                 val itemImg = getString(getColumnIndexOrThrow(itemImg))
+                val itemPlayerId = getInt(getColumnIndexOrThrow(itemPlayerId))
+                val itemIsEquippedInt = getInt(getColumnIndexOrThrow(itemIsEquipped))
+                val itemIsEquipped = itemIsEquippedInt != 0
 
-                val item = Item(itemId, itemName, itemType, itemDisc, itemImg)
+                val item = Item(itemId, itemName, itemType, itemImg, itemPlayerId, itemIsEquipped)
                 items.add(item)
             }
         }
@@ -190,38 +192,115 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
         // Close the cursor
         cursor.close()
 
+        println("RETURNING GET ALL ITEMS")
+
         return items
     }
 
-    fun equipItem(itemId: Int, playerId: Int){
+    fun insertItem(item: Item){
+        val db = this.writableDatabase
+
+        val values = ContentValues().apply {
+            put(itemName,item.name)
+            put(itemType, item.type)
+            put(itemImg, item.img)
+            put(itemPlayerId, item.itemPlayerId)
+            put(itemIsEquipped, item.itemIsEquipped)
+        }
+
+        db.insert(itemTableName, null, values)
+    }
+
+    fun generateItem(playerId: Int, number: Int){
+        val itemType = generateItemType()
+        val itemName = generateItemName(itemType)
+        val itemImg = generateItemImg(itemName)
+
+        for(i in 0..number-1){
+            println("GENERATE ITEM")
+            val tempItem= Item(
+                name = itemName,
+                type = itemType,
+                img = itemImg,
+                itemPlayerId = playerId
+            );
+            insertItem(tempItem);
+        }
+    }
+
+    fun generateItemType(): String{
+        val itemTypes = listOf("head", "hand", "chest", "legs")
+
+        return itemTypes.random()
+    }
+
+    fun generateItemName(itemType: String): String{
+        val itemAdjectives = listOf("Mighty", "Bulking", "Lifting", "Crazy")
+        var itemTypeName = emptyList<String>()
+
+        if (itemType === "head"){
+            itemTypeName = listOf("Headband", "Cap", "Beanie", "Sun Glasses")
+        }else if (itemType === "hand"){
+            itemTypeName = listOf("Dumbbell", "Protein Shake", "Jumping Rope", "Member Card")
+        }else if (itemType === "chest"){
+            itemTypeName = listOf("Tank Top", "Hoodie", "Weight Belt", "Natural Chest")
+        }else if (itemType === "legs"){
+            itemTypeName = listOf("Shorts", "Sweat Pants", "Leg Warmers", "Leggings")
+        }
+
+        return itemAdjectives.random() + " " + itemTypeName.random()
+    }
+
+
+    fun generateItemImg(itemName: String): String{
+        println("GENERATE ITEM IMG")
+        // Split the input string into words
+        val words = itemName.split(" ")
+        var itemImages = ""
+
+        // If there is more than one word, remove the first word and concatenate the remaining words
+        if (words.size > 1) {
+            itemImages= words.subList(1, words.size).joinToString("_").lowercase()
+        } else {
+            // If there is only one word, convert it to lowercase
+            itemImages = itemName.lowercase()
+        }
+        println("Item name after Elina magic")
+        println(itemImages)
+        return itemImages
+    }
+
+    fun equipItem(item: Item){
         val db = this.writableDatabase
 
         val values = ContentValues().apply{
-            put(_itemId, itemId)
-            put(_playerId, playerId)
+            put(itemName,item.name)
+            put(itemType, item.type)
+            put(itemImg, item.img)
+            put(itemPlayerId, item.itemPlayerId)
+            put(itemIsEquipped, true)
         }
 
-        db.insert(itemPlayerTableName, null, values)
+        db.update(itemTableName,values,"$itemId = ?", arrayOf(item.id.toString()))
     }
 
     fun getEquipItems(playerId: Int): List<EquipedItem> {
         val equipedItems = mutableListOf<EquipedItem>()
         val db = this.writableDatabase
 
-        val cursor = db.rawQuery("SELECT * FROM $itemPlayerTableName " +
-                "INNER JOIN $itemTableName ON $itemPlayerTableName.$_itemId = $itemTableName.$itemId " +
-                "WHERE $_playerId = $playerId", null)
+        val cursor = db.rawQuery("SELECT * FROM $itemTableName " +
+                "WHERE $itemPlayerId = $playerId " +
+                "AND $itemIsEquipped = 1", null)
 
         with(cursor){
             while (moveToNext()){
                 val itemId = getInt(getColumnIndexOrThrow(itemId))
                 val itemName = getString(getColumnIndexOrThrow(itemName))
                 val itemType = getString(getColumnIndexOrThrow(itemType))
-                val itemDisc = getString(getColumnIndexOrThrow(itemDescription))
                 val itemImg = getString(getColumnIndexOrThrow(itemImg))
                 val equipedItemId = getInt(getColumnIndexOrThrow(itemPlayerId))
 
-                val equipedItem = EquipedItem(itemId, itemName, itemType, itemDisc, itemImg, equipedItemId)
+                val equipedItem = EquipedItem(itemId, itemName, itemType, itemImg, equipedItemId)
                 equipedItems.add(equipedItem)
             }
         }
@@ -231,10 +310,18 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
         return equipedItems
     }
 
-    fun unequipItem(equippedItemId: Int){
-        println(equippedItemId);
+    fun unequipItem(item: Item){
         val db = this.writableDatabase
-        db.delete(itemPlayerTableName,"$itemPlayerId = ?", arrayOf(equippedItemId.toString()))
+
+        val values = ContentValues().apply{
+        put(itemName,item.name)
+        put(itemType, item.type)
+        put(itemImg, item.img)
+        put(itemPlayerId, item.itemPlayerId)
+        put(itemIsEquipped, false)
+    }
+
+        db.update(itemTableName,values,"$itemId = ?", arrayOf(item.id.toString()))
     }
 
     fun insertPlayer(player : Player):Long{
