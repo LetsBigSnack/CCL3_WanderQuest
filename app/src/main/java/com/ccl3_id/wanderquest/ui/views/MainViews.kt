@@ -57,9 +57,10 @@ import com.ccl3_id.wanderquest.data.models.dungeons.Dungeon
 import com.ccl3_id.wanderquest.data.models.entities.Player
 import com.ccl3_id.wanderquest.data.models.items.EquipedItem
 import com.ccl3_id.wanderquest.data.models.items.Item
-import com.ccl3_id.wanderquest.viewModels.ItemViewModel
 import com.ccl3_id.wanderquest.viewModels.MainViewModel
 import androidx.compose.foundation.layout.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import com.ccl3_id.wanderquest.viewModels.ItemViewModel
 
 
 sealed class Screen(val route: String){
@@ -105,6 +106,7 @@ fun MainView(mainViewModel : MainViewModel, itemViewModel: ItemViewModel) {
         }
     }
 }
+
 
 @Composable
 fun BottomNavigationBar(navController: NavHostController, selectedScreen: Screen){

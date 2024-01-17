@@ -19,7 +19,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
 
     companion object DatabaseConfig {
         private const val dbName : String = "WanderQuest"
-        private const val dbVersion : Int = 3
+        private const val dbVersion : Int = 9
 
         private const val playerTableName = "Player"
         private const val playerId = "_id"
@@ -63,10 +63,10 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
-        db?.execSQL("DROP TABLE IF EXISTS $playerTableName")
-        db?.execSQL("DROP TABLE IF EXISTS $itemTableName")
-        //TODO player Item remove
-        db?.execSQL("DROP TABLE IF EXISTS $dungeonTableName")
+        db?.execSQL("DROP TABLE IF EXISTS $itemPlayerTableName;")
+        db?.execSQL("DROP TABLE IF EXISTS $playerTableName;")
+        db?.execSQL("DROP TABLE IF EXISTS $itemTableName;")
+        db?.execSQL("DROP TABLE IF EXISTS $dungeonTableName;")
         onCreate(db)
     }
 
