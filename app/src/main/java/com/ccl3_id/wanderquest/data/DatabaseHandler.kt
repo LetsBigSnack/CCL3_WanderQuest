@@ -19,10 +19,10 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
 
     companion object DatabaseConfig {
         private const val dbName : String = "WanderQuest"
-        private const val dbVersion : Int = 9
+        private const val dbVersion : Int = 1
 
         private const val playerTableName = "Player"
-        private const val playerId = "_id"
+        private const val playerId = "playerId"
         private const val playerName = "playerName"
         private const val playerClass = "playerClass"
         private const val playerLevel = "playerLevel"
@@ -36,14 +36,14 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
         private const val currentXP = "currentXP"
 
         private const val itemTableName = "Items"
-        private const val itemId = "_id"
+        private const val itemId = "itemId"
         private const val itemName = "itemName"
         private const val itemType = "itemType"
         private const val itemDescription = "itemDescription"
         private const val itemImg = "itemImg"
 
         private const val dungeonTableName = "Dungeons"
-        private const val dungeonId = "_id"
+        private const val dungeonId = "dungeonId"
         private const val dungeonName = "dungeonName"
         private const val dungeonTotalDistance = "dungeonTotalDistance"
         private const val dungeonWalkedDistance = "dungeonWalkedDistance"
@@ -51,7 +51,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
         private const val dungeonCompleted = "dungeonCompleted"
 
         private const val itemPlayerTableName = "ItemPlayer"
-        private const val itemPlayerId = "_id"
+        private const val itemPlayerId = "itemPlayerId"
         private const val _itemId = "itemId"
         private const val _playerId = "playerId"
 
@@ -219,9 +219,10 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
         return equipedItems
     }
 
-    fun unequipItem(itemId: Int){
+    fun unequipItem(equippedItemId: Int){
+        println(equippedItemId);
         val db = this.writableDatabase
-        db.delete(itemPlayerTableName,"$_itemId = ?", arrayOf(itemId.toString()))
+        db.delete(itemPlayerTableName,"$itemPlayerId = ?", arrayOf(equippedItemId.toString()))
     }
 
     fun insertPlayer(player : Player){

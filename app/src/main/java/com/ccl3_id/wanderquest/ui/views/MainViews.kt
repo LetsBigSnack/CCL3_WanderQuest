@@ -289,7 +289,7 @@ fun EquipedItemPopUp(itemViewModel : ItemViewModel, mainViewModel: MainViewModel
             confirmButton = {
                 Button(
                     onClick = {
-                        itemViewModel.unequipItem(mainViewState.value.clickedEquipedItem!!.id, mainMainViewState.value.selectedPlayer!!.id)
+                        itemViewModel.unequipItem(mainViewState.value.clickedEquipedItem!!.equipedItemId, mainMainViewState.value.selectedPlayer!!.id)
                         itemViewModel.deselectItem()
                     },
                 ) {

@@ -41,8 +41,8 @@ class ItemViewModel(private val db: DatabaseHandler) : ViewModel()  {
         getEquipItems(playerId)
     }
 
-    fun unequipItem(itemId: Int, playerId: Int){
-        db.unequipItem(itemId)
+    fun unequipItem(equippedItemId: Int, playerId: Int){
+        db.unequipItem(equippedItemId)
         getEquipItems(playerId)
     }
 
