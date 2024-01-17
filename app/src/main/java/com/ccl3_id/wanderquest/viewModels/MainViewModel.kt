@@ -22,6 +22,15 @@ class MainViewModel (val db: DatabaseHandler) : ViewModel() {
         _mainViewState.update { it.copy(selectedPlayer = db.getSelectedPlayer()) }
     }
 
+    fun getOpenDungeons(){
+        _mainViewState.update { it.copy(allOpenDungeons = db.getOpenDungeons()) }
+    }
+
+    fun getActiveDungeons(){
+        _mainViewState.update { it.copy(allActiveDungeon = db.getActiveDungeons()) }
+    }
+
+
     fun selectScreen(screen: Screen){
         _mainViewState.update { it.copy(selectedScreen = screen) }
     }

@@ -15,16 +15,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.Icon
 import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -49,10 +50,13 @@ import androidx.navigation.compose.rememberNavController
 import com.ccl3_id.wanderquest.LevelUpActivity
 import com.ccl3_id.wanderquest.LoginActivity
 import com.ccl3_id.wanderquest.R
+import com.ccl3_id.wanderquest.data.models.dungeons.Dungeon
 import com.ccl3_id.wanderquest.data.models.entities.Player
 import com.ccl3_id.wanderquest.data.models.items.Item
 import com.ccl3_id.wanderquest.viewModels.ItemViewModel
 import com.ccl3_id.wanderquest.viewModels.MainViewModel
+import androidx.compose.foundation.layout.*
+
 
 sealed class Screen(val route: String){
     object Character: Screen("Character")
@@ -88,7 +92,10 @@ fun MainView(mainViewModel : MainViewModel, itemViewModel: ItemViewModel) {
             composable(Screen.Dungeon.route){
                 mainViewModel.getPlayer();
                 mainViewModel.selectScreen(Screen.Dungeon);
-                displayBattleScreen(mainViewModel);
+                mainViewModel.getOpenDungeons()
+                mainViewModel.getActiveDungeons()
+                displayDungeons(mainViewModel)
+                //displayBattleScreen(mainViewModel);
             }
         }
     }
@@ -398,6 +405,64 @@ fun displayBattleScreen(mainViewModel: MainViewModel) {
         }
     }
 }
+
+
+@Composable
+fun displayDungeons(mainViewModel: MainViewModel){
+    val state = mainViewModel.mainViewState.collectAsState()
+    val openDungeon = state.value.allOpenDungeons;
+    val activeDungeon = state.value.allActiveDungeon;
+
+    Column (
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(top = 20.dp, start = 20.dp)
+    ) {
+        Text(
+            text = "Active Dungeons",
+            fontSize = 30.sp,
+            style = TextStyle(fontFamily = FontFamily.Monospace)
+        )
+
+        displayActiveDungeons(activeDungeon);
+
+        Text(
+            text = "Open Dungeons",
+            fontSize = 30.sp,
+            style = TextStyle(fontFamily = FontFamily.Monospace)
+        )
+
+        displayOpenDungeons(openDungeon);
+
+    }
+}
+
+@Composable
+fun displayOpenDungeons(openDungeon: List<Dungeon>) {
+    LazyColumn(
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        items(openDungeon) {
+            Text(text = it.dungeonName)
+        }
+    }
+}
+
+@Composable
+fun displayActiveDungeons(openDungeon: List<Dungeon>) {
+    
+    LazyColumn(
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        items(openDungeon) {
+            Text(text = it.dungeonName)
+        }
+    }
+}
+
+
 
 @Composable
 fun displayBattleContent(mainViewModel: MainViewModel){

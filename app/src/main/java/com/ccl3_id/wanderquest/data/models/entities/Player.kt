@@ -30,6 +30,8 @@ open class Player (
     var abilityThreeDescription  : String = "ab3";
     var abilityFourDescription  : String = "ab4";
 
+
+
     companion object {
         val CLASS_LIST: List<String> = listOf("Bodybuilder", "Martial Artist", "Endurance Runner", "CrossFit Athlete","Personal Trainer")
         val CLASS_ATTRIBUTES = mapOf(
@@ -59,6 +61,7 @@ open class Player (
         getNewHealth();
         getXPtoNextLevel();
     }
+
     fun levelUp() {
         getNewHealth();
         getXPtoNextLevel();
@@ -185,11 +188,11 @@ open class Player (
         return this.playerStats[statName] ?: 0
     }
 
-    fun refundStatPoints(){
+    private fun refundStatPoints(){
         this.playerAttributePoints += 1;
     }
 
-    fun spendStatPoints(){
+    private fun spendStatPoints(){
         this.playerAttributePoints -= 1;
     }
 

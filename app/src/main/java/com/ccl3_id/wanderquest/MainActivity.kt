@@ -8,6 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.ccl3_id.wanderquest.data.DatabaseHandler
+import com.ccl3_id.wanderquest.data.models.dungeons.Dungeon
 import com.ccl3_id.wanderquest.ui.theme.WanderQuestTheme
 import com.ccl3_id.wanderquest.ui.views.MainView
 import com.ccl3_id.wanderquest.viewModels.ItemViewModel

@@ -1,6 +1,8 @@
 package com.ccl3_id.wanderquest.data.models.entities.playerSubclasses
 
+import com.ccl3_id.wanderquest.data.models.entities.Entity
 import com.ccl3_id.wanderquest.data.models.entities.Player
+import kotlin.random.Random
 
 class MartialArtist(
     playerName: String,
@@ -33,4 +35,5 @@ class MartialArtist(
         this.abilityFourDescription = "Martial Description 4";
 
     }
+
 }

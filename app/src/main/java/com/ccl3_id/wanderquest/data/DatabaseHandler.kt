@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import com.ccl3_id.wanderquest.data.models.dungeons.Dungeon
 import com.ccl3_id.wanderquest.data.models.entities.Player
 import com.ccl3_id.wanderquest.data.models.entities.playerSubclasses.BodyBuilder
 import com.ccl3_id.wanderquest.data.models.entities.playerSubclasses.CrossFitAthlete
@@ -17,7 +18,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
 
     companion object DatabaseConfig {
         private const val dbName : String = "WanderQuest"
-        private const val dbVersion : Int = 1
+        private const val dbVersion : Int = 3
 
         private const val playerTableName = "Player"
         private const val playerId = "_id"
@@ -33,12 +34,21 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
         private const val lastPlayed = "lastPlayed"
         private const val currentXP = "currentXP"
 
-        internal const val itemTableName = "Items"
-        internal const val itemId = "_id"
-        internal const val itemName = "itemName"
-        internal const val itemType = "itemType"
-        internal const val itemDescription = "itemDescription"
-        internal const val itemImg = "itemImg"
+        private const val itemTableName = "Items"
+        private const val itemId = "_id"
+        private const val itemName = "itemName"
+        private const val itemType = "itemType"
+        private const val itemDescription = "itemDescription"
+        private const val itemImg = "itemImg"
+
+        private const val dungeonTableName = "Dungeons"
+        private const val dungeonId = "_id"
+        private const val dungeonName = "dungeonName"
+        private const val dungeonTotalDistance = "dungeonTotalDistance"
+        private const val dungeonWalkedDistance = "dungeonWalkedDistance"
+        private const val dungeonActive = "dungeonActive"
+        private const val dungeonCompleted = "dungeonCompleted"
+
 
     }
 
@@ -50,6 +60,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
         db?.execSQL("DROP TABLE IF EXISTS $playerTableName")
         db?.execSQL("DROP TABLE IF EXISTS $itemTableName")
+        db?.execSQL("DROP TABLE IF EXISTS $dungeonTableName")
         onCreate(db)
     }
 
@@ -80,6 +91,14 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
 
         insertItemsData(db);
 
+        db?.execSQL("CREATE TABLE IF NOT EXISTS $dungeonTableName (" +
+                "$dungeonId INTEGER PRIMARY KEY, " +
+                "$dungeonName VARCHAR(64), " +
+                "$dungeonTotalDistance INTEGER, " +
+                "$dungeonWalkedDistance INTEGER, " +
+                "$dungeonActive BOOLEAN, " +
+                "$dungeonCompleted BOOLEAN)" +
+                ";")
     }
 
     private fun insertItemsData(db: SQLiteDatabase?){
@@ -409,4 +428,131 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
         db.delete(playerTableName,"$playerId = ?", arrayOf(player.id.toString()))
     }
 
+    // Dungeon
+
+
+    fun getDungeons() : List<Dungeon>{
+        val db = this.readableDatabase
+        val dungeons = mutableListOf<Dungeon>()
+        val cursor = db.rawQuery("SELECT * FROM $dungeonTableName;", null)
+
+        while(cursor.moveToNext()){
+            val idId = cursor.getColumnIndex(playerId)
+            val dungeonNameId = cursor.getColumnIndex(dungeonName)
+            val dungeonTotalDistanceId = cursor.getColumnIndex(dungeonTotalDistance)
+            val dungeonWalkedDistanceId = cursor.getColumnIndex(dungeonWalkedDistance)
+            val dungeonActiveId = cursor.getColumnIndex(dungeonActive)
+            val dungeonCompletedId = cursor.getColumnIndex(dungeonCompleted)
+            //
+            if(dungeonNameId >= 0){
+
+                var tempDungeon = Dungeon(
+                    cursor.getString(dungeonNameId),
+                    cursor.getInt(dungeonTotalDistanceId),
+                    cursor.getInt(dungeonWalkedDistanceId),
+                    cursor.getInt(dungeonActiveId) > 0,
+                    cursor.getInt(dungeonCompletedId) > 0,
+                    cursor.getInt(idId)
+                )
+
+                dungeons.add(tempDungeon)
+            }
+
+        }
+        return dungeons;
+    }
+
+    fun getActiveDungeons() : List<Dungeon> {
+        val db = this.readableDatabase
+        val dungeons = mutableListOf<Dungeon>()
+        val cursor = db.rawQuery("SELECT * FROM $dungeonTableName WHERE $dungeonActive = TRUE;", null)
+
+        while(cursor.moveToNext()){
+            val idId = cursor.getColumnIndex(playerId)
+            val dungeonNameId = cursor.getColumnIndex(dungeonName)
+            val dungeonTotalDistanceId = cursor.getColumnIndex(dungeonTotalDistance)
+            val dungeonWalkedDistanceId = cursor.getColumnIndex(dungeonWalkedDistance)
+            val dungeonActiveId = cursor.getColumnIndex(dungeonActive)
+            val dungeonCompletedId = cursor.getColumnIndex(dungeonCompleted)
+            //
+            if(dungeonNameId >= 0){
+
+                var tempDungeon = Dungeon(
+                    cursor.getString(dungeonNameId),
+                    cursor.getInt(dungeonTotalDistanceId),
+                    cursor.getInt(dungeonWalkedDistanceId),
+                    cursor.getInt(dungeonActiveId) > 0,
+                    cursor.getInt(dungeonCompletedId) > 0,
+                    cursor.getInt(idId)
+                )
+
+                dungeons.add(tempDungeon)
+            }
+
+        }
+        return dungeons;
+    }
+
+    fun getOpenDungeons() : List<Dungeon> {
+        val db = this.readableDatabase
+        val dungeons = mutableListOf<Dungeon>()
+        val cursor = db.rawQuery("SELECT * FROM $dungeonTableName WHERE $dungeonActive = FALSE;", null)
+
+        while(cursor.moveToNext()){
+            val idId = cursor.getColumnIndex(playerId)
+            val dungeonNameId = cursor.getColumnIndex(dungeonName)
+            val dungeonTotalDistanceId = cursor.getColumnIndex(dungeonTotalDistance)
+            val dungeonWalkedDistanceId = cursor.getColumnIndex(dungeonWalkedDistance)
+            val dungeonActiveId = cursor.getColumnIndex(dungeonActive)
+            val dungeonCompletedId = cursor.getColumnIndex(dungeonCompleted)
+            //
+            if(dungeonNameId >= 0){
+
+                var tempDungeon = Dungeon(
+                    cursor.getString(dungeonNameId),
+                    cursor.getInt(dungeonTotalDistanceId),
+                    cursor.getInt(dungeonWalkedDistanceId),
+                    cursor.getInt(dungeonActiveId) > 0,
+                    cursor.getInt(dungeonCompletedId) > 0,
+                    cursor.getInt(idId)
+                )
+
+                dungeons.add(tempDungeon)
+            }
+
+        }
+        return dungeons;
+    }
+
+    fun insertDungeon(dungeon: Dungeon){
+        val db = this.writableDatabase
+        val values = ContentValues().apply {
+            put(dungeonName,dungeon.dungeonName)
+            put(dungeonTotalDistance, dungeon.dungeonTotalDistance)
+            put(dungeonWalkedDistance, dungeon.dungeonWalkedDistance)
+            put(dungeonActive, dungeon.dungeonActive)
+            put(dungeonCompleted,  dungeon.dungeonCompleted)
+        }
+
+        db.insert(dungeonTableName, null, values)
+    }
+
+    fun updateDungeon(dungeon: Dungeon){
+        val db = this.writableDatabase
+        val values = ContentValues().apply {
+            put(dungeonName,dungeon.dungeonName)
+            put(dungeonTotalDistance, dungeon.dungeonTotalDistance)
+            put(dungeonWalkedDistance, dungeon.dungeonWalkedDistance)
+            put(dungeonActive, dungeon.dungeonActive)
+            put(dungeonCompleted,  dungeon.dungeonCompleted)
+        }
+        db.update(dungeonTableName,values,"$dungeonId = ?", arrayOf(dungeon.id.toString()))
+    }
+
+    fun deleteDungeon(dungeon: Dungeon){
+        val db = this.writableDatabase
+        db.delete(dungeonTableName,"$dungeonId = ?", arrayOf(dungeon.id.toString()))
+    }
+
 }
+
