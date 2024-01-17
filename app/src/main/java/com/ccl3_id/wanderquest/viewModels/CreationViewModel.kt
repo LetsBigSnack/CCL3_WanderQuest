@@ -83,6 +83,10 @@ class CreationViewModel (val db: DatabaseHandler) : ViewModel() {
             true
         )
 
-        db.insertPlayer(createdPlayer);
+        val id = db.insertPlayer(createdPlayer);
+        db.generateDungeons(id, 5);
     }
+
+
+
 }

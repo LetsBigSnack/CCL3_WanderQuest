@@ -1,7 +1,6 @@
 package com.ccl3_id.wanderquest.ui.views
 
 import android.content.Intent
-import android.widget.Button
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,7 +23,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.BottomNavigation
-import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material3.AlertDialog
@@ -58,9 +57,26 @@ import com.ccl3_id.wanderquest.data.models.entities.Player
 import com.ccl3_id.wanderquest.data.models.items.EquipedItem
 import com.ccl3_id.wanderquest.data.models.items.Item
 import com.ccl3_id.wanderquest.viewModels.MainViewModel
-import androidx.compose.foundation.layout.*
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import com.ccl3_id.wanderquest.viewModels.ItemViewModel
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 
 sealed class Screen(val route: String){
@@ -77,7 +93,7 @@ fun MainView(mainViewModel : MainViewModel, itemViewModel: ItemViewModel) {
     val navController = rememberNavController()
 
     Scaffold(
-        bottomBar = {BottomNavigationBar(navController, state.value.selectedScreen)}
+        bottomBar = {BottomNavigationBar(navController, state.value.selectedScreen,mainViewModel)}
     ) {
         NavHost(
             navController = navController,
@@ -85,19 +101,19 @@ fun MainView(mainViewModel : MainViewModel, itemViewModel: ItemViewModel) {
             startDestination = Screen.Character.route
         ){
             composable(Screen.Character.route){
+                //mainViewModel.selectScreen(Screen.Character);
                 mainViewModel.getPlayer();
-                mainViewModel.selectScreen(Screen.Character);
                 displayCharacterSheet(mainViewModel)
             }
             composable(Screen.Items.route){
+                //mainViewModel.selectScreen(Screen.Items);
                 itemViewModel.getItems()
                 itemViewModel.getEquipItems(state.value.selectedPlayer!!.id)
-                mainViewModel.selectScreen(Screen.Items);
                 itemsScreen(itemViewModel, mainViewModel)
             }
             composable(Screen.Dungeon.route){
+                //mainViewModel.selectScreen(Screen.Dungeon);
                 mainViewModel.getPlayer();
-                mainViewModel.selectScreen(Screen.Dungeon);
                 mainViewModel.getOpenDungeons()
                 mainViewModel.getActiveDungeons()
                 displayDungeons(mainViewModel)
@@ -109,23 +125,30 @@ fun MainView(mainViewModel : MainViewModel, itemViewModel: ItemViewModel) {
 
 
 @Composable
-fun BottomNavigationBar(navController: NavHostController, selectedScreen: Screen){
+fun BottomNavigationBar(navController: NavHostController, selectedScreen: Screen, mainViewModel: MainViewModel){
     BottomNavigation (
         backgroundColor = MaterialTheme.colorScheme.primary
     ) {
         NavigationBarItem(
             selected = (selectedScreen == Screen.Character),
-            onClick = { navController.navigate(Screen.Character.route) },
+            onClick = {
+                mainViewModel.selectScreen(Screen.Character);
+                navController.navigate(Screen.Character.route) },
             icon = { Icon(painter = painterResource(id = R.drawable.cowled), contentDescription = "Character Screen") })
 
         NavigationBarItem(
             selected = (selectedScreen == Screen.Items),
-            onClick = { navController.navigate(Screen.Items.route) },
+            onClick = {
+                mainViewModel.selectScreen(Screen.Items);
+                navController.navigate(Screen.Items.route)
+                      },
             icon = { Icon(painter = painterResource(id = R.drawable.cowled), contentDescription = "Item Screen") })
 
         NavigationBarItem(
             selected = (selectedScreen == Screen.Dungeon),
-            onClick = { navController.navigate(Screen.Dungeon.route) },
+            onClick = {
+                mainViewModel.selectScreen(Screen.Dungeon);
+                navController.navigate(Screen.Dungeon.route) },
             icon = { Icon( painter = painterResource(id = R.drawable.battle_gear), contentDescription = "Dungeon Screen") })
     }
 }
@@ -500,6 +523,7 @@ fun displayBattleScreen(mainViewModel: MainViewModel) {
 
 @Composable
 fun displayDungeons(mainViewModel: MainViewModel){
+
     val state = mainViewModel.mainViewState.collectAsState()
     val openDungeon = state.value.allOpenDungeons;
     val activeDungeon = state.value.allActiveDungeon;
@@ -507,53 +531,151 @@ fun displayDungeons(mainViewModel: MainViewModel){
     Column (
         modifier = Modifier
             .fillMaxSize()
-            .padding(top = 20.dp, start = 20.dp)
+            .padding(top = 10.dp, start = 5.dp, end = 5.dp)
     ) {
         Text(
             text = "Active Dungeons",
-            fontSize = 30.sp,
+            fontSize = 25.sp,
             style = TextStyle(fontFamily = FontFamily.Monospace)
         )
 
-        displayActiveDungeons(activeDungeon);
+        displayActiveDungeons(activeDungeon, mainViewModel);
 
         Text(
             text = "Open Dungeons",
-            fontSize = 30.sp,
+            fontSize = 25.sp,
             style = TextStyle(fontFamily = FontFamily.Monospace)
         )
 
-        displayOpenDungeons(openDungeon);
+        displayOpenDungeons(openDungeon, mainViewModel);
 
     }
 }
 
 @Composable
-fun displayOpenDungeons(openDungeon: List<Dungeon>) {
+fun displayOpenDungeons(openDungeon: List<Dungeon>, mainViewModel: MainViewModel) {
     LazyColumn(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         items(openDungeon) {
-            Text(text = it.dungeonName)
+            OpenDungeonItem(it, mainViewModel)
         }
     }
 }
 
 @Composable
-fun displayActiveDungeons(openDungeon: List<Dungeon>) {
+fun displayActiveDungeons(openDungeon: List<Dungeon>, mainViewModel: MainViewModel) {
     
     LazyColumn(
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         items(openDungeon) {
-            Text(text = it.dungeonName)
+            ActiveDungeonItem(it, mainViewModel)
         }
     }
 }
 
 
+
+@Composable
+fun OpenDungeonItem(dungeon: Dungeon, mainViewModel: MainViewModel) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column( modifier = Modifier.weight(1f)){
+            Text(text = dungeon.dungeonName, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Text(text = "Distance: ${dungeon.displayTotalDistance()}", fontSize = 20.sp)
+            CountdownTimer(convertDateStringToMillis(dungeon.dungeonExpiresIn),dungeon.id)
+        }
+
+        Button(
+            onClick = { mainViewModel.enterDungeon(dungeon) },
+        ) {
+            Text(text = "Enter")
+        }
+    }
+}
+
+@Composable
+fun ActiveDungeonItem(dungeon: Dungeon, mainViewModel: MainViewModel) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column( modifier = Modifier.weight(1f)){
+            Text(text = dungeon.dungeonName, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Text(text = "Distance:  ${dungeon.displayWalkedDistance()} / ${dungeon.displayTotalDistance()}", fontSize = 20.sp)
+        }
+
+        Button(
+            onClick = { mainViewModel.enterDungeon(dungeon) },
+        ) {
+            Text(text = "Enter")
+        }
+    }
+}
+
+fun convertDateStringToMillis(dateString: String): Long {
+    val format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+    return format.parse(dateString)?.time ?: 0L
+}
+
+@Composable
+fun CountdownTimer(expireTime: Long, dungeonID : Int) {
+    // This state will hold the remaining time
+    var remainingTime by remember { mutableStateOf("") }
+
+    // Remember a CoroutineScope for this CountdownTimer composable
+    val coroutineScope = rememberCoroutineScope()
+
+    // Launching a coroutine that ticks every second
+    DisposableEffect(key1 = coroutineScope) {
+        // Create a flow that emits every second
+        val tickerFlow = flow {
+            val endTime = expireTime
+            while (currentCoroutineContext().isActive) {
+                val currentTime = System.currentTimeMillis()
+                val remainingMillis = endTime - currentTime
+                if (remainingMillis <= 0) {
+                    emit("00:00:00:00") // Days:Hours:Minutes:Seconds
+                    break
+                }
+                emit(formatRemainingTime(remainingMillis))
+                delay(1000)
+            }
+        }
+
+        // Coroutine that collects the ticker flow
+        coroutineScope.launch {
+            tickerFlow.collect { newTime ->
+                remainingTime = newTime
+            }
+        }
+
+        // The onDispose block will be called when the composable leaves the composition
+        onDispose {
+            coroutineScope.cancel() // Cancels all coroutines launched in this scope
+        }
+    }
+
+    // Display the remaining time
+    Text(text = "Expires in: $remainingTime")
+}
+
+fun formatRemainingTime(millisUntilFinished: Long): String {
+    val days = TimeUnit.MILLISECONDS.toDays(millisUntilFinished)
+    val hours = TimeUnit.MILLISECONDS.toHours(millisUntilFinished) % 24
+    val minutes = TimeUnit.MILLISECONDS.toMinutes(millisUntilFinished) % 60
+    val seconds = TimeUnit.MILLISECONDS.toSeconds(millisUntilFinished) % 60
+    return String.format(Locale.getDefault(), "%02d:%02d:%02d:%02d", days, hours, minutes, seconds)
+}
 
 @Composable
 fun displayBattleContent(mainViewModel: MainViewModel){
