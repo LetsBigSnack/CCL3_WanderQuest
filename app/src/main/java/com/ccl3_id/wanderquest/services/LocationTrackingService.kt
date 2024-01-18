@@ -26,7 +26,7 @@ class LocationTrackingService : Service(), LocationListener {
     private val movementThreshold: Float = 20f
     // Drift threshold (in meters)
     private val driftThreshold: Float = 5f
-
+    private val accuracyThreshold : Float = 50f
 
     inner class LocalBinder : Binder() {
         fun getService(): LocationTrackingService = this@LocationTrackingService
@@ -73,6 +73,13 @@ class LocationTrackingService : Service(), LocationListener {
     }
 
     override fun onLocationChanged(location: Location) {
+
+        println("Accuracy ${location.accuracy}")
+
+        if(location.accuracy > accuracyThreshold){
+            return
+        }
+
         lastLocation?.let { lastLoc ->
             val distance = lastLoc.distanceTo(location)
             // Accumulate small movements that might be drift
