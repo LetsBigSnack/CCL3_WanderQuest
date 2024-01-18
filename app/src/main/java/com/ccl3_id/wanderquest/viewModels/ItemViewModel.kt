@@ -1,16 +1,12 @@
 package com.ccl3_id.wanderquest.viewModels
 
 import androidx.lifecycle.ViewModel
-import com.ccl3_id.wanderquest.ui.views.Screen
 import com.ccl3_id.wanderquest.data.DatabaseHandler
-import com.ccl3_id.wanderquest.data.models.items.EquippedItem
 import com.ccl3_id.wanderquest.data.models.items.Item
 import com.ccl3_id.wanderquest.viewModels.states.MainViewState
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 
 class ItemViewModel(private val db: DatabaseHandler) : ViewModel()  {
@@ -27,7 +23,7 @@ class ItemViewModel(private val db: DatabaseHandler) : ViewModel()  {
         _mainViewState.update { it.copy(itemClicked = true, clickedItem = item) }
     }
 
-    fun selcetEquippedItem(equippedItem: EquippedItem){
+    fun selcetEquippedItem(equippedItem: Item){
         _mainViewState.update { it.copy(equippedItemClicked = true, clickedEquippedItem = equippedItem) }
     }
 
@@ -37,9 +33,13 @@ class ItemViewModel(private val db: DatabaseHandler) : ViewModel()  {
     }
 
     fun equipItem(item: Item, playerId: Int){
-        db.equipItem(item)
-        getEquipItems(playerId)
-        getItems(playerId)
+        val equippedItems = _mainViewState.value.allEquippedItems
+        if(equippedItems.find { equippedItem: Item -> equippedItem.type.equals(item.type)} == null){
+            db.equipItem(item)
+            getEquipItems(playerId)
+            getItems(playerId)
+        }
+        //TODO: Add error msg
     }
 
     fun unequipItem(equippedItem: Item, playerId: Int){
@@ -50,7 +50,7 @@ class ItemViewModel(private val db: DatabaseHandler) : ViewModel()  {
 
     fun getEquipItems(playerId: Int){
         val equippedItems = db.getEquipItems(playerId)
-        _mainViewState.update { it.copy(allEquippedItem = equippedItems) }
+        _mainViewState.update { it.copy(allEquippedItems = equippedItems) }
     }
 
 }

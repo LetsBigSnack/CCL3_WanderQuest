@@ -11,7 +11,6 @@ import com.ccl3_id.wanderquest.data.models.entities.playerSubclasses.CrossFitAth
 import com.ccl3_id.wanderquest.data.models.entities.playerSubclasses.EnduranceRunner
 import com.ccl3_id.wanderquest.data.models.entities.playerSubclasses.MartialArtist
 import com.ccl3_id.wanderquest.data.models.entities.playerSubclasses.PersonalTrainer
-import com.ccl3_id.wanderquest.data.models.items.EquippedItem
 import com.ccl3_id.wanderquest.data.models.items.Item
 import java.lang.Exception
 import java.text.SimpleDateFormat
@@ -271,8 +270,8 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
         db.update(itemTableName,values,"$itemId = ?", arrayOf(item.id.toString()))
     }
 
-    fun getEquipItems(playerId: Int): List<EquippedItem> {
-        val equippedItems = mutableListOf<EquippedItem>()
+    fun getEquipItems(playerId: Int): List<Item> {
+        val equippedItems = mutableListOf<Item>()
         val db = this.writableDatabase
 
         val cursor = db.rawQuery("SELECT * FROM $itemTableName " +
@@ -287,7 +286,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
                 val itemImg = getString(getColumnIndexOrThrow(itemImg))
                 val equippedItemId = getInt(getColumnIndexOrThrow(itemPlayerId))
 
-                val equippedItem = EquippedItem(itemId, itemName, itemType, itemImg, equippedItemId)
+                val equippedItem = Item(itemId, itemName, itemType, itemImg, equippedItemId)
                 equippedItems.add(equippedItem)
             }
         }

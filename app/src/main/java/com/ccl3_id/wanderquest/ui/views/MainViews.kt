@@ -23,7 +23,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.BottomNavigation
-import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.LinearProgressIndicator
@@ -57,7 +56,6 @@ import com.ccl3_id.wanderquest.LoginActivity
 import com.ccl3_id.wanderquest.R
 import com.ccl3_id.wanderquest.data.models.dungeons.Dungeon
 import com.ccl3_id.wanderquest.data.models.entities.Player
-import com.ccl3_id.wanderquest.data.models.items.EquippedItem
 import com.ccl3_id.wanderquest.data.models.items.Item
 import com.ccl3_id.wanderquest.viewModels.MainViewModel
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -68,8 +66,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import com.ccl3_id.wanderquest.viewModels.ItemViewModel
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
@@ -77,7 +73,6 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
@@ -167,7 +162,7 @@ fun itemsScreen(itemViewModel: ItemViewModel, mainViewModel: MainViewModel){
     ) {
         val mainState = itemViewModel.mainViewState.collectAsState()
         val items = mainState.value.allItems
-        val equippedItems = mainState.value.allEquippedItem
+        val equippedItems = mainState.value.allEquippedItems
 
         Text(
             text = "Equipped:",
@@ -329,7 +324,7 @@ fun EquippedItemPopUp(itemViewModel : ItemViewModel, mainViewModel: MainViewMode
 }
 
 @Composable
-fun EquippedItemCard(equippedItem: EquippedItem, itemViewModel: ItemViewModel){
+fun EquippedItemCard(equippedItem: Item, itemViewModel: ItemViewModel){
     Column(
         modifier = Modifier
             .fillMaxWidth()
