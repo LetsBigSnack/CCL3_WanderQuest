@@ -34,6 +34,10 @@ class LocationRepository(context: Context) {
         return locationService?.getDistanceWalked() ?: 0f
     }
 
+    fun resetDistance() {
+        locationService?.resetDistance()
+    }
+
     // Call this method from your Activity or Fragment's onDestroy to avoid memory leaks
     fun unbindService(context: Context) {
         if (locationService != null) {
@@ -41,8 +45,6 @@ class LocationRepository(context: Context) {
         }
     }
 
-    fun resetDistance() {
-        locationService?.resetDistance()
-    }
+
 
 }

@@ -20,6 +20,14 @@ class LocationTrackingService : Service(), LocationListener {
     private var distanceWalked: Float = 0f
     private val binder = LocalBinder()
 
+    // New variable for tracking the accumulated drift
+    private var accumulatedDrift: Float = 0f
+    // Threshold for movement (in meters)
+    private val movementThreshold: Float = 20f
+    // Drift threshold (in meters)
+    private val driftThreshold: Float = 5f
+
+
     inner class LocalBinder : Binder() {
         fun getService(): LocationTrackingService = this@LocationTrackingService
     }
@@ -30,7 +38,7 @@ class LocationTrackingService : Service(), LocationListener {
         super.onCreate()
         locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
         try {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 10f, this)
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10f, this)
         } catch (e: SecurityException) {
             println("Permission not Granted")
             // Handle exception (permissions not granted)
@@ -65,12 +73,31 @@ class LocationTrackingService : Service(), LocationListener {
     }
 
     override fun onLocationChanged(location: Location) {
-        lastLocation?.let {
-            distanceWalked += it.distanceTo(location)
+        lastLocation?.let { lastLoc ->
+            val distance = lastLoc.distanceTo(location)
+            // Accumulate small movements that might be drift
+            if (distance < driftThreshold) {
+                accumulatedDrift += distance
+                // Check if accumulated drift exceeds the movement threshold
+                if (accumulatedDrift >= movementThreshold) {
+                    distanceWalked += accumulatedDrift
+                    accumulatedDrift = 0f // Reset accumulated drift
+                    println("Distance Walked: $distanceWalked meters")
+                }
+            } else {
+                // If movement is significant, update distance directly
+                distanceWalked += distance
+                accumulatedDrift = 0f // Reset accumulated drift
+                println("Distance Walked: $distanceWalked meters")
+            }
         }
         lastLocation = location
-        println("Distance Walked: $distanceWalked meters")
         // You might want to communicate this distance to the UI via a LiveData or similar mechanism
+    }
+
+    // Method to reset accumulated drift (can be called if needed)
+    fun resetAccumulatedDrift() {
+        accumulatedDrift = 0f
     }
 
     override fun onBind(intent: Intent): IBinder {

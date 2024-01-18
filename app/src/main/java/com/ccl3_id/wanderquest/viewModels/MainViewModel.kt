@@ -134,7 +134,7 @@ class MainViewModel (val db: DatabaseHandler, private val locationRepository: Lo
         getActiveDungeons()
     }
 
-    fun resetDistance() {
+    private fun resetDistance() {
         locationRepository.resetDistance()
     }
 
@@ -142,8 +142,11 @@ class MainViewModel (val db: DatabaseHandler, private val locationRepository: Lo
         viewModelScope.launch {
             while (isActive) {
                 if(_mainViewState.value.selectedPlayer != null){
+                    println("Before ${locationRepository.getDistanceWalked()}")
                     subtractDistanceFromDungeon()
                     resetDistance()
+                    println("After ${locationRepository.getDistanceWalked()}")
+
                 }
                 delay(10000) // Delay for 10 seconds
             }
