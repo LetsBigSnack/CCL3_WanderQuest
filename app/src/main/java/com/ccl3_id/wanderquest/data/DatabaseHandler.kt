@@ -58,10 +58,6 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
         private const val dungeonCreatedAt = "dungeonCreated"
         private const val dungeonExpiresIn = "dungeonExpiresIn"
 
-        private const val itemPlayerTableName = "ItemPlayer"
-        private const val _itemId = "itemId"
-        private const val _playerId = "playerId"
-
     }
 
     override fun onConfigure(db: SQLiteDatabase?) {
@@ -70,7 +66,6 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
-        db?.execSQL("DROP TABLE IF EXISTS $itemPlayerTableName;")
         db?.execSQL("DROP TABLE IF EXISTS $playerTableName;")
         db?.execSQL("DROP TABLE IF EXISTS $itemTableName;")
         db?.execSQL("DROP TABLE IF EXISTS $dungeonTableName;")
@@ -101,14 +96,6 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
                 "$itemImg VARCHAR(256)," +
                 "$itemPlayerId INTEGER, " +
                 "$itemIsEquipped BOOLEAN " +
-                ");")
-
-        db?.execSQL("CREATE TABLE IF NOT EXISTS $itemPlayerTableName(" +
-                "$itemPlayerId INTEGER PRIMARY KEY," +
-                "$_itemId INTEGER," +
-                "$_playerId INTEGER," +
-                "FOREIGN KEY ($_itemId) REFERENCES $itemTableName ($itemId) ON DELETE CASCADE," +
-                "FOREIGN KEY ($_playerId) REFERENCES $playerTableName ($playerId) ON DELETE CASCADE" +
                 ");")
 
         //insertItemsData(db);
