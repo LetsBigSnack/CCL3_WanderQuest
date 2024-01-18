@@ -9,6 +9,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.ccl3_id.wanderquest.data.DatabaseHandler
 import com.ccl3_id.wanderquest.data.models.dungeons.Dungeon
+import com.ccl3_id.wanderquest.repository.LocationRepository
 import com.ccl3_id.wanderquest.ui.theme.WanderQuestTheme
 import com.ccl3_id.wanderquest.ui.views.MainView
 import com.ccl3_id.wanderquest.viewModels.ItemViewModel
@@ -19,13 +20,17 @@ import com.ccl3_id.wanderquest.viewModels.MainViewModel
 class MainActivity : ComponentActivity() {
     // Database handler for Items.
     private val db = DatabaseHandler(this)
-
     // ViewModel for the Items view.
-    private val itemViewModel = ItemViewModel(db)
-    private val mainViewModel = MainViewModel(db)
 
+    private val itemViewModel = ItemViewModel(db)
+    private lateinit var mainViewModel : MainViewModel
+    private lateinit var locationRepository: LocationRepository
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        locationRepository = LocationRepository(this)
+        mainViewModel = MainViewModel(db, locationRepository)
+
         setContent {
             WanderQuestTheme {
                 // A surface container using the 'background' color from the theme.
@@ -39,5 +44,10 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        locationRepository.unbindService(this)
     }
 }

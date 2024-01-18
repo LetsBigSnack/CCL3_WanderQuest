@@ -3,6 +3,7 @@ package com.ccl3_id.wanderquest.services
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
+import android.os.Binder
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
@@ -17,6 +18,11 @@ class LocationTrackingService : Service(), LocationListener {
     private lateinit var locationManager: LocationManager
     private var lastLocation: Location? = null
     private var distanceWalked: Float = 0f
+    private val binder = LocalBinder()
+
+    inner class LocalBinder : Binder() {
+        fun getService(): LocationTrackingService = this@LocationTrackingService
+    }
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate() {
@@ -24,7 +30,7 @@ class LocationTrackingService : Service(), LocationListener {
         super.onCreate()
         locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
         try {
-            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 1f, this)
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 10f, this)
         } catch (e: SecurityException) {
             println("Permission not Granted")
             // Handle exception (permissions not granted)
@@ -59,15 +65,24 @@ class LocationTrackingService : Service(), LocationListener {
     }
 
     override fun onLocationChanged(location: Location) {
-        println(distanceWalked)
         lastLocation?.let {
             distanceWalked += it.distanceTo(location)
         }
         lastLocation = location
+        println("Distance Walked: $distanceWalked meters")
         // You might want to communicate this distance to the UI via a LiveData or similar mechanism
     }
 
-    override fun onBind(intent: Intent?): IBinder? {
-        return null
+    override fun onBind(intent: Intent): IBinder {
+        return binder
+    }
+
+    // Method to get the current distance walked
+    fun getDistanceWalked(): Float {
+        return distanceWalked
+    }
+
+    fun resetDistance() {
+        distanceWalked = 0f
     }
 }

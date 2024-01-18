@@ -119,8 +119,8 @@ fun MainView(mainViewModel : MainViewModel, itemViewModel: ItemViewModel) {
                 mainViewModel.getPlayer();
                 mainViewModel.getOpenDungeons()
                 mainViewModel.getActiveDungeons()
-                //displayDungeons(mainViewModel)
-                displayBattleScreen(mainViewModel);
+                displayDungeons(mainViewModel)
+                //displayBattleScreen(mainViewModel);
             }
         }
     }
@@ -621,22 +621,24 @@ fun ActiveDungeonItem(dungeon: Dungeon? = null, mainViewModel: MainViewModel) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if(dungeon != null){
+
             Column( modifier = Modifier.weight(1f)){
                 Text(text = dungeon.dungeonName, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                Text(text = "Distance:  ${dungeon.displayWalkedDistance()} / ${dungeon.displayTotalDistance()}", fontSize = 20.sp)
+                if(dungeon.dungeonWalkedDistance < dungeon.dungeonTotalDistance){
+                    Text(text = "Distance:  ${dungeon.displayWalkedDistance()} / ${dungeon.displayTotalDistance()}", fontSize = 20.sp)
+                }
             }
             //TODO add Dialog if you are sure
             IconButton(onClick = { mainViewModel.leaveDungeon(dungeon) }) {
                 Icon(Icons.Default.Delete,"Delete")
             }
-            Button(
-                             onClick = { },
-                         ) {
-                             Text(text = "Enter")
-                         }
-            /**
-             *
-             */
+            if(dungeon.dungeonWalkedDistance >= dungeon.dungeonTotalDistance){
+                Button(
+                    onClick = { },
+                ) {
+                    Text(text = "Enter")
+                }
+            }
         }
     }
 }

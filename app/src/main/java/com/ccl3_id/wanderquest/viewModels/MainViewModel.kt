@@ -4,23 +4,32 @@ import android.content.Context
 import android.widget.Toast
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.ccl3_id.wanderquest.data.DatabaseHandler
 import com.ccl3_id.wanderquest.data.models.dungeons.Dungeon
 import com.ccl3_id.wanderquest.data.models.entities.Enemy
+import com.ccl3_id.wanderquest.repository.LocationRepository
 import com.ccl3_id.wanderquest.ui.views.Screen
 import com.ccl3_id.wanderquest.viewModels.states.MainViewState
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlin.math.floor
 import kotlin.random.Random
 
 
-class MainViewModel (val db: DatabaseHandler) : ViewModel() {
+class MainViewModel (val db: DatabaseHandler, private val locationRepository: LocationRepository) : ViewModel() {
 
     private val _mainViewState = MutableStateFlow(MainViewState())
     val mainViewState: StateFlow<MainViewState> = _mainViewState.asStateFlow()
 
+    init {
+        startPeriodicDistanceCheck()
+    }
 
     fun getPlayer(){
         _mainViewState.update { it.copy(selectedPlayer = db.getSelectedPlayer()) }
@@ -123,6 +132,37 @@ class MainViewModel (val db: DatabaseHandler) : ViewModel() {
         db.deleteDungeon(dungeon)
         getOpenDungeons()
         getActiveDungeons()
+    }
+
+    fun resetDistance() {
+        locationRepository.resetDistance()
+    }
+
+    private fun startPeriodicDistanceCheck() {
+        viewModelScope.launch {
+            while (isActive) {
+                if(_mainViewState.value.selectedPlayer != null){
+                    subtractDistanceFromDungeon()
+                    resetDistance()
+                }
+                delay(10000) // Delay for 10 seconds
+            }
+        }
+    }
+
+    private fun subtractDistanceFromDungeon(){
+        var distance = locationRepository.getDistanceWalked()
+        var activeDungeons = _mainViewState.value.allActiveDungeon
+
+        for(activeDungeon in activeDungeons){
+            if(activeDungeon.dungeonWalkedDistance < activeDungeon.dungeonTotalDistance){
+                activeDungeon.dungeonWalkedDistance += floor(distance).toInt()
+                db.updateDungeon(activeDungeon)
+            }
+        }
+
+        getActiveDungeons()
+
     }
 
 }
