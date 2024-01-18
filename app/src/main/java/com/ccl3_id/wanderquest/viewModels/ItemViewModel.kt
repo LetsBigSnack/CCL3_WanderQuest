@@ -3,7 +3,7 @@ package com.ccl3_id.wanderquest.viewModels
 import androidx.lifecycle.ViewModel
 import com.ccl3_id.wanderquest.ui.views.Screen
 import com.ccl3_id.wanderquest.data.DatabaseHandler
-import com.ccl3_id.wanderquest.data.models.items.EquipedItem
+import com.ccl3_id.wanderquest.data.models.items.EquippedItem
 import com.ccl3_id.wanderquest.data.models.items.Item
 import com.ccl3_id.wanderquest.viewModels.states.MainViewState
 import kotlinx.coroutines.flow.Flow
@@ -27,13 +27,13 @@ class ItemViewModel(private val db: DatabaseHandler) : ViewModel()  {
         _mainViewState.update { it.copy(itemClicked = true, clickedItem = item) }
     }
 
-    fun selcetEquipedItem(equipedItem: EquipedItem){
-        _mainViewState.update { it.copy(equipedItemClicked = true, clickedEquipedItem = equipedItem) }
+    fun selcetEquippedItem(equippedItem: EquippedItem){
+        _mainViewState.update { it.copy(equippedItemClicked = true, clickedEquippedItem = equippedItem) }
     }
 
     fun deselectItem(){
         _mainViewState.update { it.copy(itemClicked = false) }
-        _mainViewState.update { it.copy(equipedItemClicked = false) }
+        _mainViewState.update { it.copy(equippedItemClicked = false) }
     }
 
     fun equipItem(item: Item, playerId: Int){
@@ -49,8 +49,8 @@ class ItemViewModel(private val db: DatabaseHandler) : ViewModel()  {
     }
 
     fun getEquipItems(playerId: Int){
-        val equipedItems = db.getEquipItems(playerId)
-        _mainViewState.update { it.copy(allEquipedItem = equipedItems) }
+        val equippedItems = db.getEquipItems(playerId)
+        _mainViewState.update { it.copy(allEquippedItem = equippedItems) }
     }
 
 }

@@ -3,7 +3,7 @@ package com.ccl3_id.wanderquest.viewModels.states
 import com.ccl3_id.wanderquest.data.models.dungeons.Dungeon
 import com.ccl3_id.wanderquest.data.models.entities.Enemy
 import com.ccl3_id.wanderquest.data.models.entities.Player
-import com.ccl3_id.wanderquest.data.models.items.EquipedItem
+import com.ccl3_id.wanderquest.data.models.items.EquippedItem
 import com.ccl3_id.wanderquest.ui.views.Screen
 import com.ccl3_id.wanderquest.data.models.items.Item
 
@@ -21,9 +21,9 @@ data class MainViewState (
     val allItems: List<Item> = emptyList(),
     val itemClicked: Boolean = false,
     val clickedItem: Item? = null,
-    val allEquipedItem: List<EquipedItem> = emptyList(),
-    val equipedItemClicked: Boolean = false,
-    val clickedEquipedItem: EquipedItem? = null,
+    val allEquippedItem: List<EquippedItem> = emptyList(),
+    val equippedItemClicked: Boolean = false,
+    val clickedEquippedItem: EquippedItem? = null,
     val allOpenDungeons: List<Dungeon> = emptyList(),
     val allActiveDungeon: List<Dungeon> = emptyList()
 )

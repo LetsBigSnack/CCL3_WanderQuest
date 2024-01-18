@@ -11,7 +11,7 @@ import com.ccl3_id.wanderquest.data.models.entities.playerSubclasses.CrossFitAth
 import com.ccl3_id.wanderquest.data.models.entities.playerSubclasses.EnduranceRunner
 import com.ccl3_id.wanderquest.data.models.entities.playerSubclasses.MartialArtist
 import com.ccl3_id.wanderquest.data.models.entities.playerSubclasses.PersonalTrainer
-import com.ccl3_id.wanderquest.data.models.items.EquipedItem
+import com.ccl3_id.wanderquest.data.models.items.EquippedItem
 import com.ccl3_id.wanderquest.data.models.items.Item
 import java.lang.Exception
 import java.text.SimpleDateFormat
@@ -271,8 +271,8 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
         db.update(itemTableName,values,"$itemId = ?", arrayOf(item.id.toString()))
     }
 
-    fun getEquipItems(playerId: Int): List<EquipedItem> {
-        val equipedItems = mutableListOf<EquipedItem>()
+    fun getEquipItems(playerId: Int): List<EquippedItem> {
+        val equippedItems = mutableListOf<EquippedItem>()
         val db = this.writableDatabase
 
         val cursor = db.rawQuery("SELECT * FROM $itemTableName " +
@@ -285,16 +285,16 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
                 val itemName = getString(getColumnIndexOrThrow(itemName))
                 val itemType = getString(getColumnIndexOrThrow(itemType))
                 val itemImg = getString(getColumnIndexOrThrow(itemImg))
-                val equipedItemId = getInt(getColumnIndexOrThrow(itemPlayerId))
+                val equippedItemId = getInt(getColumnIndexOrThrow(itemPlayerId))
 
-                val equipedItem = EquipedItem(itemId, itemName, itemType, itemImg, equipedItemId)
-                equipedItems.add(equipedItem)
+                val equippedItem = EquippedItem(itemId, itemName, itemType, itemImg, equippedItemId)
+                equippedItems.add(equippedItem)
             }
         }
 
         cursor.close()
 
-        return equipedItems
+        return equippedItems
     }
 
     fun unequipItem(item: Item){

@@ -57,7 +57,7 @@ import com.ccl3_id.wanderquest.LoginActivity
 import com.ccl3_id.wanderquest.R
 import com.ccl3_id.wanderquest.data.models.dungeons.Dungeon
 import com.ccl3_id.wanderquest.data.models.entities.Player
-import com.ccl3_id.wanderquest.data.models.items.EquipedItem
+import com.ccl3_id.wanderquest.data.models.items.EquippedItem
 import com.ccl3_id.wanderquest.data.models.items.Item
 import com.ccl3_id.wanderquest.viewModels.MainViewModel
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -119,8 +119,8 @@ fun MainView(mainViewModel : MainViewModel, itemViewModel: ItemViewModel) {
                 mainViewModel.getPlayer();
                 mainViewModel.getOpenDungeons()
                 mainViewModel.getActiveDungeons()
-                displayDungeons(mainViewModel)
-                //displayBattleScreen(mainViewModel);
+                //displayDungeons(mainViewModel)
+                displayBattleScreen(mainViewModel);
             }
         }
     }
@@ -167,10 +167,10 @@ fun itemsScreen(itemViewModel: ItemViewModel, mainViewModel: MainViewModel){
     ) {
         val mainState = itemViewModel.mainViewState.collectAsState()
         val items = mainState.value.allItems
-        val equipedItems = mainState.value.allEquipedItem
+        val equippedItems = mainState.value.allEquippedItem
 
         Text(
-            text = "Equiped:",
+            text = "Equipped:",
             fontSize = 32.sp,
             fontWeight = FontWeight.Bold,
         )
@@ -185,8 +185,8 @@ fun itemsScreen(itemViewModel: ItemViewModel, mainViewModel: MainViewModel){
                 .fillMaxWidth()
                 .padding(horizontal = 4.dp)
         ){
-            items(equipedItems) { equipedItem ->
-                EquipedItemCard(equipedItem, itemViewModel)
+            items(equippedItems) { equippedItem ->
+                EquippedItemCard(equippedItem, itemViewModel)
             }
         }
 
@@ -217,7 +217,7 @@ fun itemsScreen(itemViewModel: ItemViewModel, mainViewModel: MainViewModel){
         ItemPopUp(itemViewModel, mainViewModel)
     }
     Column {
-        EquipedItemPopUp(itemViewModel, mainViewModel)
+        EquippedItemPopUp(itemViewModel, mainViewModel)
     }
 }
 
@@ -290,11 +290,11 @@ fun ItemPopUp(itemViewModel : ItemViewModel, mainViewModel: MainViewModel){
 }
 
 @Composable
-fun EquipedItemPopUp(itemViewModel : ItemViewModel, mainViewModel: MainViewModel){
+fun EquippedItemPopUp(itemViewModel : ItemViewModel, mainViewModel: MainViewModel){
     val mainViewState = itemViewModel.mainViewState.collectAsState()
     val mainMainViewState = mainViewModel.mainViewState.collectAsState()
 
-    if(mainViewState.value.equipedItemClicked){
+    if(mainViewState.value.equippedItemClicked){
         AlertDialog(onDismissRequest = {
             itemViewModel.deselectItem()
         },
@@ -302,12 +302,12 @@ fun EquipedItemPopUp(itemViewModel : ItemViewModel, mainViewModel: MainViewModel
                 Column {
                     // https://www.jetpackcompose.net/textfield-in-jetpack-compose
                     Text(
-                        text = mainViewState.value.clickedEquipedItem!!.name,
+                        text = mainViewState.value.clickedEquippedItem!!.name,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = mainViewState.value.clickedEquipedItem!!.type,
+                        text = mainViewState.value.clickedEquippedItem!!.type,
                         fontSize = 14.sp
                     )
                 }
@@ -315,7 +315,7 @@ fun EquipedItemPopUp(itemViewModel : ItemViewModel, mainViewModel: MainViewModel
             confirmButton = {
                 Button(
                     onClick = {
-                        itemViewModel.unequipItem(mainViewState.value.clickedEquipedItem!!, mainMainViewState.value.selectedPlayer!!.id)
+                        itemViewModel.unequipItem(mainViewState.value.clickedEquippedItem!!, mainMainViewState.value.selectedPlayer!!.id)
                         itemViewModel.deselectItem()
                     },
                 ) {
@@ -329,17 +329,17 @@ fun EquipedItemPopUp(itemViewModel : ItemViewModel, mainViewModel: MainViewModel
 }
 
 @Composable
-fun EquipedItemCard(equipedItem: EquipedItem, itemViewModel: ItemViewModel){
+fun EquippedItemCard(equippedItem: EquippedItem, itemViewModel: ItemViewModel){
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { itemViewModel.selcetEquipedItem(equipedItem) }
+            .clickable { itemViewModel.selcetEquippedItem(equippedItem) }
     ) {
         // Load image dynamically from the database using the image string
-        val imageResource = painterResource(id = getImageResourceId(equipedItem.img))
+        val imageResource = painterResource(id = getImageResourceId(equippedItem.img))
         Image(
             painter = imageResource,
-            contentDescription = equipedItem.name,
+            contentDescription = equippedItem.name,
             modifier = Modifier
                 .size(100.dp)
                 .clip(shape = MaterialTheme.shapes.medium)
