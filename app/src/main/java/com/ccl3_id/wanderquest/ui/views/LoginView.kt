@@ -57,7 +57,7 @@ fun LoginView(loginViewModel: LoginViewModel, context: Context) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Walkthrough Hero", fontSize = 40.sp)
+        Text(text = "WanderQuest", fontSize = 40.sp)
         Image(
             painter = painterResource(id = R.drawable.ic_launcher_foreground),
             contentDescription = "Box"

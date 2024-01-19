@@ -101,7 +101,7 @@ fun MainView(mainViewModel : MainViewModel, itemViewModel: ItemViewModel) {
             composable(Screen.Character.route){
                 //mainViewModel.selectScreen(Screen.Character);
                 mainViewModel.getPlayer();
-                displayCharacterSheet(mainViewModel)
+                displayCharacterSheet(mainViewModel, itemViewModel)
             }
             composable(Screen.Items.route){
                 //mainViewModel.selectScreen(Screen.Items);
@@ -114,8 +114,8 @@ fun MainView(mainViewModel : MainViewModel, itemViewModel: ItemViewModel) {
                 mainViewModel.getPlayer();
                 mainViewModel.getOpenDungeons()
                 mainViewModel.getActiveDungeons()
-                //displayDungeons(mainViewModel)
-                displayBattleScreen(mainViewModel);
+                displayDungeons(mainViewModel)
+                //displayBattleScreen(mainViewModel);
             }
         }
     }
@@ -125,10 +125,12 @@ fun MainView(mainViewModel : MainViewModel, itemViewModel: ItemViewModel) {
 @Composable
 fun BottomNavigationBar(navController: NavHostController, selectedScreen: Screen, mainViewModel: MainViewModel){
     BottomNavigation (
-        backgroundColor = MaterialTheme.colorScheme.primary
+        backgroundColor = MaterialTheme.colorScheme.secondary
     ) {
         NavigationBarItem(
             selected = (selectedScreen == Screen.Character),
+            colors = androidx.compose.material3.NavigationBarItemDefaults
+                .colors(indicatorColor = MaterialTheme.colorScheme.onBackground),
             onClick = {
                 mainViewModel.selectScreen(Screen.Character);
                 navController.navigate(Screen.Character.route) },
@@ -136,6 +138,8 @@ fun BottomNavigationBar(navController: NavHostController, selectedScreen: Screen
 
         NavigationBarItem(
             selected = (selectedScreen == Screen.Items),
+            colors = androidx.compose.material3.NavigationBarItemDefaults
+                .colors(indicatorColor = MaterialTheme.colorScheme.onBackground),
             onClick = {
                 mainViewModel.selectScreen(Screen.Items);
                 navController.navigate(Screen.Items.route)
@@ -144,6 +148,8 @@ fun BottomNavigationBar(navController: NavHostController, selectedScreen: Screen
 
         NavigationBarItem(
             selected = (selectedScreen == Screen.Dungeon),
+            colors = androidx.compose.material3.NavigationBarItemDefaults
+                .colors(indicatorColor = MaterialTheme.colorScheme.onBackground),
             onClick = {
                 mainViewModel.selectScreen(Screen.Dungeon);
                 navController.navigate(Screen.Dungeon.route) },
@@ -172,7 +178,7 @@ fun itemsScreen(itemViewModel: ItemViewModel, mainViewModel: MainViewModel){
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Display items
+        // Display equipped items
         LazyVerticalGrid(
             columns = GridCells.Fixed(4),
             contentPadding = PaddingValues(4.dp),
@@ -355,11 +361,17 @@ fun getImageResourceId(imageName: String): Int {
 }
 
 @Composable
-fun displayCharacterSheet(mainViewModel: MainViewModel){
-
+fun displayCharacterSheet(mainViewModel: MainViewModel, itemViewModel: ItemViewModel){
+    //TODO Combine itemViewModel and mainViewModel
+    val itemState = itemViewModel.mainViewState.collectAsState()
     val state = mainViewModel.mainViewState.collectAsState()
     val player = state.value.selectedPlayer;
     val context = LocalContext.current
+    val equippedItems = itemState.value.equippedItemSlots
+
+    //TODO refactor
+    itemViewModel.getEquipItems(state.value.selectedPlayer!!.id)
+
     Column (
         modifier = Modifier
             .fillMaxSize()
@@ -369,6 +381,24 @@ fun displayCharacterSheet(mainViewModel: MainViewModel){
         if (player != null) {
 
             displayPlayerInfo(player);
+
+            Spacer(modifier = Modifier.padding(15.dp))
+
+            // Display equipped items
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(4),
+                contentPadding = PaddingValues(4.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+                    .padding(horizontal = 4.dp)
+            ){
+                items(equippedItems.entries.toList()) { (key, equippedItem) ->
+                    if (equippedItem != null) {
+                        EquippedItemCard(equippedItem, itemViewModel)
+                    }
+                }
+            }
 
             Spacer(modifier = Modifier.padding(15.dp))
 
