@@ -1,9 +1,14 @@
 package com.ccl3_id.wanderquest.ui.views
 
 import android.content.Intent
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.with
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -81,6 +86,31 @@ import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.runtime.*
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.dp
+import kotlin.random.Random
+
 
 sealed class Screen(val route: String){
     object Character: Screen("Character")
@@ -104,26 +134,124 @@ fun MainView(mainViewModel : MainViewModel, itemViewModel: ItemViewModel) {
             startDestination = Screen.Character.route
         ){
             composable(Screen.Character.route){
-                //mainViewModel.selectScreen(Screen.Character);
-                mainViewModel.getPlayer();
+                LaunchedEffect(Unit) { // Unit can be replaced with a specific key if needed
+                    mainViewModel.selectScreen(Screen.Character)
+                }
+                mainViewModel.getPlayer()
                 displayCharacterSheet(mainViewModel)
             }
             composable(Screen.Items.route){
-                //mainViewModel.selectScreen(Screen.Items);
+                LaunchedEffect(Unit) { // Unit can be replaced with a specific key if needed
+                    mainViewModel.selectScreen(Screen.Items);
+                }
                 itemViewModel.getItems(state.value.selectedPlayer!!.id)
                 itemViewModel.getEquipItems(state.value.selectedPlayer!!.id)
                 itemsScreen(itemViewModel, mainViewModel)
             }
             composable(Screen.Dungeon.route){
-                //mainViewModel.selectScreen(Screen.Dungeon);
+                LaunchedEffect(Unit) { // Unit can be replaced with a specific key if needed
+                    mainViewModel.selectScreen(Screen.Dungeon);
+                }
                 mainViewModel.getPlayer();
                 mainViewModel.getOpenDungeons()
                 mainViewModel.getActiveDungeons()
-                displayDungeons(mainViewModel)
+                //displayDungeons(mainViewModel)
                 //displayBattleScreen(mainViewModel);
+                ScrollableCanvasWithRectangles()
             }
         }
     }
+}
+
+@Composable
+fun ScrollableCanvasWithRectangles() {
+
+    val rectArray = arrayOf(
+        intArrayOf(0, 1, 0, 1, 0),
+        intArrayOf(0, 1, 0, 1, 0),
+        intArrayOf(1, 1, 1, 1, 0),
+        intArrayOf(0, 0, 1, 1, 0),
+        intArrayOf(1, 1, 1, 0, 0)
+    )
+
+    val horizontalScrollState = rememberScrollState()
+    val verticalScrollState = rememberScrollState()
+
+    val canvasSize = 1500.dp // The total size of the canvas
+    val canvasModifier = Modifier
+        .horizontalScroll(horizontalScrollState)
+        .verticalScroll(verticalScrollState)
+        .size(canvasSize)
+
+    val density = LocalDensity.current
+    val configuration = LocalConfiguration.current
+
+    LaunchedEffect(key1 = "initialScroll") {
+        with(density) {
+            val screenWidth = configuration.screenWidthDp.dp.toPx()
+            val screenHeight = configuration.screenHeightDp.dp.toPx()
+            val middleX = (canvasSize.toPx() - screenWidth) / 2
+            val middleY = (canvasSize.toPx() - screenHeight) / 2
+
+            horizontalScrollState.scrollTo(middleX.toInt())
+            verticalScrollState.scrollTo(middleY.toInt())
+        }
+    }
+
+    Canvas(modifier = canvasModifier, onDraw = {
+        val slotSize = 300.dp.toPx()
+        val rectSize = 150.dp.toPx()
+        val centers = mutableMapOf<Pair<Int, Int>, Offset>()
+
+        // First, calculate and store the center points of all rectangles
+        for (i in rectArray.indices) {
+            for (j in rectArray[i].indices) {
+                if (rectArray[i][j] == 1) {
+                    val randomX = Random.nextInt(0, (slotSize - rectSize).toInt()).toFloat()
+                    val randomY = Random.nextInt(0, (slotSize - rectSize).toInt()).toFloat()
+
+                    val topLeft = Offset(j * slotSize + randomX, i * slotSize + randomY)
+                    val center = Offset(topLeft.x + rectSize / 2, topLeft.y + rectSize / 2)
+
+                    centers[Pair(i, j)] = center
+                }
+            }
+        }
+
+        // Draw lines between adjacent rectangles
+        for ((key, center) in centers) {
+            val (i, j) = key
+            // Line to the right
+            if (j < rectArray[i].lastIndex && rectArray[i][j + 1] == 1) {
+                drawLine(
+                    color = Color.Black,
+                    start = center,
+                    end = centers[Pair(i, j + 1)]!!,
+                    strokeWidth = 30f
+                )
+            }
+            // Line below
+            if (i < rectArray.lastIndex && rectArray[i + 1][j] == 1) {
+                drawLine(
+                    color = Color.Black,
+                    start = center,
+                    end = centers[Pair(i + 1, j)]!!,
+                    strokeWidth = 30f
+                )
+            }
+        }
+
+        // Finally, draw the rectangles
+        for ((_, center) in centers) {
+            val topLeft = Offset(center.x - rectSize / 2, center.y - rectSize / 2)
+            drawRect(
+                color = Color.Blue,
+                topLeft = topLeft,
+                size = Size(rectSize, rectSize)
+            )
+        }
+    })
+
 }
 
 
