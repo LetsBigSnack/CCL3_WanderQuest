@@ -21,6 +21,12 @@ data class MainViewState (
     val itemClicked: Boolean = false,
     val clickedItem: Item? = null,
     val allEquippedItems: List<Item> = emptyList(),
+    val equippedItemSlots: MutableMap<String, Item?> = mutableMapOf(
+        "head" to null,
+        "hand" to null,
+        "chest" to null,
+        "legs" to null
+    ),
     val equippedItemClicked: Boolean = false,
     val clickedEquippedItem: Item? = null,
     val allOpenDungeons: List<Dungeon> = emptyList(),

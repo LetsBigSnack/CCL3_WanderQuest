@@ -33,8 +33,11 @@ class ItemViewModel(private val db: DatabaseHandler) : ViewModel()  {
     }
 
     fun equipItem(item: Item, playerId: Int){
-        val equippedItems = _mainViewState.value.allEquippedItems
-        if(equippedItems.find { equippedItem: Item -> equippedItem.type.equals(item.type)} == null){
+        val tempEquippedItemSlots = _mainViewState.value.equippedItemSlots
+
+        if (tempEquippedItemSlots[item.type] == null){
+            tempEquippedItemSlots[item.type] = item
+            _mainViewState.update { it.copy(equippedItemSlots = tempEquippedItemSlots) }
             db.equipItem(item)
             getEquipItems(playerId)
             getItems(playerId)
@@ -49,8 +52,15 @@ class ItemViewModel(private val db: DatabaseHandler) : ViewModel()  {
     }
 
     fun getEquipItems(playerId: Int){
-        val equippedItems = db.getEquipItems(playerId)
-        _mainViewState.update { it.copy(allEquippedItems = equippedItems) }
+        val equippedItemsDb = db.getEquipItems(playerId)
+        val equippedItems = mutableMapOf<String, Item?>()
+
+        equippedItems.put("head", equippedItemsDb.find { item: Item -> item.type == "head" })
+        equippedItems.put("hand", equippedItemsDb.find { item: Item -> item.type == "hand" })
+        equippedItems.put("chest", equippedItemsDb.find { item: Item -> item.type == "chest" })
+        equippedItems.put("legs", equippedItemsDb.find { item: Item -> item.type == "legs" })
+
+        _mainViewState.update { it.copy(equippedItemSlots = equippedItems) }
     }
 
 }

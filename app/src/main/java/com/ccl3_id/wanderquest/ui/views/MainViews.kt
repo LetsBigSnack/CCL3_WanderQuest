@@ -162,7 +162,7 @@ fun itemsScreen(itemViewModel: ItemViewModel, mainViewModel: MainViewModel){
     ) {
         val mainState = itemViewModel.mainViewState.collectAsState()
         val items = mainState.value.allItems
-        val equippedItems = mainState.value.allEquippedItems
+        val equippedItems = mainState.value.equippedItemSlots
 
         Text(
             text = "Equipped:",
@@ -180,8 +180,10 @@ fun itemsScreen(itemViewModel: ItemViewModel, mainViewModel: MainViewModel){
                 .fillMaxWidth()
                 .padding(horizontal = 4.dp)
         ){
-            items(equippedItems) { equippedItem ->
-                EquippedItemCard(equippedItem, itemViewModel)
+            items(equippedItems.entries.toList()) { (key, equippedItem) ->
+                if (equippedItem != null) {
+                    EquippedItemCard(equippedItem, itemViewModel)
+                }
             }
         }
 
