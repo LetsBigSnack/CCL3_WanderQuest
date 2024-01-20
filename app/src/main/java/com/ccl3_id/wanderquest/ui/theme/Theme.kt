@@ -17,9 +17,21 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = Color(0xFFCBFFC3),
+    onPrimary = Color(0xFF273E47),
+    //Background
+    background = Color(0xFF3A424A),
+    onBackground = Color(0xFF97ECFF),
+    surface = Color(0xFF3A424A),
+    onSurface =  Color(0xFF97ECFF),
+    //Nav
+    secondary = Color(0xFFDFF9FF),
+    //Go back/cancel
+    tertiary = Color(0xFFEFFF8E),
+    //Grey
+    onSecondary = Color(0xFFCDCBC7),
+    //Red/Health
+    onTertiary = Color(0xFFF17777),
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -29,6 +41,8 @@ private val LightColorScheme = lightColorScheme(
     //Background
     background = Color(0xFF3A424A),
     onBackground = Color(0xFF97ECFF),
+    surface = Color(0xFF3A424A),
+    onSurface =  Color(0xFF97ECFF),
     //Nav
     secondary = Color(0xFFDFF9FF),
     //Go back/cancel
@@ -43,15 +57,9 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun WanderQuestTheme(
         darkTheme: Boolean = isSystemInDarkTheme(),
-        // Dynamic color is available on Android 12+
-        dynamicColor: Boolean = true,
         content: @Composable () -> Unit
 ) {
     val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
 
         darkTheme -> DarkColorScheme
         else -> LightColorScheme

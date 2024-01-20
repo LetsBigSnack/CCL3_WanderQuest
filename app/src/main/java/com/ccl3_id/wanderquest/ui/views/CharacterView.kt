@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.material.*
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -40,8 +41,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.ccl3_id.wanderquest.LoginActivity
 import com.ccl3_id.wanderquest.viewModels.CharacterViewModel
+import androidx.compose.material3.Scaffold
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CharacterView(characterViewModel: CharacterViewModel, context: Context) {
 
@@ -53,12 +54,13 @@ fun CharacterView(characterViewModel: CharacterViewModel, context: Context) {
         topBar = {
             TopAppBar(
                 title = { Text("Characters",fontSize = 30.sp,
-                    fontWeight = FontWeight.Bold, color = Color.White) },
+                    fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.background)},
                 navigationIcon = {
                     IconButton(onClick = { val intent = Intent(context, LoginActivity::class.java); context.startActivity(intent);  }) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
                     }
-                }
+                },
+                backgroundColor = MaterialTheme.colorScheme.secondary
             )
         }
     ) { contentPadding ->
