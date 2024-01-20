@@ -1,6 +1,7 @@
 package com.ccl3_id.wanderquest.ui.views
 
 import android.content.Intent
+import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -100,6 +101,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
@@ -156,8 +158,8 @@ fun MainView(mainViewModel : MainViewModel, itemViewModel: ItemViewModel) {
                 mainViewModel.getOpenDungeons()
                 mainViewModel.getActiveDungeons()
                 //displayDungeons(mainViewModel)
-                //displayBattleScreen(mainViewModel);
-                ScrollableCanvasWithRectangles()
+                displayBattleScreen(mainViewModel);
+                //ScrollableCanvasWithRectangles()
             }
         }
     }
@@ -174,10 +176,12 @@ fun ScrollableCanvasWithRectangles() {
         intArrayOf(1, 1, 1, 0, 0)
     )
 
+    val context = LocalContext.current
+
     val horizontalScrollState = rememberScrollState()
     val verticalScrollState = rememberScrollState()
 
-    val canvasSize = 1500.dp // The total size of the canvas
+    val canvasSize = 2000.dp // The total size of the canvas
     val canvasModifier = Modifier
         .horizontalScroll(horizontalScrollState)
         .verticalScroll(verticalScrollState)
@@ -185,6 +189,25 @@ fun ScrollableCanvasWithRectangles() {
 
     val density = LocalDensity.current
     val configuration = LocalConfiguration.current
+
+    val slotSize = with(density) { 400.dp.toPx() }
+    val rectSize = with(density) { 150.dp.toPx() }
+    val centers = mutableMapOf<Pair<Int, Int>, Offset>()
+
+    // First, calculate and store the center points of all rectangles
+    for (i in rectArray.indices) {
+        for (j in rectArray[i].indices) {
+            if (rectArray[i][j] == 1) {
+                val randomX = Random.nextInt(0, (slotSize - rectSize).toInt()).toFloat()
+                val randomY = Random.nextInt(0, (slotSize - rectSize).toInt()).toFloat()
+
+                val topLeft = Offset(j * slotSize + randomX, i * slotSize + randomY)
+                val center = Offset(topLeft.x + rectSize / 2, topLeft.y + rectSize / 2)
+
+                centers[Pair(i, j)] = center
+            }
+        }
+    }
 
     LaunchedEffect(key1 = "initialScroll") {
         with(density) {
@@ -198,26 +221,23 @@ fun ScrollableCanvasWithRectangles() {
         }
     }
 
-    Canvas(modifier = canvasModifier, onDraw = {
-        val slotSize = 300.dp.toPx()
-        val rectSize = 150.dp.toPx()
-        val centers = mutableMapOf<Pair<Int, Int>, Offset>()
+    Canvas(modifier = canvasModifier
+        .pointerInput(Unit) {
+            detectTapGestures { offset ->
+                centers.forEach { (index, center) ->
+                    val (i, j) = index
+                    val topLeft = Offset(center.x - rectSize / 2, center.y - rectSize / 2)
+                    val bottomRight = Offset(center.x + rectSize / 2, center.y + rectSize / 2)
 
-        // First, calculate and store the center points of all rectangles
-        for (i in rectArray.indices) {
-            for (j in rectArray[i].indices) {
-                if (rectArray[i][j] == 1) {
-                    val randomX = Random.nextInt(0, (slotSize - rectSize).toInt()).toFloat()
-                    val randomY = Random.nextInt(0, (slotSize - rectSize).toInt()).toFloat()
-
-                    val topLeft = Offset(j * slotSize + randomX, i * slotSize + randomY)
-                    val center = Offset(topLeft.x + rectSize / 2, topLeft.y + rectSize / 2)
-
-                    centers[Pair(i, j)] = center
+                    if (offset.x >= topLeft.x && offset.x <= bottomRight.x && offset.y >= topLeft.y && offset.y <= bottomRight.y) {
+                        // Display toast with the indices
+                        //CALL Function
+                        println("CLicked on Rect $i $j")
+                        return@detectTapGestures
+                    }
                 }
             }
-        }
-
+        }, onDraw = {
         // Draw lines between adjacent rectangles
         for ((key, center) in centers) {
             val (i, j) = key
