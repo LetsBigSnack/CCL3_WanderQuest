@@ -47,8 +47,9 @@ private val LightColorScheme = lightColorScheme(
     secondary = Color(0xFFDFF9FF),
     //Go back/cancel
     tertiary = Color(0xFFEFFF8E),
-    //Grey
+    //ItemBg
     onSecondary = Color(0xFFCDCBC7),
+    onSecondaryContainer = Color(0xFF817D78),
     //Red/Health
     onTertiary = Color(0xFFF17777),
 

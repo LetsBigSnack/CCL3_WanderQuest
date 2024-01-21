@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.Icon
@@ -114,8 +115,8 @@ fun MainView(mainViewModel : MainViewModel, itemViewModel: ItemViewModel) {
                 mainViewModel.getPlayer();
                 mainViewModel.getOpenDungeons()
                 mainViewModel.getActiveDungeons()
-                displayDungeons(mainViewModel)
-                //displayBattleScreen(mainViewModel);
+                //displayDungeons(mainViewModel)
+                displayBattleScreen(mainViewModel);
             }
         }
     }
@@ -166,55 +167,13 @@ fun itemsScreen(itemViewModel: ItemViewModel, mainViewModel: MainViewModel){
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        val mainState = itemViewModel.mainViewState.collectAsState()
-        val items = mainState.value.allItems
-        val equippedItems = mainState.value.equippedItemSlots
-
-        Text(
-            text = "Equipped:",
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Bold,
-        )
-
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Display equipped items
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(4),
-            contentPadding = PaddingValues(4.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 4.dp)
-        ){
-            items(equippedItems.entries.toList()) { (key, equippedItem) ->
-                if (equippedItem != null) {
-                    EquippedItemCard(equippedItem, itemViewModel)
-                }
-            }
-        }
+        displayPlayerEquipedItems(itemViewModel)
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Text(
-            text = "Items:",
-            fontSize = 32.sp,
-            fontWeight = FontWeight.Bold,
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Display items
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(4),
-            contentPadding = PaddingValues(4.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 4.dp)
-        ){
-            items(items) { item ->
-                ItemCard(item, itemViewModel)
-            }
-        }
+        displayPlayerItems(itemViewModel)
     }
     Column {
         ItemPopUp(itemViewModel, mainViewModel)
@@ -230,6 +189,8 @@ fun ItemCard(item: Item, itemViewModel: ItemViewModel) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable { itemViewModel.selcetItem(item) }
+            .padding(4.dp)
+            .background(MaterialTheme.colorScheme.onSecondary, shape = RoundedCornerShape(10.dp))
     ) {
         // Load image dynamically from the database using the image string
         val imageResource = painterResource(id = getImageResourceId(item.img))
@@ -252,45 +213,189 @@ fun ItemCard(item: Item, itemViewModel: ItemViewModel) {
     }
 }
 
+@Composable
+fun displayPlayerItems(itemViewModel: ItemViewModel){
+    val mainState = itemViewModel.mainViewState.collectAsState()
+    val items = mainState.value.allItems
+
+    Text(
+        text = "Items:",
+        fontSize = 32.sp,
+    )
+
+    Spacer(modifier = Modifier.height(8.dp))
+
+    // Display items
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(4),
+        contentPadding = PaddingValues(4.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 4.dp)
+    ){
+        items(items) { item ->
+            ItemCard(item, itemViewModel)
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ItemPopUp(itemViewModel : ItemViewModel, mainViewModel: MainViewModel){
-    val mainViewState = itemViewModel.mainViewState.collectAsState()
-    val mainMainViewState = mainViewModel.mainViewState.collectAsState()
+    val itemViewState = itemViewModel.mainViewState.collectAsState()
+    val equippedItems = itemViewState.value.equippedItemSlots
 
-    if (mainViewState.value.itemClicked){
-        AlertDialog(onDismissRequest = {
-                itemViewModel.deselectItem()
-            },
-            text = {
-                Column {
-                    // https://www.jetpackcompose.net/textfield-in-jetpack-compose
-                    Text(
-                        text = mainViewState.value.clickedItem!!.name,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = mainViewState.value.clickedItem!!.type,
-                        fontSize = 14.sp
-                    )
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        itemViewModel.equipItem(mainViewState.value.clickedItem!!, mainMainViewState.value.selectedPlayer!!.id)
-                        itemViewModel.deselectItem()
-                    }
-                ) {
-                    Text(
-                        text = "Equip"
-                    )
-                }
-            }
-        )
+    val mainViewState = mainViewModel.mainViewState.collectAsState()
+    val playerId = mainViewState.value.selectedPlayer!!.id
+
+    if (itemViewState.value.itemClicked){
+        val clickedItem = itemViewState.value.clickedItem!!
+        val isAlreadyEquipped = equippedItems[clickedItem.type]
+
+        if(isAlreadyEquipped != null){
+            isAlreadyEquippedPopUp(clickedItem, itemViewModel, playerId)
+        }
+        else{
+            ItemPopUpEquip(clickedItem, itemViewModel, playerId)
+        }
     }
 }
+
+@Composable
+fun ItemPopUpEquip(clickedItem: Item, itemViewModel: ItemViewModel, playerId: Int){
+
+    AlertDialog(
+        onDismissRequest = {
+            itemViewModel.deselectItem()
+        },
+        text = {
+            Column {
+                // https://www.jetpackcompose.net/textfield-in-jetpack-compose
+                Text(
+                    text = clickedItem.name,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = clickedItem.type,
+                    fontSize = 18.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    itemViewModel.equipItem(clickedItem, playerId)
+                    itemViewModel.deselectItem()
+                }
+            ) {
+                Text(
+                    text = "Equip"
+                )
+            }
+        }
+    )
+}
+
+@Composable
+fun isAlreadyEquippedPopUp(clickedItem: Item, itemViewModel: ItemViewModel, playerId: Int){
+    AlertDialog(
+        onDismissRequest = {
+            itemViewModel.deselectItem()
+        },
+        text = {
+            Column {
+                // https://www.jetpackcompose.net/textfield-in-jetpack-compose
+                Text(
+                    text = clickedItem.name,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = clickedItem.type,
+                    fontSize = 18.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "You have already equipped an item of this type. Would you like to replace it?",
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    itemViewModel.replaceEquippedItem(clickedItem, playerId)
+                    itemViewModel.deselectItem()
+                }){
+                Text("Replace")
+            }
+        },
+        dismissButton = {
+            Button(onClick = { itemViewModel.deselectItem() }) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+@Composable
+fun EquippedItemCard(equippedItem: Item, itemViewModel: ItemViewModel){
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { itemViewModel.selcetEquippedItem(equippedItem) }
+            .padding(4.dp)
+            .background(MaterialTheme.colorScheme.onSecondaryContainer, shape = RoundedCornerShape(10.dp))
+    ) {
+        // Load image dynamically from the database using the image string
+        val imageResource = painterResource(id = getImageResourceId(equippedItem.img))
+        Image(
+            painter = imageResource,
+            contentDescription = equippedItem.name,
+            modifier = Modifier
+                .size(100.dp)
+                .clip(shape = MaterialTheme.shapes.medium)
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+    }
+}
+
+
+@Composable
+fun displayPlayerEquipedItems(itemViewModel: ItemViewModel){
+    val itemState = itemViewModel.mainViewState.collectAsState()
+    val equippedItems = itemState.value.equippedItemSlots
+
+    Text(
+        text = "Equipped Items:",
+        fontSize = 30.sp,
+        style = TextStyle(fontFamily = FontFamily.Monospace)
+    )
+
+    // Display equipped items
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(4),
+        contentPadding = PaddingValues(4.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(115.dp)
+    ){
+        items(equippedItems.entries.toList()) { (key, equippedItem) ->
+            if (equippedItem != null) {
+                EquippedItemCard(equippedItem, itemViewModel)
+            }
+            else{
+                EmptySlotPlaceholder()
+            }
+        }
+    }
+}
+
 
 @Composable
 fun EquippedItemPopUp(itemViewModel : ItemViewModel, mainViewModel: MainViewModel){
@@ -306,12 +411,14 @@ fun EquippedItemPopUp(itemViewModel : ItemViewModel, mainViewModel: MainViewMode
                     // https://www.jetpackcompose.net/textfield-in-jetpack-compose
                     Text(
                         text = mainViewState.value.clickedEquippedItem!!.name,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = mainViewState.value.clickedEquippedItem!!.type,
-                        fontSize = 14.sp
+                        fontSize = 18.sp,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             },
@@ -331,26 +438,7 @@ fun EquippedItemPopUp(itemViewModel : ItemViewModel, mainViewModel: MainViewMode
     }
 }
 
-@Composable
-fun EquippedItemCard(equippedItem: Item, itemViewModel: ItemViewModel){
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { itemViewModel.selcetEquippedItem(equippedItem) }
-    ) {
-        // Load image dynamically from the database using the image string
-        val imageResource = painterResource(id = getImageResourceId(equippedItem.img))
-        Image(
-            painter = imageResource,
-            contentDescription = equippedItem.name,
-            modifier = Modifier
-                .size(100.dp)
-                .clip(shape = MaterialTheme.shapes.medium)
-        )
 
-        Spacer(modifier = Modifier.height(4.dp))
-    }
-}
 
 // Helper function to get the resource ID of an image based on its name
 @Composable
@@ -363,11 +451,9 @@ fun getImageResourceId(imageName: String): Int {
 @Composable
 fun displayCharacterSheet(mainViewModel: MainViewModel, itemViewModel: ItemViewModel){
     //TODO Combine itemViewModel and mainViewModel
-    val itemState = itemViewModel.mainViewState.collectAsState()
     val state = mainViewModel.mainViewState.collectAsState()
     val player = state.value.selectedPlayer;
     val context = LocalContext.current
-    val equippedItems = itemState.value.equippedItemSlots
 
     //TODO refactor
     itemViewModel.getEquipItems(state.value.selectedPlayer!!.id)
@@ -384,21 +470,7 @@ fun displayCharacterSheet(mainViewModel: MainViewModel, itemViewModel: ItemViewM
 
             Spacer(modifier = Modifier.padding(15.dp))
 
-            // Display equipped items
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(4),
-                contentPadding = PaddingValues(4.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(100.dp)
-                    .padding(horizontal = 4.dp)
-            ){
-                items(equippedItems.entries.toList()) { (key, equippedItem) ->
-                    if (equippedItem != null) {
-                        EquippedItemCard(equippedItem, itemViewModel)
-                    }
-                }
-            }
+            displayPlayerEquipedItems(itemViewModel)
 
             Spacer(modifier = Modifier.padding(15.dp))
 
@@ -463,6 +535,20 @@ fun displayPlayerInfo(player: Player) {
             text = "XP: " + player.playerCurrentXP + "/" + player.playerXPToNextLevel,
             fontSize = 20.sp,
         )
+    }
+}
+
+@Composable
+fun EmptySlotPlaceholder() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(4.dp)
+            .background(MaterialTheme.colorScheme.onSecondaryContainer, shape = RoundedCornerShape(10.dp))
+    ) {
+        Spacer(modifier = Modifier
+            .size(104.dp)
+            .clip(shape = MaterialTheme.shapes.medium))
     }
 }
 

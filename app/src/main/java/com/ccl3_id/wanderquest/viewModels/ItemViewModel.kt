@@ -45,6 +45,27 @@ class ItemViewModel(private val db: DatabaseHandler) : ViewModel()  {
         //TODO: Add error msg
     }
 
+    fun replaceEquippedItem(newItem: Item, playerId: Int){
+        val tempEquippedItemSlots = _mainViewState.value.equippedItemSlots.toMutableMap()
+        val itemType = newItem.type
+
+        // Unequip the current item in the slot, if present
+        tempEquippedItemSlots[itemType]?.let { currentItem ->
+            db.unequipItem(currentItem)
+        }
+
+        // Equip the new item
+        tempEquippedItemSlots[itemType] = newItem
+        db.equipItem(newItem)
+
+        // Update the state
+        _mainViewState.update { it.copy(equippedItemSlots = tempEquippedItemSlots) }
+
+        // Refresh the lists
+        getEquipItems(playerId)
+        getItems(playerId)
+    }
+
     fun unequipItem(equippedItem: Item, playerId: Int){
         db.unequipItem(equippedItem)
         getEquipItems(playerId)
