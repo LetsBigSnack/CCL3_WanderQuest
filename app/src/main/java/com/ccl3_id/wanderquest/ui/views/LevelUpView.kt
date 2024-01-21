@@ -76,8 +76,10 @@ fun LevelUpView(levelUpViewModel: LevelUpViewModel, context: Context) {
             TopAppBar(
                 title = {
                     Text(
-                        "LEVEL UP", fontSize = 30.sp,
-                        fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.background
+                        "LEVEL UP",
+                        fontSize = 30.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.background
                     )
                 },
                 navigationIcon = {
@@ -145,7 +147,7 @@ fun Stats(statName : String, statValue: Int, levelUpViewModel: LevelUpViewModel)
         IconButton(onClick = { levelUpViewModel.subStat(statName) },
             modifier = Modifier
                 .size(20.dp) // Set the size of the IconButton
-                .background(Color.LightGray, shape = CircleShape)) {
+                .background(MaterialTheme.colorScheme.primary, shape = CircleShape)) {
             Icon(Icons.Default.ArrowBack,"Subtract")
         }
         Column (modifier = Modifier
@@ -158,7 +160,7 @@ fun Stats(statName : String, statValue: Int, levelUpViewModel: LevelUpViewModel)
         IconButton(onClick = {levelUpViewModel.addStat(statName) },
             modifier = Modifier
                 .size(20.dp) // Set the size of the IconButton
-                .background(Color.LightGray, shape = CircleShape) // Set a round background
+                .background(MaterialTheme.colorScheme.primary, shape = CircleShape) // Set a round background
         ) {
             Icon(Icons.Default.ArrowForward,"Add")
         }
