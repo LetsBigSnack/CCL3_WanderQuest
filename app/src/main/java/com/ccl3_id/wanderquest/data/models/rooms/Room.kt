@@ -4,31 +4,28 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
 import kotlin.random.Random
 
-class Room(val xIndex: Int, val yIndex: Int, var roomType: String, slotSize: Float, rectSize: Float) {
+class Room(val xIndex: Int, val yIndex: Int, var roomType: String) {
 
 
     companion object{
-        val ROOM_SIZE = 150.dp
-        val SLOT_SIZE = 400.dp
+        val ROOM_SIZE = 150
+        val SLOT_SIZE = 400
     }
 
     var centerPos:Offset? = null
+
+    var randomX = 0f
+    var randomY = 0f
     var hasBeenVisted : Boolean
 
     init {
-        val randomX = Random.nextInt(0, (slotSize - rectSize).toInt()).toFloat()
-        val randomY = Random.nextInt(0, (slotSize - rectSize).toInt()).toFloat()
-
-        val topLeft = Offset(xIndex * slotSize + randomX, yIndex * slotSize + randomY)
-        centerPos = Offset(topLeft.x + rectSize / 2, topLeft.y + rectSize / 2)
+        randomX = Random.nextInt(0, (SLOT_SIZE - ROOM_SIZE).toInt()).toFloat()
+        randomY = Random.nextInt(0, (SLOT_SIZE - ROOM_SIZE).toInt()).toFloat()
         hasBeenVisted = false
-
     }
 
     fun visitRoom(){
         this.hasBeenVisted = true
     }
-
-
 
 }

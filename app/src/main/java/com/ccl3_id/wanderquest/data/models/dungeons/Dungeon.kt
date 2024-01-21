@@ -22,7 +22,7 @@ class Dungeon(
         rooms = Array(5) { Array(5) { null } }
     }
 
-    fun generateRooms(slotSize: Float, rectSize: Float) {
+    fun generateRooms() {
 
         val dungeonSize = 12;
         var currentSize = 0;
@@ -31,7 +31,7 @@ class Dungeon(
 
 
         //Starting Room
-        val startingRoom = Room(2,2,"starting", slotSize, rectSize)
+        val startingRoom = Room(2,2,"starting")
         currentSize++;
         createdRooms.add(startingRoom)
 
@@ -68,7 +68,7 @@ class Dungeon(
                         break
                     }
 
-                    val tempRoom = Room(newXIndex, newYIndex, roomType, slotSize, rectSize)
+                    val tempRoom = Room(newXIndex, newYIndex, roomType)
                     createdRooms.add(tempRoom)
                     currentSize++
                 }

@@ -159,9 +159,7 @@ fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
 
     val density = LocalDensity.current
     val configuration = LocalConfiguration.current
-    val rectSize = with(density) { Room.ROOM_SIZE.toPx() }
-    val centers = mutableMapOf<Pair<Int, Int>, Offset>()
-
+    val rectSize = with(density) { Room.ROOM_SIZE.dp.toPx() }
 
     LaunchedEffect(key1 = "initialScroll") {
         with(density) {
@@ -174,6 +172,16 @@ fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
             verticalScrollState.scrollTo(middleY.toInt())
         }
     }
+
+    dungeonRooms!!.forEach { row ->
+        row.forEach { room ->
+            if (room != null) {
+                val topLeft =  with(density) {Offset(room.xIndex * Room.SLOT_SIZE.dp.toPx() + room.randomX.dp.toPx(), room.yIndex * Room.SLOT_SIZE.dp.toPx()  + room.randomY.dp.toPx())}
+                room.centerPos = Offset(topLeft.x + rectSize / 2, topLeft.y + rectSize / 2)
+            }
+        }
+    }
+
 
     Canvas(modifier = canvasModifier
         .pointerInput(Unit) {
@@ -743,8 +751,8 @@ fun OpenDungeonItem(dungeon: Dungeon, mainViewModel: MainViewModel) {
 fun ActiveDungeonItem(dungeon: Dungeon? = null, mainViewModel: MainViewModel) {
 
     val density = LocalDensity.current
-    val slotSize = with(density) { Room.SLOT_SIZE.toPx() }
-    val rectSize = with(density) { Room.ROOM_SIZE.toPx() }
+    val slotSize = with(density) { Room.SLOT_SIZE.dp.toPx() }
+    val rectSize = with(density) { Room.ROOM_SIZE.dp.toPx() }
 
 
     Row(
@@ -769,7 +777,7 @@ fun ActiveDungeonItem(dungeon: Dungeon? = null, mainViewModel: MainViewModel) {
             }
             if(dungeon.dungeonWalkedDistance >= dungeon.dungeonTotalDistance){
                 Button(
-                    onClick = { mainViewModel.generateDungeon(dungeon, slotSize, rectSize)  },
+                    onClick = { mainViewModel.generateDungeon(dungeon)  },
                 ) {
                     Text(text = "Enter")
                 }

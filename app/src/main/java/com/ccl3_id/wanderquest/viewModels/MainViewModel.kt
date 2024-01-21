@@ -167,8 +167,8 @@ class MainViewModel (val db: DatabaseHandler, private val locationRepository: Lo
 
     }
 
-    fun generateDungeon(dungeon: Dungeon, slotSize: Float, rectSize: Float){
-         dungeon.generateRooms(slotSize, rectSize);
+    fun generateDungeon(dungeon: Dungeon){
+         dungeon.generateRooms();
         _mainViewState.update { it.copy(dungeonRooms = dungeon.rooms)}
 
     }
