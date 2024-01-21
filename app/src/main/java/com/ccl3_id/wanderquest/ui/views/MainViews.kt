@@ -1,11 +1,6 @@
 package com.ccl3_id.wanderquest.ui.views
 
 import android.content.Intent
-import android.widget.Toast
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.with
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -29,7 +24,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.BottomNavigation
-import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.LinearProgressIndicator
@@ -74,8 +68,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import com.ccl3_id.wanderquest.viewModels.ItemViewModel
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
@@ -83,34 +75,18 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.runtime.*
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.dp
+import com.ccl3_id.wanderquest.data.models.rooms.Room
 import kotlin.random.Random
 
 
@@ -157,8 +133,8 @@ fun MainView(mainViewModel : MainViewModel, itemViewModel: ItemViewModel) {
                 mainViewModel.getPlayer();
                 mainViewModel.getOpenDungeons()
                 mainViewModel.getActiveDungeons()
-                //displayDungeons(mainViewModel)
-                displayBattleScreen(mainViewModel);
+                displayDungeons(mainViewModel)
+                //displayBattleScreen(mainViewModel);
                 //ScrollableCanvasWithRectangles()
             }
         }
@@ -166,17 +142,11 @@ fun MainView(mainViewModel : MainViewModel, itemViewModel: ItemViewModel) {
 }
 
 @Composable
-fun ScrollableCanvasWithRectangles() {
+fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
 
-    val rectArray = arrayOf(
-        intArrayOf(0, 1, 0, 1, 0),
-        intArrayOf(0, 1, 0, 1, 0),
-        intArrayOf(1, 1, 1, 1, 0),
-        intArrayOf(0, 0, 1, 1, 0),
-        intArrayOf(1, 1, 1, 0, 0)
-    )
+    val state = mainViewModel.mainViewState.collectAsState()
+    val dungeonRooms = state.value.dungeonRooms
 
-    val context = LocalContext.current
 
     val horizontalScrollState = rememberScrollState()
     val verticalScrollState = rememberScrollState()
@@ -189,25 +159,9 @@ fun ScrollableCanvasWithRectangles() {
 
     val density = LocalDensity.current
     val configuration = LocalConfiguration.current
-
-    val slotSize = with(density) { 400.dp.toPx() }
-    val rectSize = with(density) { 150.dp.toPx() }
+    val rectSize = with(density) { Room.ROOM_SIZE.toPx() }
     val centers = mutableMapOf<Pair<Int, Int>, Offset>()
 
-    // First, calculate and store the center points of all rectangles
-    for (i in rectArray.indices) {
-        for (j in rectArray[i].indices) {
-            if (rectArray[i][j] == 1) {
-                val randomX = Random.nextInt(0, (slotSize - rectSize).toInt()).toFloat()
-                val randomY = Random.nextInt(0, (slotSize - rectSize).toInt()).toFloat()
-
-                val topLeft = Offset(j * slotSize + randomX, i * slotSize + randomY)
-                val center = Offset(topLeft.x + rectSize / 2, topLeft.y + rectSize / 2)
-
-                centers[Pair(i, j)] = center
-            }
-        }
-    }
 
     LaunchedEffect(key1 = "initialScroll") {
         with(density) {
@@ -224,51 +178,73 @@ fun ScrollableCanvasWithRectangles() {
     Canvas(modifier = canvasModifier
         .pointerInput(Unit) {
             detectTapGestures { offset ->
-                centers.forEach { (index, center) ->
-                    val (i, j) = index
-                    val topLeft = Offset(center.x - rectSize / 2, center.y - rectSize / 2)
-                    val bottomRight = Offset(center.x + rectSize / 2, center.y + rectSize / 2)
-
-                    if (offset.x >= topLeft.x && offset.x <= bottomRight.x && offset.y >= topLeft.y && offset.y <= bottomRight.y) {
-                        // Display toast with the indices
-                        //CALL Function
-                        println("CLicked on Rect $i $j")
-                        return@detectTapGestures
+                dungeonRooms!!.forEach { row ->
+                    row.forEach { room ->
+                        if (room != null) {
+                            val center = room.centerPos!!
+                            val topLeft = Offset(center.x - rectSize / 2, center.y - rectSize / 2)
+                            val bottomRight = Offset(center.x + rectSize / 2, center.y + rectSize / 2)
+                            if (offset.x >= topLeft.x && offset.x <= bottomRight.x && offset.y >= topLeft.y && offset.y <= bottomRight.y) {
+                                // Display toast with the indices
+                                //CALL Function
+                                println("CLicked on Rect ${room.xIndex} ${room.yIndex}")
+                                return@detectTapGestures
+                            }
+                        }
                     }
                 }
             }
         }, onDraw = {
-        // Draw lines between adjacent rectangles
-        for ((key, center) in centers) {
-            val (i, j) = key
-            // Line to the right
-            if (j < rectArray[i].lastIndex && rectArray[i][j + 1] == 1) {
-                drawLine(
-                    color = Color.Black,
-                    start = center,
-                    end = centers[Pair(i, j + 1)]!!,
-                    strokeWidth = 30f
-                )
-            }
-            // Line below
-            if (i < rectArray.lastIndex && rectArray[i + 1][j] == 1) {
-                drawLine(
-                    color = Color.Black,
-                    start = center,
-                    end = centers[Pair(i + 1, j)]!!,
-                    strokeWidth = 30f
-                )
+
+        for (i in dungeonRooms!!.indices) {
+            for (j in  dungeonRooms!![i].indices) {
+                val currentRoom =  dungeonRooms!![i][j]
+                if(currentRoom != null){
+                    // Draw line to the right
+                    if (j <  dungeonRooms!![i].lastIndex &&  dungeonRooms!![i][j + 1] != null) {
+                        drawLine(
+                            color = Color.Black,
+                            start = currentRoom!!.centerPos!!,
+                            end =  dungeonRooms!![i][j + 1]!!.centerPos!!,
+                            strokeWidth = 30f
+                        )
+                    }
+                    // Draw line below
+                    if (i <  dungeonRooms!!.lastIndex &&  dungeonRooms!![i + 1][j] != null) {
+                        drawLine(
+                            color = Color.Black,
+                            start = currentRoom!!.centerPos!!,
+                            end =  dungeonRooms!![i + 1][j]!!.centerPos!!,
+                            strokeWidth = 30f
+                        )
+                    }
+                }
             }
         }
 
-        // Finally, draw the rectangles
-        for ((_, center) in centers) {
-            val topLeft = Offset(center.x - rectSize / 2, center.y - rectSize / 2)
-            drawRect(
-                color = Color.Blue,
-                topLeft = topLeft,
-                size = Size(rectSize, rectSize)
-            )
+        dungeonRooms!!.forEach { row ->
+            row.forEach { room ->
+                if (room != null) {
+                    val center = room.centerPos!!
+                    val topLeft = Offset(center.x - rectSize / 2, center.y - rectSize / 2)
+
+                    var color = Color.Blue
+
+                    when (room.roomType){
+
+                        "Monster" -> color = Color.Red
+                        "Item" -> color = Color.Yellow
+                        "Empty" -> color = Color.Gray
+
+                    }
+
+                    drawRect(
+                        color = color,
+                        topLeft = topLeft,
+                        size = Size(rectSize, rectSize)
+                    )
+                }
+            }
         }
     })
 
@@ -679,27 +655,32 @@ fun displayDungeons(mainViewModel: MainViewModel){
     val openDungeon = state.value.allOpenDungeons;
     val activeDungeon = state.value.allActiveDungeon;
 
-    Column (
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(top = 10.dp, start = 5.dp, end = 5.dp)
-    ) {
-        Text(
-            text = "Active Dungeons ${activeDungeon.size}/3",
-            fontSize = 25.sp,
-            style = TextStyle(fontFamily = FontFamily.Monospace)
-        )
 
-        displayActiveDungeons(activeDungeon, mainViewModel);
+    if(state.value.dungeonRooms == null){
+        Column (
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 10.dp, start = 5.dp, end = 5.dp)
+        ) {
+            Text(
+                text = "Active Dungeons ${activeDungeon.size}/3",
+                fontSize = 25.sp,
+                style = TextStyle(fontFamily = FontFamily.Monospace)
+            )
 
-        Text(
-            text = "Open Dungeons",
-            fontSize = 25.sp,
-            style = TextStyle(fontFamily = FontFamily.Monospace)
-        )
+            displayActiveDungeons(activeDungeon, mainViewModel);
 
-        displayOpenDungeons(openDungeon, mainViewModel);
+            Text(
+                text = "Open Dungeons",
+                fontSize = 25.sp,
+                style = TextStyle(fontFamily = FontFamily.Monospace)
+            )
 
+            displayOpenDungeons(openDungeon, mainViewModel);
+
+        }
+    }else{
+        ScrollableCanvasWithRectangles(mainViewModel)
     }
 }
 
@@ -760,6 +741,12 @@ fun OpenDungeonItem(dungeon: Dungeon, mainViewModel: MainViewModel) {
 
 @Composable
 fun ActiveDungeonItem(dungeon: Dungeon? = null, mainViewModel: MainViewModel) {
+
+    val density = LocalDensity.current
+    val slotSize = with(density) { Room.SLOT_SIZE.toPx() }
+    val rectSize = with(density) { Room.ROOM_SIZE.toPx() }
+
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -782,7 +769,7 @@ fun ActiveDungeonItem(dungeon: Dungeon? = null, mainViewModel: MainViewModel) {
             }
             if(dungeon.dungeonWalkedDistance >= dungeon.dungeonTotalDistance){
                 Button(
-                    onClick = { },
+                    onClick = { mainViewModel.generateDungeon(dungeon, slotSize, rectSize)  },
                 ) {
                     Text(text = "Enter")
                 }

@@ -2,7 +2,6 @@ package com.ccl3_id.wanderquest.viewModels
 
 import android.content.Context
 import android.widget.Toast
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ccl3_id.wanderquest.data.DatabaseHandler
@@ -165,6 +164,12 @@ class MainViewModel (val db: DatabaseHandler, private val locationRepository: Lo
         }
 
         getActiveDungeons()
+
+    }
+
+    fun generateDungeon(dungeon: Dungeon, slotSize: Float, rectSize: Float){
+         dungeon.generateRooms(slotSize, rectSize);
+        _mainViewState.update { it.copy(dungeonRooms = dungeon.rooms)}
 
     }
 

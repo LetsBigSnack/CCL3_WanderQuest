@@ -6,6 +6,7 @@ import com.ccl3_id.wanderquest.data.models.entities.Player
 import com.ccl3_id.wanderquest.data.models.items.EquipedItem
 import com.ccl3_id.wanderquest.ui.views.Screen
 import com.ccl3_id.wanderquest.data.models.items.Item
+import com.ccl3_id.wanderquest.data.models.rooms.Room
 
 data class MainViewState (
     val selectedPlayer: Player? = null,
@@ -25,5 +26,6 @@ data class MainViewState (
     val equipedItemClicked: Boolean = false,
     val clickedEquipedItem: EquipedItem? = null,
     val allOpenDungeons: List<Dungeon> = emptyList(),
-    val allActiveDungeon: List<Dungeon> = emptyList()
+    val allActiveDungeon: List<Dungeon> = emptyList(),
+    var dungeonRooms : Array<Array<Room?>>? = null
 )
