@@ -11,6 +11,7 @@ class Dungeon(
     var dungeonCompleted : Boolean = false,
     var dungeonCreatedAt : String = "",
     var dungeonExpiresIn : String = "",
+    var dungeonGenerated : Boolean = false,
     var id : Int = 0,
     var dungeonPlayerID : Int = 0
 ) {
@@ -32,17 +33,18 @@ class Dungeon(
 
         //Starting Room
         val startingRoom = Room(2,2,"starting")
+        startingRoom.generatePosition()
         currentSize++;
         createdRooms.add(startingRoom)
 
         while (currentSize < dungeonSize){
 
-            val currentRoom = createdRooms.find{ room: Room -> room.hasBeenVisted == false }
+            val currentRoom = createdRooms.find{ room: Room -> room.hasBeenVisited == false }
 
             //if everything as been visted but still not desired Size --> clear vistedRooms
             if(currentRoom == null){
                     createdRooms.map {
-                        it.hasBeenVisted = false
+                        it.hasBeenVisited = false
                     }
                     continue
             }
@@ -69,18 +71,22 @@ class Dungeon(
                     }
 
                     val tempRoom = Room(newXIndex, newYIndex, roomType)
+                    tempRoom.generatePosition()
                     createdRooms.add(tempRoom)
                     currentSize++
                 }
-                currentRoom.hasBeenVisted = true
+                currentRoom.hasBeenVisited = true
             }
+        }
+
+        createdRooms.map {
+            it.hasBeenVisited = false
+            it.dungeonID = this.id
         }
 
         for (room in createdRooms){
             this.rooms[room.yIndex][room.xIndex] = room
         }
-
-        println("Generated Dungeon")
 
     }
 

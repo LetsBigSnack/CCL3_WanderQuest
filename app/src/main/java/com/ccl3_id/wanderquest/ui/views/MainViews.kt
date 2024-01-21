@@ -87,7 +87,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.input.pointer.pointerInput
 import com.ccl3_id.wanderquest.data.models.rooms.Room
-import kotlin.random.Random
 
 
 sealed class Screen(val route: String){
@@ -255,6 +254,33 @@ fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
             }
         }
     })
+
+    Column(
+        modifier = Modifier.fillMaxSize().padding(bottom = 20.dp),
+        verticalArrangement = Arrangement.Bottom
+    ) {
+        Button(
+            onClick = {
+            },
+            modifier = Modifier
+                .padding(top = 20.dp, start = 20.dp, end = 20.dp)
+                .fillMaxWidth()
+        ) {
+            Text(text = "Enter Room", fontSize = 25.sp)
+
+        }
+
+        Button(
+            onClick = {
+                      mainViewModel.leaveDungeon()
+            },
+            modifier = Modifier
+                .padding(top = 20.dp, start = 20.dp, end = 20.dp)
+                .fillMaxWidth()
+        ) {
+            Text(text = "Leave Dungeon", fontSize = 25.sp)
+        }
+    }
 
 }
 
@@ -772,12 +798,12 @@ fun ActiveDungeonItem(dungeon: Dungeon? = null, mainViewModel: MainViewModel) {
                 }
             }
             //TODO add Dialog if you are sure
-            IconButton(onClick = { mainViewModel.leaveDungeon(dungeon) }) {
+            IconButton(onClick = { mainViewModel.deleteDungeon(dungeon) }) {
                 Icon(Icons.Default.Delete,"Delete")
             }
             if(dungeon.dungeonWalkedDistance >= dungeon.dungeonTotalDistance){
                 Button(
-                    onClick = { mainViewModel.generateDungeon(dungeon)  },
+                    onClick = { mainViewModel.selectDungeon(dungeon)  },
                 ) {
                     Text(text = "Enter")
                 }

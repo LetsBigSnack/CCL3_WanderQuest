@@ -27,5 +27,6 @@ data class MainViewState (
     val clickedEquipedItem: EquipedItem? = null,
     val allOpenDungeons: List<Dungeon> = emptyList(),
     val allActiveDungeon: List<Dungeon> = emptyList(),
+    val selectedDungeon: Dungeon? = null,
     var dungeonRooms : Array<Array<Room?>>? = null
 )

@@ -37,10 +37,8 @@ class LoginActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         if (permissionHandler.hasPermissions(requiredPermissions)) {
-            println("Permission Granted")
             startLocationTrackingService()
         } else {
-            println("Ask Permission")
             permissionHandler.requestPermissions(requiredPermissions)
         }
 
@@ -62,9 +60,7 @@ class LoginActivity : ComponentActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (permissionHandler.onRequestPermissionsResult(requestCode, permissions, grantResults)) {
             startLocationTrackingService()
-            println("Permission Granted")
         } else {
-            println("Denied")
         }
     }
 

@@ -34,13 +34,11 @@ class LocationTrackingService : Service(), LocationListener {
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate() {
-        println("LocationTrackingService Started")
         super.onCreate()
         locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
         try {
             locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10f, this)
         } catch (e: SecurityException) {
-            println("Permission not Granted")
             // Handle exception (permissions not granted)
         }
         startForegroundService()
@@ -74,7 +72,6 @@ class LocationTrackingService : Service(), LocationListener {
 
     override fun onLocationChanged(location: Location) {
 
-        println("Accuracy ${location.accuracy}")
 
         if(location.accuracy > accuracyThreshold){
             return
@@ -89,13 +86,11 @@ class LocationTrackingService : Service(), LocationListener {
                 if (accumulatedDrift >= movementThreshold) {
                     distanceWalked += accumulatedDrift
                     accumulatedDrift = 0f // Reset accumulated drift
-                    println("Distance Walked: $distanceWalked meters")
                 }
             } else {
                 // If movement is significant, update distance directly
                 distanceWalked += distance
                 accumulatedDrift = 0f // Reset accumulated drift
-                println("Distance Walked: $distanceWalked meters")
             }
         }
         lastLocation = location

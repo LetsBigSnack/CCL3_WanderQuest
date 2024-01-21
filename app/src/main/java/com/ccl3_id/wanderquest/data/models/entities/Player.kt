@@ -138,8 +138,6 @@ open class Player (
                     this.playerStats[Player.STAT_MOTIVATION] = current + 1
                 }
                 else -> {
-                    // Optionally handle unknown stats
-                    println("Unknown stat: $statName")
                 }
             }
             this.spendStatPoints();
@@ -179,7 +177,6 @@ open class Player (
                 }
             }
             else -> {
-                println("Unknown stat: $statName")
             }
         }
     }
