@@ -17,18 +17,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
+import androidx.compose.material.TextField
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -103,17 +105,19 @@ fun StepOneName(creationViewModel: CreationViewModel, context: Context)
             Text(text = "Name", fontSize = 40.sp)
             TextField(
                 modifier = Modifier
-                    .padding(top = 20.dp)
-                    .background(MaterialTheme.colorScheme.secondary),
+                    .padding(top = 20.dp),
                 value = characterName,
                 onValueChange = { newChar -> creationViewModel.changeCharacterName(newChar)  },
                 label = {
                     Text(
                         text = "Character Name",
-                        color = MaterialTheme.colorScheme.onPrimary
+                        color = MaterialTheme.colorScheme.onPrimary,
                     )
                 },
-                textStyle = TextStyle(color = MaterialTheme.colorScheme.onPrimary)
+                textStyle = TextStyle(color = MaterialTheme.colorScheme.onPrimary),
+                colors = TextFieldDefaults.textFieldColors(
+                    backgroundColor = MaterialTheme.colorScheme.secondary
+                )
             )
             Button(
                 onClick = { creationViewModel.nextStep(); },
