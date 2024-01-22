@@ -17,6 +17,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
+    //Buttons
     primary = Color(0xFFCBFFC3),
     onPrimary = Color(0xFF273E47),
     //Background
@@ -28,8 +29,9 @@ private val DarkColorScheme = darkColorScheme(
     secondary = Color(0xFFDFF9FF),
     //Go back/cancel
     tertiary = Color(0xFFEFFF8E),
-    //Grey
+    //ItemBg
     onSecondary = Color(0xFFCDCBC7),
+    onSecondaryContainer = Color(0xFF817D78),
     //Red/Health
     onTertiary = Color(0xFFF17777),
 )
