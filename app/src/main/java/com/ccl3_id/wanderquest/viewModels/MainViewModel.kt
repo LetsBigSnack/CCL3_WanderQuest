@@ -2,7 +2,6 @@ package com.ccl3_id.wanderquest.viewModels
 
 import android.content.Context
 import android.widget.Toast
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ccl3_id.wanderquest.data.DatabaseHandler
@@ -46,7 +45,6 @@ class MainViewModel (val db: DatabaseHandler, private val locationRepository: Lo
 
 
     fun selectScreen(screen: Screen){
-        println(screen);
         _mainViewState.update { it.copy(selectedScreen = screen) }
     }
 
@@ -128,11 +126,12 @@ class MainViewModel (val db: DatabaseHandler, private val locationRepository: Lo
         getActiveDungeons()
     }
 
-    fun leaveDungeon(dungeon: Dungeon){
+    fun deleteDungeon(dungeon: Dungeon){
         db.deleteDungeon(dungeon)
         getOpenDungeons()
         getActiveDungeons()
     }
+
 
     private fun resetDistance() {
         locationRepository.resetDistance()
@@ -142,10 +141,8 @@ class MainViewModel (val db: DatabaseHandler, private val locationRepository: Lo
         viewModelScope.launch {
             while (isActive) {
                 if(_mainViewState.value.selectedPlayer != null){
-                    println("Before ${locationRepository.getDistanceWalked()}")
                     subtractDistanceFromDungeon()
                     resetDistance()
-                    println("After ${locationRepository.getDistanceWalked()}")
 
                 }
                 delay(10000) // Delay for 10 seconds
@@ -166,6 +163,41 @@ class MainViewModel (val db: DatabaseHandler, private val locationRepository: Lo
 
         getActiveDungeons()
 
+    }
+
+    fun selectDungeon(dungeon: Dungeon){
+
+        if(!dungeon.dungeonGenerated){
+            generateDungeonRooms(dungeon)
+        }
+
+        _mainViewState.update { it.copy(selectedDungeon = dungeon)}
+        _mainViewState.update { it.copy(dungeonRooms = dungeon.rooms)}
+
+    }
+
+    fun generateDungeonRooms(dungeon: Dungeon){
+        dungeon.generateRooms();
+
+        dungeon.dungeonGenerated = true
+
+        val rooms = dungeon.rooms
+
+        for (i in rooms.indices) {
+            for (j in rooms[i].indices) {
+                if(rooms[i][j] != null){
+                    db.insertRoom(rooms[i][j]!!)
+                }
+            }
+        }
+
+        db.updateDungeon(dungeon)
+    }
+
+    fun leaveDungeon(){
+        _mainViewState.update { it.copy(selectedDungeon = null)}
+        _mainViewState.update { it.copy(dungeonRooms = null)}
+        getActiveDungeons()
     }
 
 }

@@ -13,6 +13,7 @@ import com.ccl3_id.wanderquest.data.models.entities.playerSubclasses.MartialArti
 import com.ccl3_id.wanderquest.data.models.entities.playerSubclasses.PersonalTrainer
 import com.ccl3_id.wanderquest.data.models.items.Item
 import com.google.gson.Gson
+import com.ccl3_id.wanderquest.data.models.rooms.Room
 import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -59,6 +60,21 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
         private const val dungeonPlayerId = "dungeonPlayerId"
         private const val dungeonCreatedAt = "dungeonCreated"
         private const val dungeonExpiresIn = "dungeonExpiresIn"
+        private const val dungeonGenerated = "dungeonGenerated"
+
+        private const val itemPlayerTableName = "ItemPlayer"
+        private const val _itemId = "itemId"
+        private const val _playerId = "playerId"
+
+        private const val roomTableName = "Rooms"
+        private const val roomId = "roomId"
+        private const val roomXIndex = "roomXIndex"
+        private const val roomYIndex = "roomYIndex"
+        private const val roomType = "roomType"
+        private const val roomRandomX = "roomRandomX"
+        private const val roomRandomY = "roomRandomY"
+        private const val roomDungeonId = "roomDungeonId"
+        private const val roomHasBeenVisited = "roomHasBeenVisited"
 
     }
 
@@ -71,6 +87,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
         db?.execSQL("DROP TABLE IF EXISTS $playerTableName;")
         db?.execSQL("DROP TABLE IF EXISTS $itemTableName;")
         db?.execSQL("DROP TABLE IF EXISTS $dungeonTableName;")
+        db?.execSQL("DROP TABLE IF EXISTS $roomTableName;")
         onCreate(db)
     }
 
@@ -113,12 +130,24 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
                 "$dungeonCreatedAt TIMESTAMP," +
                 "$dungeonExpiresIn TIMESTAMP," +
                 "$dungeonPlayerId INTEGER," +
+                "$dungeonGenerated BOOLEAN," +
                 "FOREIGN KEY ($dungeonPlayerId) REFERENCES $playerTableName ($playerId) ON DELETE CASCADE" +
+                ");")
+
+        db?.execSQL("CREATE TABLE IF NOT EXISTS $roomTableName (" +
+                "$roomId INTEGER PRIMARY KEY, " +
+                "$roomXIndex INTEGER, " +
+                "$roomYIndex INTEGER, " +
+                "$roomType VARCHAR(64), " +
+                "$roomRandomX FLOAT," +
+                "$roomRandomY FLOAT," +
+                "$roomDungeonId INTEGER," +
+                "$roomHasBeenVisited BOOLEAN," +
+                "FOREIGN KEY ($roomDungeonId) REFERENCES $dungeonTableName ($dungeonId) ON DELETE CASCADE" +
                 ");")
     }
 
     fun getAllItems(playerId: Int): List<Item> {
-        println("GET ALL ITEMS")
         val items = mutableListOf<Item>()
         val db = readableDatabase
 
@@ -147,8 +176,6 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
         // Close the cursor
         cursor.close()
 
-        println("RETURNING GET ALL ITEMS")
-
         return items
     }
 
@@ -174,7 +201,6 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
         val itemStatsJSON = generateStatJson()
 
         for(i in 0..number-1){
-            println("GENERATE ITEM")
             val tempItem= Item(
                 name = itemName,
                 type = itemType,
@@ -211,7 +237,6 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
 
 
     fun generateItemImg(itemName: String): String{
-        println("GENERATE ITEM IMG")
         // Split the input string into words
         val words = itemName.split(" ")
         var itemImages = ""
@@ -223,8 +248,6 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
             // If there is only one word, convert it to lowercase
             itemImages = itemName.lowercase()
         }
-        println("Item name after Elina magic")
-        println(itemImages)
         return itemImages
     }
 
@@ -339,7 +362,6 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
 
     fun updatePlayer(player: Player){
         val db = this.writableDatabase
-        println(player);
         val values = ContentValues().apply {
             put(playerName,player.playerName)
             put(playerClass, player.playerClass)
@@ -481,7 +503,6 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
     fun selectPlayer(player: Player){
         deselectAllPlayers();
         val db = this.writableDatabase
-        println(player);
         val values = ContentValues().apply {
             put(lastPlayed, true)
         }
@@ -520,6 +541,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
             val dungeonCreatedAtId= cursor.getColumnIndex(dungeonCreatedAt)
             val dungeonExpiresInId= cursor.getColumnIndex(dungeonExpiresIn)
             val dungeonPlayerId= cursor.getColumnIndex(dungeonPlayerId)
+            val dungeonGeneratedId = cursor.getColumnIndex(dungeonGenerated)
             //
             if(dungeonNameId >= 0){
 
@@ -531,9 +553,16 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
                     cursor.getInt(dungeonCompletedId) > 0,
                     cursor.getString(dungeonCreatedAtId),
                     cursor.getString(dungeonExpiresInId),
+                    cursor.getInt(dungeonGeneratedId) > 0,
                     cursor.getInt(idId),
                     cursor.getInt(dungeonPlayerId),
                 )
+
+                val rooms = getRoomsForDungeon(tempDungeon.id)
+
+                for (room in rooms){
+                    tempDungeon.rooms[room.yIndex][room.xIndex] = room
+                }
 
                 dungeons.add(tempDungeon)
             }
@@ -557,6 +586,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
             val dungeonCreatedAtId= cursor.getColumnIndex(dungeonCreatedAt)
             val dungeonExpiresInId= cursor.getColumnIndex(dungeonExpiresIn)
             val dungeonPlayerId= cursor.getColumnIndex(dungeonPlayerId)
+            val dungeonGeneratedId = cursor.getColumnIndex(dungeonGenerated)
             //
             if(dungeonNameId >= 0){
 
@@ -568,6 +598,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
                     cursor.getInt(dungeonCompletedId) > 0,
                     cursor.getString(dungeonCreatedAtId),
                     cursor.getString(dungeonExpiresInId),
+                    cursor.getInt(dungeonGeneratedId) > 0,
                     cursor.getInt(idId),
                     cursor.getInt(dungeonPlayerId),
                 )
@@ -594,6 +625,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
             val dungeonCreatedAtId= cursor.getColumnIndex(dungeonCreatedAt)
             val dungeonExpiresInId= cursor.getColumnIndex(dungeonExpiresIn)
             val dungeonPlayerId= cursor.getColumnIndex(dungeonPlayerId)
+            val dungeonGeneratedId = cursor.getColumnIndex(dungeonGenerated)
             //
             if(dungeonNameId >= 0){
 
@@ -605,6 +637,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
                     cursor.getInt(dungeonCompletedId) > 0,
                     cursor.getString(dungeonCreatedAtId),
                     cursor.getString(dungeonExpiresInId),
+                    cursor.getInt(dungeonGeneratedId) > 0,
                     cursor.getInt(idId),
                     cursor.getInt(dungeonPlayerId),
                 )
@@ -631,6 +664,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
             put(dungeonCreatedAt,  dateFormat.format(Date()))
             put(dungeonExpiresIn,  dateFormat.format(calendar.time))
             put(dungeonPlayerId,  dungeon.dungeonPlayerID)
+            put(dungeonGenerated, dungeon.dungeonGenerated)
         }
 
         db.insert(dungeonTableName, null, values)
@@ -645,6 +679,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
             put(dungeonActive, dungeon.dungeonActive)
             put(dungeonCompleted,  dungeon.dungeonCompleted)
             put(dungeonPlayerId,  dungeon.dungeonPlayerID)
+            put(dungeonGenerated, dungeon.dungeonGenerated)
         }
         db.update(dungeonTableName,values,"$dungeonId = ?", arrayOf(dungeon.id.toString()))
     }
@@ -655,9 +690,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
     }
 
     fun generateDungeons(id: Long, number: Int) {
-        println("CALL")
         for(i in 0..number-1){
-            println("GENERATE")
             val tempDungeon = Dungeon(generateDungeonName(), generateDistance(),0);
             tempDungeon.dungeonPlayerID = id.toInt();
             insertDungeon(tempDungeon);
@@ -674,6 +707,82 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
         val distances = listOf(500,750,1000,5000,10000)
         return distances.random()
     }
+
+    fun insertRoom(room: Room){
+        val db = this.writableDatabase
+
+        val values = ContentValues().apply {
+            put(roomDungeonId,room.dungeonID)
+            put(roomType, room.roomType)
+            put(roomRandomX, room.randomX)
+            put(roomRandomY, room.randomY)
+            put(roomXIndex, room.xIndex)
+            put(roomYIndex, room.yIndex)
+            put(roomHasBeenVisited, room.hasBeenVisited)
+        }
+
+        db.insert(roomTableName, null, values)
+    }
+
+    fun updateRoom(room: Room){
+
+        val db = this.writableDatabase
+
+        val values = ContentValues().apply {
+            put(roomDungeonId,room.dungeonID)
+            put(roomType, room.roomType)
+            put(roomRandomX, room.randomX)
+            put(roomRandomY, room.randomY)
+            put(roomXIndex, room.xIndex)
+            put(roomYIndex, room.yIndex)
+            put(roomHasBeenVisited, room.hasBeenVisited)
+        }
+
+        db.update(roomTableName,values,"$roomId = ?", arrayOf(room.id.toString()))
+    }
+
+    fun deleteRoom(room: Room){
+        val db = this.writableDatabase
+        db.delete(roomTableName,"$roomId = ?", arrayOf(room.id.toString()))
+    }
+
+    fun getRoomsForDungeon(dungeonId: Int) : List<Room>{
+        val db = this.readableDatabase
+        val rooms = mutableListOf<Room>()
+        val cursor = db.rawQuery("SELECT * FROM $roomTableName WHERE $roomDungeonId = $dungeonId;", null)
+
+        while(cursor.moveToNext()){
+
+            val idId = cursor.getColumnIndex(roomId)
+            val roomTypeId = cursor.getColumnIndex(roomType)
+            val roomXIndexId = cursor.getColumnIndex(roomXIndex)
+            val roomYIndexId = cursor.getColumnIndex(roomYIndex)
+            val roomRandomXId = cursor.getColumnIndex(roomRandomX)
+            val roomRandomYId = cursor.getColumnIndex(roomRandomY)
+            val roomHasBeenVisitedId = cursor.getColumnIndex(roomHasBeenVisited)
+            val roomDungeonId = cursor.getColumnIndex(roomDungeonId)
+
+            if(idId >= 0){
+
+                var tempRoom = Room(
+                    cursor.getInt(roomXIndexId),
+                    cursor.getInt(roomYIndexId),
+                    cursor.getString(roomTypeId),
+                    cursor.getFloat(roomRandomXId),
+                    cursor.getFloat(roomRandomYId),
+                    cursor.getInt(roomHasBeenVisitedId) > 0,
+                    cursor.getInt(idId),
+                    cursor.getInt(roomDungeonId)
+                )
+
+                rooms.add(tempRoom)
+            }
+
+        }
+        return rooms;
+
+    }
+
 
 }
 

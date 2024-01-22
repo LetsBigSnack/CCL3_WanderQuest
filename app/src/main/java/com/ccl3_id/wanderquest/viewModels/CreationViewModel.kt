@@ -17,12 +17,10 @@ class CreationViewModel (val db: DatabaseHandler) : ViewModel() {
 
     fun nextStep(){
         _creationViewState.update { it.copy(stepNumber = creationViewState.value.stepNumber+1) }
-        println(creationViewState.value.stepNumber);
     }
 
     fun previousStep(){
         _creationViewState.update { it.copy(stepNumber = creationViewState.value.stepNumber-1) }
-        println(creationViewState.value.stepNumber);
     }
 
     fun changeCharacterName(name : String){

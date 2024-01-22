@@ -48,7 +48,6 @@ fun LoginView(loginViewModel: LoginViewModel, context: Context) {
     val state = loginViewModel.loginViewState.collectAsState()
 
     val players = state.value.players;
-    println(players)
 
     Column (
         modifier = Modifier

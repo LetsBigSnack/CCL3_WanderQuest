@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -77,6 +78,27 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.forEachGesture
+import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.layout.offset
+import androidx.compose.ui.input.pointer.PointerInputScope
+import androidx.compose.ui.input.pointer.consumePositionChange
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChange
+import androidx.compose.ui.input.pointer.positionChanged
+import androidx.compose.ui.unit.IntOffset
+import com.ccl3_id.wanderquest.data.models.rooms.Room
+import kotlinx.coroutines.coroutineScope
+
 
 sealed class Screen(val route: String){
     object Character: Screen("Character")
@@ -100,25 +122,191 @@ fun MainView(mainViewModel : MainViewModel, itemViewModel: ItemViewModel) {
             startDestination = Screen.Character.route
         ){
             composable(Screen.Character.route){
-                //mainViewModel.selectScreen(Screen.Character);
-                mainViewModel.getPlayer();
+                LaunchedEffect(Unit) { // Unit can be replaced with a specific key if needed
+                    mainViewModel.selectScreen(Screen.Character)
+                }
+                mainViewModel.getPlayer()
                 displayCharacterSheet(mainViewModel, itemViewModel)
             }
             composable(Screen.Items.route){
-                //mainViewModel.selectScreen(Screen.Items);
+                LaunchedEffect(Unit) { // Unit can be replaced with a specific key if needed
+                    mainViewModel.selectScreen(Screen.Items);
+                }
                 itemViewModel.getItems(state.value.selectedPlayer!!.id)
                 itemViewModel.getEquipItems(state.value.selectedPlayer!!.id)
                 itemsScreen(itemViewModel, mainViewModel)
             }
             composable(Screen.Dungeon.route){
-                //mainViewModel.selectScreen(Screen.Dungeon);
+                LaunchedEffect(Unit) { // Unit can be replaced with a specific key if needed
+                    mainViewModel.selectScreen(Screen.Dungeon);
+                }
                 mainViewModel.getPlayer();
                 mainViewModel.getOpenDungeons()
                 mainViewModel.getActiveDungeons()
-                //displayDungeons(mainViewModel)
-                displayBattleScreen(mainViewModel);
+                displayDungeons(mainViewModel)
+                //displayBattleScreen(mainViewModel);
+                //ScrollableCanvasWithRectangles()
             }
         }
+    }
+}
+
+@Composable
+fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
+
+    val state = mainViewModel.mainViewState.collectAsState()
+    val dungeonRooms = state.value.dungeonRooms
+
+
+    val horizontalScrollState = rememberScrollState()
+    val verticalScrollState = rememberScrollState()
+
+    val canvasSize = 2000.dp // The total size of the canvas
+    val canvasModifier = Modifier
+        .horizontalScroll(horizontalScrollState)
+        .verticalScroll(verticalScrollState)
+        .size(canvasSize)
+
+    val density = LocalDensity.current
+    val configuration = LocalConfiguration.current
+    val rectSize = with(density) { Room.ROOM_SIZE.dp.toPx() }
+    val coroutineScope = rememberCoroutineScope()
+
+    var offsetX by remember { mutableStateOf(0f) }
+    var offsetY by remember { mutableStateOf(0f) }
+    val screenWidth = with(density) { configuration.screenWidthDp.dp.toPx() }
+    val screenHeight = with(density) { configuration.screenHeightDp.dp.toPx() }
+    val maxOffsetX = with(density) { canvasSize.toPx() - screenWidth }
+    val maxOffsetY = with(density) { canvasSize.toPx() - screenHeight }
+
+
+    LaunchedEffect(key1 = "initialScroll") {
+        //offsetX = maxOffsetX / 2
+        //offsetY = maxOffsetY / 2
+    }
+
+    dungeonRooms!!.forEach { row ->
+        row.forEach { room ->
+            if (room != null) {
+                val topLeft =  with(density) {Offset(room.xIndex * Room.SLOT_SIZE.dp.toPx() + room.randomX.dp.toPx(), room.yIndex * Room.SLOT_SIZE.dp.toPx()  + room.randomY.dp.toPx())}
+                room.centerPos = Offset(topLeft.x + rectSize / 2, topLeft.y + rectSize / 2)
+            }
+        }
+    }
+
+    Column {
+        Canvas(modifier = canvasModifier.fillMaxSize().weight(1f)
+            .pointerInput(Unit) {
+                detectDragGestures { _, dragAmount ->
+                    println("DRAG detected")
+                    coroutineScope.launch {
+                        horizontalScrollState.scrollBy(-dragAmount.x)
+                        verticalScrollState.scrollBy(-dragAmount.y)
+                    }
+                }
+            }.pointerInput(Unit) {
+                detectTapGestures { offset ->
+                    dungeonRooms!!.forEach { row ->
+                        row.forEach { room ->
+                            if (room != null) {
+                                val center = room.centerPos!!
+                                val topLeft =
+                                    Offset(center.x - rectSize / 2, center.y - rectSize / 2)
+                                val bottomRight =
+                                    Offset(center.x + rectSize / 2, center.y + rectSize / 2)
+                                if (offset.x >= topLeft.x && offset.x <= bottomRight.x && offset.y >= topLeft.y && offset.y <= bottomRight.y) {
+                                    // Display toast with the indices
+                                    //CALL Function
+                                    println("CLicked on Rect ${room.xIndex} ${room.yIndex}")
+                                    return@detectTapGestures
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }, onDraw = {
+
+            for (i in dungeonRooms!!.indices) {
+                for (j in dungeonRooms!![i].indices) {
+                    val currentRoom = dungeonRooms!![i][j]
+                    if (currentRoom != null) {
+                        // Draw line to the right
+                        if (j < dungeonRooms!![i].lastIndex && dungeonRooms!![i][j + 1] != null) {
+                            drawLine(
+                                color = Color.Black,
+                                start = currentRoom!!.centerPos!!,
+                                end = dungeonRooms!![i][j + 1]!!.centerPos!!,
+                                strokeWidth = 30f
+                            )
+                        }
+                        // Draw line below
+                        if (i < dungeonRooms!!.lastIndex && dungeonRooms!![i + 1][j] != null) {
+                            drawLine(
+                                color = Color.Black,
+                                start = currentRoom!!.centerPos!!,
+                                end = dungeonRooms!![i + 1][j]!!.centerPos!!,
+                                strokeWidth = 30f
+                            )
+                        }
+                    }
+                }
+            }
+
+            dungeonRooms!!.forEach { row ->
+                row.forEach { room ->
+                    if (room != null) {
+                        val center = room.centerPos!!
+                        val topLeft = Offset(center.x - rectSize / 2, center.y - rectSize / 2)
+
+                        var color = Color.Blue
+
+                        when (room.roomType) {
+
+                            "Monster" -> color = Color.Red
+                            "Item" -> color = Color.Yellow
+                            "Empty" -> color = Color.Gray
+
+                        }
+
+                        drawRect(
+                            color = color,
+                            topLeft = topLeft,
+                            size = Size(rectSize, rectSize)
+                        )
+                    }
+                }
+            }
+        })
+
+        Column(
+            modifier = Modifier.padding(15.dp),
+            verticalArrangement = Arrangement.Bottom
+
+        ) {
+            Button(
+                onClick = {
+                },
+                modifier = Modifier
+                    .padding(start = 20.dp, end = 20.dp, bottom = 15.dp)
+                    .fillMaxWidth()
+            ) {
+                Text(text = "Enter Room", fontSize = 25.sp)
+
+            }
+
+            Button(
+                onClick = {
+                    mainViewModel.leaveDungeon()
+                },
+                modifier = Modifier
+                    .padding(start = 20.dp, end = 20.dp)
+                    .fillMaxWidth()
+            ) {
+                Text(text = "Leave Dungeon", fontSize = 25.sp)
+            }
+        }
+
     }
 }
 
@@ -349,7 +537,10 @@ fun EquippedItemCard(equippedItem: Item, itemViewModel: ItemViewModel){
             .fillMaxWidth()
             .clickable { itemViewModel.selcetEquippedItem(equippedItem) }
             .padding(4.dp)
-            .background(MaterialTheme.colorScheme.onSecondaryContainer, shape = RoundedCornerShape(10.dp))
+            .background(
+                MaterialTheme.colorScheme.onSecondaryContainer,
+                shape = RoundedCornerShape(10.dp)
+            )
     ) {
         // Load image dynamically from the database using the image string
         val imageResource = painterResource(id = getImageResourceId(equippedItem.img))
@@ -544,7 +735,10 @@ fun EmptySlotPlaceholder() {
         modifier = Modifier
             .fillMaxWidth()
             .padding(4.dp)
-            .background(MaterialTheme.colorScheme.onSecondaryContainer, shape = RoundedCornerShape(10.dp))
+            .background(
+                MaterialTheme.colorScheme.onSecondaryContainer,
+                shape = RoundedCornerShape(10.dp)
+            )
     ) {
         Spacer(modifier = Modifier
             .size(104.dp)
@@ -644,27 +838,32 @@ fun displayDungeons(mainViewModel: MainViewModel){
     val openDungeon = state.value.allOpenDungeons;
     val activeDungeon = state.value.allActiveDungeon;
 
-    Column (
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(top = 10.dp, start = 5.dp, end = 5.dp)
-    ) {
-        Text(
-            text = "Active Dungeons ${activeDungeon.size}/3",
-            fontSize = 25.sp,
-            style = TextStyle(fontFamily = FontFamily.Monospace)
-        )
 
-        displayActiveDungeons(activeDungeon, mainViewModel);
+    if(state.value.dungeonRooms == null){
+        Column (
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 10.dp, start = 5.dp, end = 5.dp)
+        ) {
+            Text(
+                text = "Active Dungeons ${activeDungeon.size}/3",
+                fontSize = 25.sp,
+                style = TextStyle(fontFamily = FontFamily.Monospace)
+            )
 
-        Text(
-            text = "Open Dungeons",
-            fontSize = 25.sp,
-            style = TextStyle(fontFamily = FontFamily.Monospace)
-        )
+            displayActiveDungeons(activeDungeon, mainViewModel);
 
-        displayOpenDungeons(openDungeon, mainViewModel);
+            Text(
+                text = "Open Dungeons",
+                fontSize = 25.sp,
+                style = TextStyle(fontFamily = FontFamily.Monospace)
+            )
 
+            displayOpenDungeons(openDungeon, mainViewModel);
+
+        }
+    }else{
+        ScrollableCanvasWithRectangles(mainViewModel)
     }
 }
 
@@ -725,6 +924,12 @@ fun OpenDungeonItem(dungeon: Dungeon, mainViewModel: MainViewModel) {
 
 @Composable
 fun ActiveDungeonItem(dungeon: Dungeon? = null, mainViewModel: MainViewModel) {
+
+    val density = LocalDensity.current
+    val slotSize = with(density) { Room.SLOT_SIZE.dp.toPx() }
+    val rectSize = with(density) { Room.ROOM_SIZE.dp.toPx() }
+
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -742,12 +947,12 @@ fun ActiveDungeonItem(dungeon: Dungeon? = null, mainViewModel: MainViewModel) {
                 }
             }
             //TODO add Dialog if you are sure
-            IconButton(onClick = { mainViewModel.leaveDungeon(dungeon) }) {
+            IconButton(onClick = { mainViewModel.deleteDungeon(dungeon) }) {
                 Icon(Icons.Default.Delete,"Delete")
             }
             if(dungeon.dungeonWalkedDistance >= dungeon.dungeonTotalDistance){
                 Button(
-                    onClick = { },
+                    onClick = { mainViewModel.selectDungeon(dungeon)  },
                 ) {
                     Text(text = "Enter")
                 }
