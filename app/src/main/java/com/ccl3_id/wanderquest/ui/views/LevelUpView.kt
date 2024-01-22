@@ -35,6 +35,7 @@ import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.collectAsState
@@ -57,6 +58,7 @@ import androidx.core.content.ContextCompat.startActivity
 import com.ccl3_id.wanderquest.MainActivity
 import com.ccl3_id.wanderquest.viewModels.LevelUpViewModel
 import kotlin.system.exitProcess
+import androidx.compose.material3.Scaffold
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -74,8 +76,10 @@ fun LevelUpView(levelUpViewModel: LevelUpViewModel, context: Context) {
             TopAppBar(
                 title = {
                     Text(
-                        "LEVEL UP", fontSize = 30.sp,
-                        fontWeight = FontWeight.Bold, color = Color.White
+                        "LEVEL UP",
+                        fontSize = 30.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.background
                     )
                 },
                 navigationIcon = {
@@ -87,7 +91,8 @@ fun LevelUpView(levelUpViewModel: LevelUpViewModel, context: Context) {
                     }) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
                     }
-                }
+                },
+                backgroundColor = MaterialTheme.colorScheme.secondary
             )
         }
     ) { contentPadding ->
@@ -142,7 +147,7 @@ fun Stats(statName : String, statValue: Int, levelUpViewModel: LevelUpViewModel)
         IconButton(onClick = { levelUpViewModel.subStat(statName) },
             modifier = Modifier
                 .size(20.dp) // Set the size of the IconButton
-                .background(Color.LightGray, shape = CircleShape)) {
+                .background(MaterialTheme.colorScheme.primary, shape = CircleShape)) {
             Icon(Icons.Default.ArrowBack,"Subtract")
         }
         Column (modifier = Modifier
@@ -155,7 +160,7 @@ fun Stats(statName : String, statValue: Int, levelUpViewModel: LevelUpViewModel)
         IconButton(onClick = {levelUpViewModel.addStat(statName) },
             modifier = Modifier
                 .size(20.dp) // Set the size of the IconButton
-                .background(Color.LightGray, shape = CircleShape) // Set a round background
+                .background(MaterialTheme.colorScheme.primary, shape = CircleShape) // Set a round background
         ) {
             Icon(Icons.Default.ArrowForward,"Add")
         }

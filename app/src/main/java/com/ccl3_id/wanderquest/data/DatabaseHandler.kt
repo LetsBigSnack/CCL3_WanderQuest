@@ -11,7 +11,6 @@ import com.ccl3_id.wanderquest.data.models.entities.playerSubclasses.CrossFitAth
 import com.ccl3_id.wanderquest.data.models.entities.playerSubclasses.EnduranceRunner
 import com.ccl3_id.wanderquest.data.models.entities.playerSubclasses.MartialArtist
 import com.ccl3_id.wanderquest.data.models.entities.playerSubclasses.PersonalTrainer
-import com.ccl3_id.wanderquest.data.models.items.EquipedItem
 import com.ccl3_id.wanderquest.data.models.items.Item
 import com.ccl3_id.wanderquest.data.models.rooms.Room
 import java.lang.Exception
@@ -24,7 +23,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
 
     companion object DatabaseConfig {
         private const val dbName : String = "WanderQuest"
-        private const val dbVersion : Int = 1000011
+        private const val dbVersion : Int = 1000111
 
         private const val playerTableName = "Player"
         private const val playerId = "playerId"
@@ -82,7 +81,6 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
-        db?.execSQL("DROP TABLE IF EXISTS $itemPlayerTableName;")
         db?.execSQL("DROP TABLE IF EXISTS $playerTableName;")
         db?.execSQL("DROP TABLE IF EXISTS $itemTableName;")
         db?.execSQL("DROP TABLE IF EXISTS $dungeonTableName;")
@@ -114,14 +112,6 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
                 "$itemImg VARCHAR(256)," +
                 "$itemPlayerId INTEGER, " +
                 "$itemIsEquipped BOOLEAN " +
-                ");")
-
-        db?.execSQL("CREATE TABLE IF NOT EXISTS $itemPlayerTableName(" +
-                "$itemPlayerId INTEGER PRIMARY KEY," +
-                "$_itemId INTEGER," +
-                "$_playerId INTEGER," +
-                "FOREIGN KEY ($_itemId) REFERENCES $itemTableName ($itemId) ON DELETE CASCADE," +
-                "FOREIGN KEY ($_playerId) REFERENCES $playerTableName ($playerId) ON DELETE CASCADE" +
                 ");")
 
         //insertItemsData(db);
@@ -303,8 +293,8 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
         db.update(itemTableName,values,"$itemId = ?", arrayOf(item.id.toString()))
     }
 
-    fun getEquipItems(playerId: Int): List<EquipedItem> {
-        val equipedItems = mutableListOf<EquipedItem>()
+    fun getEquipItems(playerId: Int): List<Item> {
+        val equippedItems = mutableListOf<Item>()
         val db = this.writableDatabase
 
         val cursor = db.rawQuery("SELECT * FROM $itemTableName " +
@@ -317,16 +307,16 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
                 val itemName = getString(getColumnIndexOrThrow(itemName))
                 val itemType = getString(getColumnIndexOrThrow(itemType))
                 val itemImg = getString(getColumnIndexOrThrow(itemImg))
-                val equipedItemId = getInt(getColumnIndexOrThrow(itemPlayerId))
+                val equippedItemId = getInt(getColumnIndexOrThrow(itemPlayerId))
 
-                val equipedItem = EquipedItem(itemId, itemName, itemType, itemImg, equipedItemId)
-                equipedItems.add(equipedItem)
+                val equippedItem = Item(itemId, itemName, itemType, itemImg, equippedItemId)
+                equippedItems.add(equippedItem)
             }
         }
 
         cursor.close()
 
-        return equipedItems
+        return equippedItems
     }
 
     fun unequipItem(item: Item){
