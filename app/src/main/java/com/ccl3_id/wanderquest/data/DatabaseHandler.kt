@@ -23,7 +23,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
 
     companion object DatabaseConfig {
         private const val dbName : String = "WanderQuest"
-        private const val dbVersion : Int = 1000111
+        private const val dbVersion : Int = 1011111111
 
         private const val playerTableName = "Player"
         private const val playerId = "playerId"

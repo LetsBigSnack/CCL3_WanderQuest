@@ -25,7 +25,7 @@ class Dungeon(
 
     fun generateRooms() {
 
-        val dungeonSize = 12;
+        val dungeonSize = 25;
         var currentSize = 0;
         val createdRooms = mutableListOf<Room>()
         val directions: List<Pair<Int,Int>> =  listOf(Pair(0, -1), Pair(1, 0), Pair(0, 1),Pair(-1, 0))
