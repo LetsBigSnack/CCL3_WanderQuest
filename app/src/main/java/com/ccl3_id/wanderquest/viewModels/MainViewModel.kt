@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.ccl3_id.wanderquest.data.DatabaseHandler
 import com.ccl3_id.wanderquest.data.models.dungeons.Dungeon
 import com.ccl3_id.wanderquest.data.models.entities.Enemy
+import com.ccl3_id.wanderquest.data.models.rooms.Room
 import com.ccl3_id.wanderquest.repository.LocationRepository
 import com.ccl3_id.wanderquest.ui.views.Screen
 import com.ccl3_id.wanderquest.viewModels.states.MainViewState
@@ -173,7 +174,7 @@ class MainViewModel (val db: DatabaseHandler, private val locationRepository: Lo
 
         _mainViewState.update { it.copy(selectedDungeon = dungeon)}
         _mainViewState.update { it.copy(dungeonRooms = dungeon.rooms)}
-
+        getAdjacentRooms()
     }
 
     fun generateDungeonRooms(dungeon: Dungeon){
@@ -194,10 +195,73 @@ class MainViewModel (val db: DatabaseHandler, private val locationRepository: Lo
         db.updateDungeon(dungeon)
     }
 
+    fun selectRoom(room: Room){
+        _mainViewState.update { it.copy(currentSelectedRoom = room)}
+        println(_mainViewState.value.currentSelectedRoom)
+    }
+
     fun leaveDungeon(){
         _mainViewState.update { it.copy(selectedDungeon = null)}
         _mainViewState.update { it.copy(dungeonRooms = null)}
+        _mainViewState.update { it.copy(currentSelectedRoom = null)}
         getActiveDungeons()
+    }
+
+    fun getAdjacentRooms() {
+
+        val dungeonRooms = _mainViewState.value.dungeonRooms
+        val visitedRooms = mutableListOf<Room>()
+        val adjacentRooms = mutableListOf<Room>()
+        val directions: List<Pair<Int,Int>> =  listOf(Pair(0, -1), Pair(1, 0), Pair(0, 1),Pair(-1, 0))
+
+        //Already Entered Rooms
+        dungeonRooms!!.forEach { row ->
+            row.forEach { room ->
+                if (room != null && room.hasBeenVisited) {
+                    visitedRooms.add(room)
+                }
+            }
+        }
+
+        for(currentRoom in visitedRooms){
+            for(direction in directions){
+                val newXIndex = currentRoom.xIndex + direction.first
+                val newYIndex = currentRoom.yIndex + direction.second
+
+                if(Dungeon.checkBoundaries(newXIndex,newYIndex)){
+                    val adjacentRoom = dungeonRooms[newYIndex][newXIndex]
+                    if(adjacentRoom != null && !adjacentRoom.hasBeenVisited){
+                        adjacentRooms.add(adjacentRoom)
+                    }
+                }
+            }
+        }
+
+        _mainViewState.update { it.copy(adjacentRooms = adjacentRooms)}
+    }
+
+    fun checkRoomEnabled(): Boolean {
+        val selectedRoom = _mainViewState.value.currentSelectedRoom ?: return false
+
+        if(selectedRoom!!.hasBeenVisited){
+            return true
+        }
+
+        return _mainViewState.value.adjacentRooms.find { room: Room -> room.xIndex == selectedRoom.xIndex && room.yIndex == selectedRoom.yIndex } != null
+
+
+    }
+
+    fun enterRoom(){
+
+        val dungeonRooms = _mainViewState.value.dungeonRooms?: return
+        val selectedRoom = _mainViewState.value.currentSelectedRoom ?: return
+
+        dungeonRooms[selectedRoom.yIndex][selectedRoom.xIndex]!!.hasBeenVisited = true
+        _mainViewState.update { it.copy(dungeonRooms = dungeonRooms)}
+        selectedRoom.hasBeenVisited = true;
+        getAdjacentRooms()
+        db.updateRoom(selectedRoom)
     }
 
 }

@@ -33,5 +33,7 @@ data class MainViewState (
     val allOpenDungeons: List<Dungeon> = emptyList(),
     val allActiveDungeon: List<Dungeon> = emptyList(),
     val selectedDungeon: Dungeon? = null,
-    var dungeonRooms : Array<Array<Room?>>? = null
+    var dungeonRooms : Array<Array<Room?>>? = null,
+    var adjacentRooms : List<Room> = emptyList(),
+    var currentSelectedRoom : Room? = null
 )

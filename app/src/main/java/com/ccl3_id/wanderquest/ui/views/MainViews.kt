@@ -79,7 +79,6 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.geometry.Offset
@@ -87,17 +86,9 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.forEachGesture
 import androidx.compose.foundation.gestures.scrollBy
-import androidx.compose.foundation.layout.offset
-import androidx.compose.ui.input.pointer.PointerInputScope
-import androidx.compose.ui.input.pointer.consumePositionChange
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.positionChange
-import androidx.compose.ui.input.pointer.positionChanged
-import androidx.compose.ui.unit.IntOffset
 import com.ccl3_id.wanderquest.data.models.rooms.Room
-import kotlinx.coroutines.coroutineScope
 
 
 sealed class Screen(val route: String){
@@ -156,6 +147,8 @@ fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
 
     val state = mainViewModel.mainViewState.collectAsState()
     val dungeonRooms = state.value.dungeonRooms
+    val adjacentRooms = state.value.adjacentRooms
+
 
 
     val horizontalScrollState = rememberScrollState()
@@ -172,17 +165,15 @@ fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
     val rectSize = with(density) { Room.ROOM_SIZE.dp.toPx() }
     val coroutineScope = rememberCoroutineScope()
 
-    var offsetX by remember { mutableStateOf(0f) }
-    var offsetY by remember { mutableStateOf(0f) }
-    val screenWidth = with(density) { configuration.screenWidthDp.dp.toPx() }
-    val screenHeight = with(density) { configuration.screenHeightDp.dp.toPx() }
-    val maxOffsetX = with(density) { canvasSize.toPx() - screenWidth }
-    val maxOffsetY = with(density) { canvasSize.toPx() - screenHeight }
-
-
     LaunchedEffect(key1 = "initialScroll") {
-        //offsetX = maxOffsetX / 2
-        //offsetY = maxOffsetY / 2
+        with(density) {
+            val screenWidth = configuration.screenWidthDp.dp.toPx()
+            val screenHeight = configuration.screenHeightDp.dp.toPx()
+            val middleX = (canvasSize.toPx() - screenWidth) / 2
+            val middleY = (canvasSize.toPx() - screenHeight) / 2
+            horizontalScrollState.scrollTo(middleX.toInt())
+            verticalScrollState.scrollTo(middleY.toInt())
+        }
     }
 
     dungeonRooms!!.forEach { row ->
@@ -217,6 +208,7 @@ fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
                                 if (offset.x >= topLeft.x && offset.x <= bottomRight.x && offset.y >= topLeft.y && offset.y <= bottomRight.y) {
                                     // Display toast with the indices
                                     //CALL Function
+                                    mainViewModel.selectRoom(room)
                                     println("CLicked on Rect ${room.xIndex} ${room.yIndex}")
                                     return@detectTapGestures
                                 }
@@ -253,6 +245,20 @@ fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
                 }
             }
 
+            if(state.value.currentSelectedRoom != null){
+                val selectSize = 40
+                val center = state.value.currentSelectedRoom!!.centerPos!!
+                val topLeft = Offset((center.x - rectSize / 2)-selectSize/2, (center.y - rectSize / 2)-selectSize/2)
+
+                drawRect(
+                    color = Color.Black,
+                    topLeft = topLeft,
+                    size = Size(rectSize+selectSize, rectSize+selectSize)
+                )
+
+            }
+
+
             dungeonRooms!!.forEach { row ->
                 row.forEach { room ->
                     if (room != null) {
@@ -261,12 +267,18 @@ fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
 
                         var color = Color.Blue
 
-                        when (room.roomType) {
-
-                            "Monster" -> color = Color.Red
-                            "Item" -> color = Color.Yellow
-                            "Empty" -> color = Color.Gray
-
+                        if(room.hasBeenVisited){
+                            when (room.roomType) {
+                                "Monster" -> color = Color.Red
+                                "Item" -> color = Color.Yellow
+                                "Empty" -> color = Color.Cyan
+                            }
+                        }else{
+                            if(adjacentRooms.find { adjacentRoom: Room -> adjacentRoom.xIndex == room.xIndex && adjacentRoom.yIndex == room.yIndex } != null){
+                                color = Color.Gray
+                            }else{
+                                color = Color.DarkGray
+                            }
                         }
 
                         drawRect(
@@ -286,10 +298,12 @@ fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
         ) {
             Button(
                 onClick = {
+                          mainViewModel.enterRoom()
                 },
                 modifier = Modifier
                     .padding(start = 20.dp, end = 20.dp, bottom = 15.dp)
-                    .fillMaxWidth()
+                    .fillMaxWidth(),
+                enabled = mainViewModel.checkRoomEnabled()
             ) {
                 Text(text = "Enter Room", fontSize = 25.sp)
 

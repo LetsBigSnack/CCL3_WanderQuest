@@ -16,6 +16,20 @@ class Dungeon(
     var dungeonPlayerID : Int = 0
 ) {
 
+    companion object{
+        fun checkBoundaries(newXIndex: Int, newYIndex: Int):Boolean{
+            return checkXBoundaries(newXIndex) && checkYBoundaries(newYIndex)
+        }
+
+        fun checkXBoundaries(newXIndex : Int):Boolean{
+            return newXIndex in 0..4
+        }
+        fun checkYBoundaries(newYIndex : Int):Boolean{
+            return newYIndex in 0..4
+        }
+
+    }
+
     lateinit var rooms : Array<Array<Room?>>
 
 
@@ -25,7 +39,19 @@ class Dungeon(
 
     fun generateRooms() {
 
-        val dungeonSize = 25;
+        var dungeonSize = 0;
+
+        when(dungeonTotalDistance){
+
+            500 -> dungeonSize = 3
+            750 -> dungeonSize = 6
+            1000 -> dungeonSize = 9
+            5000 -> dungeonSize = 15
+            10000 -> dungeonSize = 21
+
+        }
+
+
         var currentSize = 0;
         val createdRooms = mutableListOf<Room>()
         val directions: List<Pair<Int,Int>> =  listOf(Pair(0, -1), Pair(1, 0), Pair(0, 1),Pair(-1, 0))
@@ -80,7 +106,9 @@ class Dungeon(
         }
 
         createdRooms.map {
-            it.hasBeenVisited = false
+            if(it.roomType != "starting"){
+                it.hasBeenVisited = false
+            }
             it.dungeonID = this.id
         }
 
@@ -88,17 +116,6 @@ class Dungeon(
             this.rooms[room.yIndex][room.xIndex] = room
         }
 
-    }
-
-    fun checkBoundaries(newXIndex: Int, newYIndex: Int):Boolean{
-        return checkXBoundaries(newXIndex) && checkYBoundaries(newYIndex)
-    }
-
-    fun checkXBoundaries(newXIndex : Int):Boolean{
-        return newXIndex in 0..4
-    }
-    fun checkYBoundaries(newYIndex : Int):Boolean{
-        return newYIndex in 0..4
     }
 
 
