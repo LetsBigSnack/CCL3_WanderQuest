@@ -23,17 +23,17 @@ private val DarkColorScheme = darkColorScheme(
     //Background
     background = Color(0xFF34363E),
     onBackground = Color(0xFFB3B3B3),
-    surface = Color(0xFF34363E),
+    surface = Color(0xFF3F3F3F),
     onSurface =  Color(0xFFB3B3B3),
     //Nav
     secondary = Color(0xFF44444C),
-    //Go back/cancel
-    tertiary = Color(0xFFEFFF8E),
+    //Go exp/back
+    tertiary = Color(0xFF365C71),
     //ItemBg
     onSecondary = Color(0xFFB3B3B3),
-    onSecondaryContainer = Color(0xFF54555B),
+    onSecondaryContainer = Color(0xFF727374),
     //Red/Health
-    onTertiary = Color(0xFFF17777),
+    onTertiary = Color(0xFFFF784E),
 )
 
 private val LightColorScheme = lightColorScheme(
@@ -43,17 +43,17 @@ private val LightColorScheme = lightColorScheme(
     //Background
     background = Color(0xFF34363E),
     onBackground = Color(0xFFB3B3B3),
-    surface = Color(0xFF34363E),
+    surface = Color(0xFF3F3F3F),
     onSurface =  Color(0xFFB3B3B3),
     //Nav
     secondary = Color(0xFF44444C),
-    //Go back/cancel
-    tertiary = Color(0xFFEFFF8E),
+    //Go exp/back
+    tertiary = Color(0xFF365C71),
     //ItemBg
     onSecondary = Color(0xFFB3B3B3),
-    onSecondaryContainer = Color(0xFF54555B),
+    onSecondaryContainer = Color(0xFF727374),
     //Red/Health
-    onTertiary = Color(0xFFF17777),
+    onTertiary = Color(0xFFFF784E),
 
 )
 
