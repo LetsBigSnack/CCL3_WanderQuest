@@ -90,7 +90,6 @@ import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.ui.input.pointer.pointerInput
 import com.ccl3_id.wanderquest.data.models.entities.Enemy
 import com.ccl3_id.wanderquest.data.models.rooms.Room
-import com.ccl3_id.wanderquest.viewModels.CharacterViewModel
 
 
 sealed class Screen(val route: String){
@@ -150,7 +149,7 @@ fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
     val state = mainViewModel.mainViewState.collectAsState()
     val dungeonRooms = state.value.dungeonRooms
     val adjacentRooms = state.value.adjacentRooms
-
+    val selectedRoom = state.value.currentSelectedRoom
 
 
     val horizontalScrollState = rememberScrollState()
@@ -167,23 +166,39 @@ fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
     val rectSize = with(density) { Room.ROOM_SIZE.dp.toPx() }
     val coroutineScope = rememberCoroutineScope()
 
-    LaunchedEffect(key1 = "initialScroll") {
-        with(density) {
-            val screenWidth = configuration.screenWidthDp.dp.toPx()
-            val screenHeight = configuration.screenHeightDp.dp.toPx()
-            val middleX = (canvasSize.toPx() - screenWidth) / 2
-            val middleY = (canvasSize.toPx() - screenHeight) / 2
-            horizontalScrollState.scrollTo(middleX.toInt())
-            verticalScrollState.scrollTo(middleY.toInt())
-        }
-    }
-
     dungeonRooms!!.forEach { row ->
         row.forEach { room ->
             if (room != null) {
                 val topLeft =  with(density) {Offset(room.xIndex * Room.SLOT_SIZE.dp.toPx() + room.randomX.dp.toPx(), room.yIndex * Room.SLOT_SIZE.dp.toPx()  + room.randomY.dp.toPx())}
                 room.centerPos = Offset(topLeft.x + rectSize / 2, topLeft.y + rectSize / 2)
+                if(selectedRoom != null){
+                    if(room.xIndex == selectedRoom.xIndex && room.yIndex == selectedRoom.yIndex){
+                        selectedRoom.centerPos = room.centerPos
+                    }
+                }
             }
+        }
+    }
+
+    LaunchedEffect(key1 = "initialScroll") {
+        with(density) {
+            var middleX : Float = 0f;
+            var middleY : Float = 0f;
+            val screenWidth = configuration.screenWidthDp.dp.toPx()
+            val screenHeight = configuration.screenHeightDp.dp.toPx()
+            val viewportCenterX = screenWidth / 2
+            val viewportCenterY = screenHeight / 2
+
+            if(selectedRoom == null){
+                middleX = (canvasSize.toPx() - screenWidth) / 2
+                middleY = (canvasSize.toPx() - screenHeight) / 2
+            }else{
+                middleX = selectedRoom.centerPos!!.x - viewportCenterX
+                middleY = selectedRoom.centerPos!!.y - viewportCenterY
+            }
+
+            horizontalScrollState.scrollTo(middleX.toInt())
+            verticalScrollState.scrollTo(middleY.toInt())
         }
     }
 
@@ -301,7 +316,6 @@ fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
             Button(
                 onClick = {
                     mainViewModel.openDungeonDialog()
-                    //mainViewModel.enterRoom()
                 },
                 modifier = Modifier
                     .padding(start = 20.dp, end = 20.dp, bottom = 15.dp)
@@ -408,7 +422,7 @@ fun displayRoomMonster(monster : Enemy, mainViewModel: MainViewModel) {
         confirmButton = {
             androidx.compose.material.Button(
                 onClick = {
-                    mainViewModel.completeRoom()
+                    mainViewModel.startBattle(monster.copy())
                     mainViewModel.dismissDialog()
                 }
             ) {
@@ -966,34 +980,6 @@ fun displayPlayerAbilities(player: Player){
 
 
 @Composable
-fun displayBattleScreen(mainViewModel: MainViewModel) {
-
-    val state = mainViewModel.mainViewState.collectAsState()
-
-    if(state.value.battleStarted){
-        displayBattleContent(mainViewModel);
-    }else{
-        Column(modifier = Modifier
-            .fillMaxSize()
-            .padding(10.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,) {
-            Button(
-                onClick = {
-                    mainViewModel.startBattle();
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-            ) {
-                Text(text = "Start Battle", fontSize = 20.sp)
-            }
-
-        }
-    }
-}
-
-
-@Composable
 fun displayDungeons(mainViewModel: MainViewModel){
 
     val state = mainViewModel.mainViewState.collectAsState()
@@ -1025,7 +1011,11 @@ fun displayDungeons(mainViewModel: MainViewModel){
 
         }
     }else{
-        ScrollableCanvasWithRectangles(mainViewModel)
+        if(state.value.battleStarted){
+            displayBattleContent(mainViewModel);
+        }else{
+            ScrollableCanvasWithRectangles(mainViewModel)
+        }
     }
 }
 
@@ -1321,7 +1311,7 @@ fun displayBattleContent(mainViewModel: MainViewModel){
                     modifier = Modifier
                         .fillMaxWidth()
                 ) {
-                    Text(text = "Run away", fontSize = 20.sp)
+                    Text(text = "Leave Battle", fontSize = 20.sp)
                 }
             }
 

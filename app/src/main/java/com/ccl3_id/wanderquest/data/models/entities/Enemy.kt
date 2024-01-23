@@ -20,4 +20,8 @@ class Enemy(monsterName: String = "Monster") : Entity(monsterName) {
 
     }
 
+    fun copy(): Enemy {
+        return Enemy(this.entityName)
+    }
+
 }

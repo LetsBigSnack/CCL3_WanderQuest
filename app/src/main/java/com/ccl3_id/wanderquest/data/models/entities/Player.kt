@@ -82,7 +82,7 @@ open class Player (
     }
 
     open fun abilityOne(entity: Entity): String {
-        val dmgDealt = Random.nextInt(1, 10);
+        val dmgDealt = Random.nextInt(1, 2);
 
         entity.takeDmg(dmgDealt);
 
@@ -196,6 +196,7 @@ open class Player (
     fun getNewHealth(){
         entityMaxHealth = playerLevel * (this.playerStats[STAT_CONSTITUTION]!!) + 10;
         entityCurrentHealth = entityMaxHealth;
+        isAlive = true
     }
 
     fun getXPtoNextLevel(){

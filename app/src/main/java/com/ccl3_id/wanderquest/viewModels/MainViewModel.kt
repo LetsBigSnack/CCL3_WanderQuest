@@ -50,9 +50,9 @@ class MainViewModel (val db: DatabaseHandler, private val locationRepository: Lo
         _mainViewState.update { it.copy(selectedScreen = screen) }
     }
 
-    fun startBattle() {
+    fun startBattle(monster: Enemy) {
         _mainViewState.value.selectedPlayer!!.getNewHealth();
-        _mainViewState.update { it.copy(enemy = Enemy("Monster")) }
+        _mainViewState.update { it.copy(enemy = monster) }
         _mainViewState.update { it.copy(battleStarted = true) }
         _mainViewState.update { it.copy(currentEnemyHealth =  _mainViewState.value.enemy!!.entityCurrentHealth) }
         _mainViewState.update { it.copy(currentPlayerHealth =  _mainViewState.value.selectedPlayer!!.entityCurrentHealth) }
@@ -93,6 +93,7 @@ class MainViewModel (val db: DatabaseHandler, private val locationRepository: Lo
             val xpGain = Random.nextInt(1,5);
             _mainViewState.value.selectedPlayer!!.earnXP(xpGain)
             _mainViewState.update { it.copy(battleCompleteText = "Enemy defeated earned $xpGain XP")}
+            completeRoom()
             db.updatePlayer(_mainViewState.value.selectedPlayer!!)
             db.generateItem(_mainViewState.value.selectedPlayer!!.id, 1)
         }else if(!_mainViewState.value.selectedPlayer!!.isAlive){
@@ -254,7 +255,6 @@ class MainViewModel (val db: DatabaseHandler, private val locationRepository: Lo
     }
 
     fun enterRoom(){
-
         val selectedRoom = _mainViewState.value.currentSelectedRoom
         if(selectedRoom != null){
             _mainViewState.update { it.copy(currentRoomContent = selectedRoom.roomContents)}
