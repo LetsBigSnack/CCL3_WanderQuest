@@ -1,5 +1,7 @@
 package com.ccl3_id.wanderquest.data.models.entities
 
+import com.ccl3_id.wanderquest.data.models.items.ItemStats
+import com.google.gson.Gson
 import kotlinx.coroutines.flow.update
 import java.lang.Math.floor
 import kotlin.math.roundToInt

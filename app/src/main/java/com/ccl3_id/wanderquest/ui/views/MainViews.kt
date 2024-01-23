@@ -610,23 +610,24 @@ fun ItemPopUp(itemViewModel : ItemViewModel, mainViewModel: MainViewModel){
     val equippedItems = itemViewState.value.equippedItemSlots
 
     val mainViewState = mainViewModel.mainViewState.collectAsState()
-    val playerId = mainViewState.value.selectedPlayer!!.id
+    val player = mainViewState.value.selectedPlayer!!
 
     if (itemViewState.value.itemClicked){
         val clickedItem = itemViewState.value.clickedItem!!
         val isAlreadyEquipped = equippedItems[clickedItem.type]
 
         if(isAlreadyEquipped != null){
-            isAlreadyEquippedPopUp(clickedItem, itemViewModel, playerId)
+            isAlreadyEquippedPopUp(clickedItem, itemViewModel, player)
         }
         else{
-            ItemPopUpEquip(clickedItem, itemViewModel, playerId)
+            ItemPopUpEquip(clickedItem, itemViewModel, player)
         }
     }
 }
 
 @Composable
-fun ItemPopUpEquip(clickedItem: Item, itemViewModel: ItemViewModel, playerId: Int){
+fun ItemPopUpEquip(clickedItem: Item, itemViewModel: ItemViewModel, player: Player){
+    val itemStats = clickedItem.getStats() // Get parsed stats
 
     AlertDialog(
         onDismissRequest = {
@@ -646,12 +647,31 @@ fun ItemPopUpEquip(clickedItem: Item, itemViewModel: ItemViewModel, playerId: In
                     fontSize = 18.sp,
                     color = MaterialTheme.colorScheme.onSurface
                 )
+                if (itemStats != null) {
+                    Text(
+                        "Stat Buffs: ${itemStats.statBuffs.entries.joinToString { "${it.key}: ${it.value}" }}",
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        "Abilities: ${itemStats.abilities}",
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        "Stat Nerfs: ${itemStats.statNerfs.entries.joinToString { "${it.key}: ${it.value}" }}",
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                } else {
+                    Text(
+                        "No additional stats available.",
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
             }
         },
         confirmButton = {
             Button(
                 onClick = {
-                    itemViewModel.equipItem(clickedItem, playerId)
+                    itemViewModel.equipItem(clickedItem, player)
                     itemViewModel.deselectItem()
                 }
             ) {
@@ -664,7 +684,9 @@ fun ItemPopUpEquip(clickedItem: Item, itemViewModel: ItemViewModel, playerId: In
 }
 
 @Composable
-fun isAlreadyEquippedPopUp(clickedItem: Item, itemViewModel: ItemViewModel, playerId: Int){
+fun isAlreadyEquippedPopUp(clickedItem: Item, itemViewModel: ItemViewModel, player: Player){
+    val itemStats = clickedItem.getStats() // Get parsed stats
+
     AlertDialog(
         onDismissRequest = {
             itemViewModel.deselectItem()
@@ -683,16 +705,36 @@ fun isAlreadyEquippedPopUp(clickedItem: Item, itemViewModel: ItemViewModel, play
                     fontSize = 18.sp,
                     color = MaterialTheme.colorScheme.onSurface
                 )
+                if (itemStats != null) {
+                    Text(
+                        "Stat Buffs: ${itemStats.statBuffs.entries.joinToString { "${it.key}: ${it.value}" }}",
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        "Abilities: ${itemStats.abilities}",
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        "Stat Nerfs: ${itemStats.statNerfs.entries.joinToString { "${it.key}: ${it.value}" }}",
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                } else {
+                    Text(
+                        "No additional stats available.",
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
                 Text(
                     text = "You have already equipped an item of this type. Would you like to replace it?",
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontWeight = FontWeight.Bold
                 )
             }
         },
         confirmButton = {
             Button(
                 onClick = {
-                    itemViewModel.replaceEquippedItem(clickedItem, playerId)
+                    itemViewModel.replaceEquippedItem(clickedItem, player)
                     itemViewModel.deselectItem()
                 }){
                 Text("Replace")
@@ -769,7 +811,11 @@ fun EquippedItemPopUp(itemViewModel : ItemViewModel, mainViewModel: MainViewMode
     val mainViewState = itemViewModel.mainViewState.collectAsState()
     val mainMainViewState = mainViewModel.mainViewState.collectAsState()
 
+
     if(mainViewState.value.equippedItemClicked){
+        val clickedItem = mainViewState.value.clickedItem!!
+
+        val itemStats = clickedItem.getStats() // Get parsed stats
         AlertDialog(onDismissRequest = {
             itemViewModel.deselectItem()
         },
@@ -787,12 +833,31 @@ fun EquippedItemPopUp(itemViewModel : ItemViewModel, mainViewModel: MainViewMode
                         fontSize = 18.sp,
                         color = MaterialTheme.colorScheme.onSurface
                     )
+                    if (itemStats != null) {
+                        Text(
+                            "Stat Buffs: ${itemStats.statBuffs.entries.joinToString { "${it.key}: ${it.value}" }}",
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            "Abilities: ${itemStats.abilities}",
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            "Stat Nerfs: ${itemStats.statNerfs.entries.joinToString { "${it.key}: ${it.value}" }}",
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    } else {
+                        Text(
+                            "No additional stats available.",
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
                 }
             },
             confirmButton = {
                 Button(
                     onClick = {
-                        itemViewModel.unequipItem(mainViewState.value.clickedEquippedItem!!, mainMainViewState.value.selectedPlayer!!.id)
+                        itemViewModel.unequipItem(mainViewState.value.clickedEquippedItem!!, mainMainViewState.value.selectedPlayer!!)
                         itemViewModel.deselectItem()
                     },
                 ) {
@@ -804,8 +869,6 @@ fun EquippedItemPopUp(itemViewModel : ItemViewModel, mainViewModel: MainViewMode
         )
     }
 }
-
-
 
 // Helper function to get the resource ID of an image based on its name
 @Composable
@@ -841,7 +904,7 @@ fun displayCharacterSheet(mainViewModel: MainViewModel, itemViewModel: ItemViewM
 
             Spacer(modifier = Modifier.padding(15.dp))
 
-            displayPlayerStats(player);
+            displayPlayerStats(player, itemViewModel);
 
             Spacer(modifier = Modifier.padding(15.dp))
 
@@ -923,33 +986,29 @@ fun EmptySlotPlaceholder() {
 }
 
 @Composable
-fun displayPlayerStats(player: Player){
-    Text(
-        text = "Stats: ",
-        fontSize = 30.sp,
-    )
+fun displayPlayerStats(player: Player, itemViewModel: ItemViewModel){
+    Text(text = "Stats:", fontSize = 30.sp)
 
-    Text(
-        text = "Strength: " + player.playerStats[Player.STAT_STRENGTH],
-        fontSize = 20.sp,
-    )
-    Text(
-        text = "Stamina: " +player.playerStats[Player.STAT_STAMINA],
-        fontSize = 20.sp,
-    )
-    Text(
-        text = "Dexterity: "  + player.playerStats[Player.STAT_DEXTERITY],
-        fontSize = 20.sp,
-    )
-    Text(
-        text = "Constitution: "  + player.playerStats[Player.STAT_CONSTITUTION],
-        fontSize = 20.sp,
-    )
-    Text(
-        text = "Motivation: "  +player.playerStats[Player.STAT_MOTIVATION],
-        fontSize = 20.sp,
-    )
+    val equippedItems = itemViewModel.mainViewState.collectAsState().value.equippedItemSlots
 
+    Player.STAT_LIST.forEach { stat ->
+        val baseValue = player.playerStats[stat] ?: 0
+        var totalBuffNerf = 0
+
+        equippedItems.values.filterNotNull().forEach { item ->
+            item.updateItemStatsFromJSON()
+            totalBuffNerf += item.itemStats.getOrDefault(stat, 0)
+        }
+
+        val statDisplay = buildString {
+            append("$stat: $baseValue")
+            if (totalBuffNerf != 0) {
+                append(" (${if (totalBuffNerf > 0) "+" else ""}$totalBuffNerf)")
+            }
+        }
+
+        Text(text = statDisplay, fontSize = 20.sp)
+    }
 }
 
 @Composable

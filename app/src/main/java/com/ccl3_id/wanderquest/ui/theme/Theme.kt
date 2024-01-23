@@ -18,40 +18,40 @@ import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
     //Buttons
-    primary = Color(0xFFCBFFC3),
-    onPrimary = Color(0xFF273E47),
+    primary = Color(0xFFFF784E),
+    onPrimary = Color(0xFF34363E),
     //Background
-    background = Color(0xFF3A424A),
-    onBackground = Color(0xFF97ECFF),
-    surface = Color(0xFF3A424A),
-    onSurface =  Color(0xFF97ECFF),
+    background = Color(0xFF34363E),
+    onBackground = Color(0xFFB3B3B3),
+    surface = Color(0xFF34363E),
+    onSurface =  Color(0xFFB3B3B3),
     //Nav
-    secondary = Color(0xFFDFF9FF),
+    secondary = Color(0xFF44444C),
     //Go back/cancel
     tertiary = Color(0xFFEFFF8E),
     //ItemBg
-    onSecondary = Color(0xFFCDCBC7),
-    onSecondaryContainer = Color(0xFF817D78),
+    onSecondary = Color(0xFFB3B3B3),
+    onSecondaryContainer = Color(0xFF54555B),
     //Red/Health
     onTertiary = Color(0xFFF17777),
 )
 
 private val LightColorScheme = lightColorScheme(
     //Buttons
-    primary = Color(0xFFCBFFC3),
-    onPrimary = Color(0xFF273E47),
+    primary = Color(0xFFFF784E),
+    onPrimary = Color(0xFF34363E),
     //Background
-    background = Color(0xFF3A424A),
-    onBackground = Color(0xFF97ECFF),
-    surface = Color(0xFF3A424A),
-    onSurface =  Color(0xFF97ECFF),
+    background = Color(0xFF34363E),
+    onBackground = Color(0xFFB3B3B3),
+    surface = Color(0xFF34363E),
+    onSurface =  Color(0xFFB3B3B3),
     //Nav
-    secondary = Color(0xFFDFF9FF),
+    secondary = Color(0xFF44444C),
     //Go back/cancel
     tertiary = Color(0xFFEFFF8E),
     //ItemBg
-    onSecondary = Color(0xFFCDCBC7),
-    onSecondaryContainer = Color(0xFF817D78),
+    onSecondary = Color(0xFFB3B3B3),
+    onSecondaryContainer = Color(0xFF54555B),
     //Red/Health
     onTertiary = Color(0xFFF17777),
 
