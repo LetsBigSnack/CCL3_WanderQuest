@@ -13,17 +13,19 @@ import com.ccl3_id.wanderquest.data.models.entities.playerSubclasses.MartialArti
 import com.ccl3_id.wanderquest.data.models.entities.playerSubclasses.PersonalTrainer
 import com.ccl3_id.wanderquest.data.models.items.Item
 import com.ccl3_id.wanderquest.data.models.rooms.Room
+import com.google.gson.Gson
 import java.lang.Exception
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import kotlin.random.Random
 
 class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, null, dbVersion) {
 
     companion object DatabaseConfig {
         private const val dbName : String = "WanderQuest"
-        private const val dbVersion : Int = 1111111222
+        private const val dbVersion : Int = 7
 
         private const val playerTableName = "Player"
         private const val playerId = "playerId"
@@ -46,6 +48,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
         private const val itemImg = "itemImg"
         private const val itemPlayerId = "itemPlayerId"
         private const val itemIsEquipped = "itemIsEquipped"
+        private const val itemStatJSON = "itemStatJSON"
 
         private const val dungeonTableName = "Dungeons"
         private const val dungeonId = "dungeonId"
@@ -111,7 +114,8 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
                 "$itemType VARCHAR(64), " +
                 "$itemImg VARCHAR(256)," +
                 "$itemPlayerId INTEGER, " +
-                "$itemIsEquipped BOOLEAN " +
+                "$itemIsEquipped BOOLEAN, " +
+                "$itemStatJSON VARCHAR(256) " +
                 ");")
 
         //insertItemsData(db);
@@ -143,42 +147,6 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
                 ");")
     }
 
-    private fun insertItemsData(db: SQLiteDatabase?){
-        val items = listOf(
-            // Sportswear - Headpiece
-            Item(name = "Head Band", type = "Headpiece", img = "head_band", itemPlayerId = 0, itemIsEquipped = false),
-            Item(name = "Cap", type = "Headpiece", img = "cap", itemPlayerId = 0, itemIsEquipped = false),
-            Item(name = "Beanie", type = "Headpiece", img = "beanie", itemPlayerId = 0, itemIsEquipped = false),
-            Item(name = "Sun Glasses", type = "Headpiece", img = "sun_glasses", itemPlayerId = 0, itemIsEquipped = false),
-
-            // Sportswear - Handheld
-            Item(name = "Dumbbells", type = "Handheld", img = "dumbbell", itemPlayerId = 0, itemIsEquipped = false),
-            Item(name = "Protein Shake", type = "Handheld", img = "protein", itemPlayerId = 0, itemIsEquipped = false),
-            Item(name = "Jumping Rope", type = "Handheld", img = "jump_rope", itemPlayerId = 0, itemIsEquipped = false),
-            Item(name = "Member Card", type = "Handheld", img = "member_card", itemPlayerId = 0, itemIsEquipped = false),
-
-            // Sportswear - Upper Body
-            Item(name = "Muscle Shirt", type = "Upper Body", img = "tank_top", itemPlayerId = 0, itemIsEquipped = false),
-            Item(name = "Grey Hoodie", type = "Upper Body", img = "hoodie", itemPlayerId = 0, itemIsEquipped = false),
-            Item(name = "Weightlift Belt", type = "Upper Body", img = "weight_belt", itemPlayerId = 0, itemIsEquipped = false),
-            Item(name = "Natural", type = "Upper Body", img = "natural", itemPlayerId = 0, itemIsEquipped = false),
-
-            // Sportswear - Lower Body
-            Item(name = "Shorts", type = "Lower Body", img = "shorts", itemPlayerId = 0, itemIsEquipped = false),
-            Item(name = "Sweat Pants", type = "Lower Body", img = "sweat_pants", itemPlayerId = 0, itemIsEquipped = false),
-            Item(name = "Leg Warmers", type = "Lower Body", img = "socks", itemPlayerId = 0, itemIsEquipped = false),
-            Item(name = "Leggings", type = "Lower Body", img = "leggings", itemPlayerId = 0, itemIsEquipped = false)
-        )
-
-        // Insert each item into the database
-        items.forEach { item ->
-            db?.execSQL(
-                "INSERT INTO $itemTableName ($itemName, $itemType, $itemImg) VALUES (?, ?, ?, ?)",
-                arrayOf(item.name, item.type, item.img)
-            )
-        }
-    }
-
     fun getAllItems(playerId: Int): List<Item> {
         val items = mutableListOf<Item>()
         val db = readableDatabase
@@ -198,8 +166,9 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
                 val itemPlayerId = getInt(getColumnIndexOrThrow(itemPlayerId))
                 val itemIsEquippedInt = getInt(getColumnIndexOrThrow(itemIsEquipped))
                 val itemIsEquipped = itemIsEquippedInt != 0
+                val itemStats = getString(getColumnIndexOrThrow(itemStatJSON))
 
-                val item = Item(itemId, itemName, itemType, itemImg, itemPlayerId, itemIsEquipped)
+                val item = Item(itemId, itemName, itemType, itemImg, itemPlayerId, itemIsEquipped, itemStats)
                 items.add(item)
             }
         }
@@ -219,6 +188,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
             put(itemImg, item.img)
             put(itemPlayerId, item.itemPlayerId)
             put(itemIsEquipped, item.itemIsEquipped)
+            put(itemStatJSON, item.itemStatsJSON)
         }
 
         db.insert(itemTableName, null, values)
@@ -228,13 +198,15 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
         val itemType = generateItemType()
         val itemName = generateItemName(itemType)
         val itemImg = generateItemImg(itemName)
+        val itemStatsJSON = generateStatJson()
 
         for(i in 0..number-1){
             val tempItem= Item(
                 name = itemName,
                 type = itemType,
                 img = itemImg,
-                itemPlayerId = playerId
+                itemPlayerId = playerId,
+                itemStatsJSON = itemStatsJSON
             );
             insertItem(tempItem);
         }
@@ -265,6 +237,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
 
 
     fun generateItemImg(itemName: String): String{
+        println("GENERATE ITEM IMG")
         // Split the input string into words
         val words = itemName.split(" ")
         var itemImages = ""
@@ -277,6 +250,40 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
             itemImages = itemName.lowercase()
         }
         return itemImages
+    }
+
+    fun generateItemStatBuffs(): Map<String, Int>{
+        val possibleStats = listOf("Strength", "Stamina", "Dexterity", "Constitution", "Motivation")
+        val numberOfStats = Random.nextInt(1, possibleStats.size)
+
+        return possibleStats.shuffled().take(numberOfStats).associateWith { Random.nextInt(1,10) }
+    }
+
+    fun generateItemAbilities(): String{
+        val possibleStats = listOf("Lucky Chucky", "Health Regen", "Magic Shield", " ", " ", " ", " ")
+
+        return possibleStats.random()
+    }
+
+    fun generateItemStatNerfs(): Map<String, Int>{
+        val possibleStats = listOf("Strength", "Stamina", "Dexterity", "Constitution", "Motivation", " ", " ", " ", " ", " ")
+        val numberOfStats = Random.nextInt(1, 2)
+
+        return possibleStats.shuffled().take(numberOfStats).associateWith { Random.nextInt(1,5) }
+    }
+
+    fun generateStatJson(): String{
+        val statBuffs = generateItemStatBuffs()
+        val abilities = generateItemAbilities()
+        val statNerfs = generateItemStatNerfs()
+
+        val itemAttributes = mapOf(
+            "statBuffs" to statBuffs,
+            "abilities" to abilities,
+            "statNerfs" to statNerfs,
+        )
+        println("Generate stat JSON" + Gson().toJson(itemAttributes))
+        return Gson().toJson(itemAttributes)
     }
 
     fun equipItem(item: Item){
@@ -308,8 +315,9 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
                 val itemType = getString(getColumnIndexOrThrow(itemType))
                 val itemImg = getString(getColumnIndexOrThrow(itemImg))
                 val equippedItemId = getInt(getColumnIndexOrThrow(itemPlayerId))
+                val itemStats = getString(getColumnIndexOrThrow(itemStatJSON))
 
-                val equippedItem = Item(itemId, itemName, itemType, itemImg, equippedItemId)
+                val equippedItem = Item(itemId, itemName, itemType, itemImg, equippedItemId, true, itemStats)
                 equippedItems.add(equippedItem)
             }
         }

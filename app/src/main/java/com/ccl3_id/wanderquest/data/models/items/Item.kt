@@ -7,6 +7,7 @@ open class Item(
     val type: String,
     val img: String,
     val itemPlayerId: Int,
-    val itemIsEquipped: Boolean = false
+    val itemIsEquipped: Boolean = false,
+    var itemStatsJSON: String
 )
 
