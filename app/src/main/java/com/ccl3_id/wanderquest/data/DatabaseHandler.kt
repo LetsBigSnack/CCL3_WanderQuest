@@ -25,7 +25,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
 
     companion object DatabaseConfig {
         private const val dbName : String = "WanderQuest"
-        private const val dbVersion : Int = 7
+        private const val dbVersion : Int = 2
 
         private const val playerTableName = "Player"
         private const val playerId = "playerId"
@@ -194,6 +194,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
         db.insert(itemTableName, null, values)
     }
 
+    //TODO Refactor
     fun generateItem(playerId: Int, number: Int){
         val itemType = generateItemType()
         val itemName = generateItemName(itemType)
@@ -211,6 +212,27 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
             insertItem(tempItem);
         }
     }
+
+
+    fun generateItem() : Item {
+
+        val itemType = generateItemType()
+        val itemName = generateItemName(itemType)
+        val itemImg = generateItemImg(itemName)
+        val itemStatsJSON = generateStatJson()
+
+        val tempItem= Item(
+            name = itemName,
+            type = itemType,
+            img = itemImg,
+            itemPlayerId = 0,
+            itemStatsJSON = itemStatsJSON
+        );
+
+        return tempItem;
+
+    }
+
 
     fun generateItemType(): String{
         val itemTypes = listOf("head", "hand", "chest", "legs")

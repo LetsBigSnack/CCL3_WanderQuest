@@ -1,5 +1,6 @@
 package com.ccl3_id.wanderquest.viewModels.states
 
+import com.ccl3_id.wanderquest.data.models.GameObject
 import com.ccl3_id.wanderquest.data.models.dungeons.Dungeon
 import com.ccl3_id.wanderquest.data.models.entities.Enemy
 import com.ccl3_id.wanderquest.data.models.entities.Player
@@ -36,6 +37,6 @@ data class MainViewState (
     var dungeonRooms : Array<Array<Room?>>? = null,
     var adjacentRooms : List<Room> = emptyList(),
     var currentSelectedRoom : Room? = null,
-    var displayDungeonPopUp : Boolean = false
-
+    var displayDungeonPopUp : Boolean = false,
+    var currentRoomContent : GameObject? = null,
 )

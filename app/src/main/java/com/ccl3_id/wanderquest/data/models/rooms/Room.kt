@@ -1,6 +1,9 @@
 package com.ccl3_id.wanderquest.data.models.rooms
 
 import androidx.compose.ui.geometry.Offset
+import com.ccl3_id.wanderquest.data.models.GameObject
+import com.ccl3_id.wanderquest.data.models.entities.Enemy
+import com.ccl3_id.wanderquest.data.models.items.Item
 import kotlin.random.Random
 
 class Room(val xIndex: Int,
@@ -13,6 +16,14 @@ class Room(val xIndex: Int,
            var dungeonID : Int = 0,
     ) {
 
+    var roomContents : GameObject? = null
+
+    init {
+        when(roomType){
+            "Item" -> roomContents = Item.generateItem()
+            "Monster" -> roomContents = Enemy()
+        }
+    }
 
     companion object{
         val ROOM_SIZE = 150

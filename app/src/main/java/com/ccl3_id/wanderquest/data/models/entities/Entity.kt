@@ -1,6 +1,8 @@
 package com.ccl3_id.wanderquest.data.models.entities
 
-open class Entity (val entityName : String = "Entity")
+import com.ccl3_id.wanderquest.data.models.GameObject
+
+open class Entity (val entityName : String = "Entity") : GameObject()
 {
     var entityMaxHealth: Int = 0;
     var entityCurrentHealth: Int = 0;

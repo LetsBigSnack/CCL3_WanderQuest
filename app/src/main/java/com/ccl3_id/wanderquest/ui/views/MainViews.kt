@@ -88,6 +88,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.ui.input.pointer.pointerInput
+import com.ccl3_id.wanderquest.data.models.entities.Enemy
 import com.ccl3_id.wanderquest.data.models.rooms.Room
 import com.ccl3_id.wanderquest.viewModels.CharacterViewModel
 
@@ -376,43 +377,100 @@ fun alreadyVisited(mainViewModel: MainViewModel){
 @Composable
 fun displayRoomContents(mainViewModel: MainViewModel){
 
+    val state = mainViewModel.mainViewState.collectAsState()
+    val currentDungeon = state.value.currentSelectedRoom
+    val roomContent = currentDungeon?.roomContents
+
+
+    if(roomContent != null){
+        when (roomContent) {
+            is Item -> displayRoomItem(roomContent, mainViewModel)// handle Item
+            is Enemy -> displayRoomMonster(roomContent, mainViewModel)// handle Monster
+            else -> throw IllegalArgumentException("Unknown type")
+        }
+    }else{
+        displayRoomNothing(mainViewModel)
+    }
+}
+@Composable
+fun displayRoomMonster(monster : Enemy, mainViewModel: MainViewModel) {
     androidx.compose.material.AlertDialog(
         onDismissRequest = {
             mainViewModel.dismissDialog()
         },
         text = {
             Column {
-                Text(text = "Are you sure you want to delete this character?")
-                Text(text = "Are you sure you want to delete this character?")
-                Text(text = "Are you sure you want to delete this character?")
-                Text(text = "Are you sure you want to delete this character?")
-                Text(text = "Are you sure you want to delete this character?")
+                Text(text = "You encountered a Monster")
+                Text(text = "${monster.entityName}")
             }
 
         },
         confirmButton = {
             androidx.compose.material.Button(
                 onClick = {
+                    mainViewModel.completeRoom()
                     mainViewModel.dismissDialog()
                 }
             ) {
-                Text(text = "Yes")
-            }
-        },
-        dismissButton = {
-            androidx.compose.material.Button(
-                onClick = {
-                    mainViewModel.dismissDialog()
-                }
-            ) {
-                Text(text = "No")
+                Text(text = "Fight")
             }
         }
     )
 
-
 }
 
+@Composable
+fun displayRoomItem(item: Item, mainViewModel: MainViewModel) {
+    androidx.compose.material.AlertDialog(
+        onDismissRequest = {
+            mainViewModel.dismissDialog()
+        },
+        text = {
+            Column {
+                Text(text = "You found an Item!")
+                Text(text = "${item.name}")
+                Text(text = "${item.itemStatsJSON}")
+            }
+
+        },
+        confirmButton = {
+            androidx.compose.material.Button(
+                onClick = {
+                    mainViewModel.getItem(item)
+                    mainViewModel.completeRoom()
+                    mainViewModel.dismissDialog()
+                }
+            ) {
+                Text(text = "Okay")
+            }
+        })
+}
+
+@Composable
+fun displayRoomNothing(mainViewModel: MainViewModel) {
+
+    androidx.compose.material.AlertDialog(
+        onDismissRequest = {
+            mainViewModel.dismissDialog()
+        },
+        text = {
+            Column {
+                Text(text = "You find nothing of interest in this room.")
+            }
+
+        },
+        confirmButton = {
+            androidx.compose.material.Button(
+                onClick = {
+                    mainViewModel.completeRoom()
+                    mainViewModel.dismissDialog()
+                }
+            ) {
+                Text(text = "Okay")
+            }
+        }
+    )
+}
 
 
 @Composable

@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.ccl3_id.wanderquest.data.DatabaseHandler
 import com.ccl3_id.wanderquest.data.models.dungeons.Dungeon
 import com.ccl3_id.wanderquest.data.models.entities.Enemy
+import com.ccl3_id.wanderquest.data.models.items.Item
 import com.ccl3_id.wanderquest.data.models.rooms.Room
 import com.ccl3_id.wanderquest.repository.LocationRepository
 import com.ccl3_id.wanderquest.ui.views.Screen
@@ -254,6 +255,14 @@ class MainViewModel (val db: DatabaseHandler, private val locationRepository: Lo
 
     fun enterRoom(){
 
+        val selectedRoom = _mainViewState.value.currentSelectedRoom
+        if(selectedRoom != null){
+            _mainViewState.update { it.copy(currentRoomContent = selectedRoom.roomContents)}
+        }
+
+    }
+
+    fun completeRoom(){
         val dungeonRooms = _mainViewState.value.dungeonRooms?: return
         val selectedRoom = _mainViewState.value.currentSelectedRoom ?: return
 
@@ -270,6 +279,16 @@ class MainViewModel (val db: DatabaseHandler, private val locationRepository: Lo
 
     fun dismissDialog() {
         _mainViewState.update { it.copy(displayDungeonPopUp = false)}
+    }
+
+    fun getItem(item : Item) {
+
+        val player = mainViewState.value.selectedPlayer
+
+        if(player != null){
+            item.itemPlayerId = player!!.id
+            db.insertItem(item)
+        }
     }
 
 }

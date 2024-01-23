@@ -33,6 +33,12 @@ class LoginActivity : ComponentActivity() {
         Manifest.permission.POST_NOTIFICATIONS
     )
 
+    private val requiredPermissionsLowerVersion = arrayOf(
+        Manifest.permission.ACTIVITY_RECOGNITION,
+        Manifest.permission.ACCESS_FINE_LOCATION,
+        Manifest.permission.FOREGROUND_SERVICE
+    )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -61,6 +67,16 @@ class LoginActivity : ComponentActivity() {
         if (permissionHandler.onRequestPermissionsResult(requestCode, permissions, grantResults)) {
             startLocationTrackingService()
         } else {
+            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU) {
+                if (permissionHandler.hasPermissions(requiredPermissionsLowerVersion)) {
+                    startLocationTrackingService()
+                    println("PERMISSION given")
+                }else{
+                    println("PERMISSION not given")
+                }
+            }else{
+                println("PERMISSION not given")
+            }
         }
     }
 
