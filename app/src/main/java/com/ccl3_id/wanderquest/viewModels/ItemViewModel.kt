@@ -2,6 +2,7 @@ package com.ccl3_id.wanderquest.viewModels
 
 import androidx.lifecycle.ViewModel
 import com.ccl3_id.wanderquest.data.DatabaseHandler
+import com.ccl3_id.wanderquest.data.models.entities.Player
 import com.ccl3_id.wanderquest.data.models.items.Item
 import com.ccl3_id.wanderquest.viewModels.states.MainViewState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,20 +33,21 @@ class ItemViewModel(private val db: DatabaseHandler) : ViewModel()  {
         _mainViewState.update { it.copy(equippedItemClicked = false) }
     }
 
-    fun equipItem(item: Item, playerId: Int){
+    fun equipItem(item: Item, player: Player){
         val tempEquippedItemSlots = _mainViewState.value.equippedItemSlots
 
         if (tempEquippedItemSlots[item.type] == null){
             tempEquippedItemSlots[item.type] = item
             _mainViewState.update { it.copy(equippedItemSlots = tempEquippedItemSlots) }
             db.equipItem(item)
-            getEquipItems(playerId)
-            getItems(playerId)
+            item.updateItemStatsFromJSON()
+            getEquipItems(player.id)
+            getItems(player.id)
         }
         //TODO: Add error msg
     }
 
-    fun replaceEquippedItem(newItem: Item, playerId: Int){
+    fun replaceEquippedItem(newItem: Item, player: Player){
         val tempEquippedItemSlots = _mainViewState.value.equippedItemSlots.toMutableMap()
         val itemType = newItem.type
 
@@ -56,20 +58,22 @@ class ItemViewModel(private val db: DatabaseHandler) : ViewModel()  {
 
         // Equip the new item
         tempEquippedItemSlots[itemType] = newItem
+        newItem.updateItemStatsFromJSON()
         db.equipItem(newItem)
 
         // Update the state
         _mainViewState.update { it.copy(equippedItemSlots = tempEquippedItemSlots) }
 
         // Refresh the lists
-        getEquipItems(playerId)
-        getItems(playerId)
+        getEquipItems(player.id)
+        getItems(player.id)
     }
 
-    fun unequipItem(equippedItem: Item, playerId: Int){
+    fun unequipItem(equippedItem: Item, player: Player){
         db.unequipItem(equippedItem)
-        getEquipItems(playerId)
-        getItems(playerId)
+        equippedItem.updateItemStatsFromJSON()
+        getEquipItems(player.id)
+        getItems(player.id)
     }
 
     fun getEquipItems(playerId: Int){
