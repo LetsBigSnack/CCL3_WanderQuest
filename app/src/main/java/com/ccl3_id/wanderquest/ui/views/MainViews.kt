@@ -89,6 +89,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.ui.input.pointer.pointerInput
 import com.ccl3_id.wanderquest.data.models.rooms.Room
+import com.ccl3_id.wanderquest.viewModels.CharacterViewModel
 
 
 sealed class Screen(val route: String){
@@ -298,7 +299,8 @@ fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
         ) {
             Button(
                 onClick = {
-                          mainViewModel.enterRoom()
+                    mainViewModel.openDungeonDialog()
+                    //mainViewModel.enterRoom()
                 },
                 modifier = Modifier
                     .padding(start = 20.dp, end = 20.dp, bottom = 15.dp)
@@ -322,7 +324,95 @@ fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
         }
 
     }
+
+    Column {
+        displayPopUpDungeon(mainViewModel)
+    }
 }
+
+
+@Composable
+fun displayPopUpDungeon(mainViewModel: MainViewModel) {
+
+    val state = mainViewModel.mainViewState.collectAsState()
+    val currentDungeon = state.value.currentSelectedRoom
+
+    if(state.value.displayDungeonPopUp && currentDungeon != null){
+
+        if(currentDungeon.hasBeenVisited){
+            alreadyVisited(mainViewModel)
+        }else{
+            displayRoomContents(mainViewModel)
+        }
+
+    }
+}
+
+@Composable
+fun alreadyVisited(mainViewModel: MainViewModel){
+
+    androidx.compose.material.AlertDialog(
+        onDismissRequest = {
+            mainViewModel.dismissDialog()
+        },
+        text = {
+            Column {
+                Text(text = "You already visited this room!")
+            }
+
+        },
+        confirmButton = {
+            androidx.compose.material.Button(
+                onClick = {
+                    mainViewModel.dismissDialog()
+                }
+            ) {
+                Text(text = "Okay")
+            }
+        }
+    )
+}
+
+@Composable
+fun displayRoomContents(mainViewModel: MainViewModel){
+
+    androidx.compose.material.AlertDialog(
+        onDismissRequest = {
+            mainViewModel.dismissDialog()
+        },
+        text = {
+            Column {
+                Text(text = "Are you sure you want to delete this character?")
+                Text(text = "Are you sure you want to delete this character?")
+                Text(text = "Are you sure you want to delete this character?")
+                Text(text = "Are you sure you want to delete this character?")
+                Text(text = "Are you sure you want to delete this character?")
+            }
+
+        },
+        confirmButton = {
+            androidx.compose.material.Button(
+                onClick = {
+                    mainViewModel.dismissDialog()
+                }
+            ) {
+                Text(text = "Yes")
+            }
+        },
+        dismissButton = {
+            androidx.compose.material.Button(
+                onClick = {
+                    mainViewModel.dismissDialog()
+                }
+            ) {
+                Text(text = "No")
+            }
+        }
+    )
+
+
+}
+
 
 
 @Composable

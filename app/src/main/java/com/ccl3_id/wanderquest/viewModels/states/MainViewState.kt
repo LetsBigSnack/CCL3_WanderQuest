@@ -35,5 +35,7 @@ data class MainViewState (
     val selectedDungeon: Dungeon? = null,
     var dungeonRooms : Array<Array<Room?>>? = null,
     var adjacentRooms : List<Room> = emptyList(),
-    var currentSelectedRoom : Room? = null
+    var currentSelectedRoom : Room? = null,
+    var displayDungeonPopUp : Boolean = false
+
 )

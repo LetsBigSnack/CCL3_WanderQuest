@@ -264,4 +264,12 @@ class MainViewModel (val db: DatabaseHandler, private val locationRepository: Lo
         db.updateRoom(selectedRoom)
     }
 
+    fun openDungeonDialog() {
+        _mainViewState.update { it.copy(displayDungeonPopUp = true)}
+    }
+
+    fun dismissDialog() {
+        _mainViewState.update { it.copy(displayDungeonPopUp = false)}
+    }
+
 }

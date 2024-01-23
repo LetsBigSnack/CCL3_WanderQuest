@@ -19,22 +19,26 @@
             android:name=".LevelUpActivity"
             android:exported="false"
             android:label="@string/title_activity_level_up"
-            android:theme="@style/Theme.WanderQuest" />
+            android:theme="@style/Theme.WanderQuest"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".CreationActivity"
             android:exported="false"
             android:label="@string/title_activity_creation"
-            android:theme="@style/Theme.WanderQuest" />
+            android:theme="@style/Theme.WanderQuest"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".CharactersActivity"
             android:exported="false"
             android:label="@string/title_activity_characters"
-            android:theme="@style/Theme.WanderQuest" />
+            android:theme="@style/Theme.WanderQuest"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".LoginActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.WanderQuest">
+            android:theme="@style/Theme.WanderQuest"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -44,7 +48,8 @@
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.WanderQuest"/>
+            android:theme="@style/Theme.WanderQuest"
+            android:screenOrientation="portrait"/>
     </application>
     <!--<meta-data
         android:name="com.google.firebase.messaging.default_notification_channel_id"
