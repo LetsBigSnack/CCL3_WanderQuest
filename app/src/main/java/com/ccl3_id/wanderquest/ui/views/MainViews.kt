@@ -90,6 +90,8 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.forEachGesture
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.Card
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.consumePositionChange
 import androidx.compose.ui.input.pointer.pointerInput
@@ -457,8 +459,9 @@ fun ItemPopUpEquip(clickedItem: Item, itemViewModel: ItemViewModel, player: Play
         onDismissRequest = {
             itemViewModel.deselectItem()
         },
+        containerColor = MaterialTheme.colorScheme.background,
         text = {
-            Column {
+            Column{
                 // https://www.jetpackcompose.net/textfield-in-jetpack-compose
                 Text(
                     text = clickedItem.name,
@@ -515,6 +518,7 @@ fun isAlreadyEquippedPopUp(clickedItem: Item, itemViewModel: ItemViewModel, play
         onDismissRequest = {
             itemViewModel.deselectItem()
         },
+        containerColor = MaterialTheme.colorScheme.background,
         text = {
             Column {
                 // https://www.jetpackcompose.net/textfield-in-jetpack-compose
@@ -606,8 +610,7 @@ fun displayPlayerEquipedItems(itemViewModel: ItemViewModel){
 
     Text(
         text = "Equipped Items:",
-        fontSize = 30.sp,
-        style = TextStyle(fontFamily = FontFamily.Monospace)
+        fontSize = 30.sp
     )
 
     // Display equipped items
@@ -640,9 +643,11 @@ fun EquippedItemPopUp(itemViewModel : ItemViewModel, mainViewModel: MainViewMode
         val clickedItem = mainViewState.value.clickedItem!!
 
         val itemStats = clickedItem.getStats() // Get parsed stats
-        AlertDialog(onDismissRequest = {
-            itemViewModel.deselectItem()
-        },
+        AlertDialog(
+            onDismissRequest = {
+                itemViewModel.deselectItem()
+            },
+            containerColor = MaterialTheme.colorScheme.background,
             text = {
                 Column {
                     // https://www.jetpackcompose.net/textfield-in-jetpack-compose
@@ -716,7 +721,7 @@ fun displayCharacterSheet(mainViewModel: MainViewModel, itemViewModel: ItemViewM
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(top = 20.dp, start = 20.dp)
+            .padding(top = 20.dp, start = 12.dp, end = 12.dp)
     ) {
         if (player != null) {
 
@@ -811,29 +816,52 @@ fun EmptySlotPlaceholder() {
 
 @Composable
 fun displayPlayerStats(player: Player, itemViewModel: ItemViewModel){
-    Text(text = "Stats:", fontSize = 30.sp)
+    // Custom styles
+    val cardBackgroundColor = MaterialTheme.colorScheme.secondary
+    val textColor = MaterialTheme.colorScheme.onSurface
+    val statNameStyle = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold, color = textColor)
+    val statValueStyle = TextStyle(fontSize = 18.sp, color = textColor)
 
-    val equippedItems = itemViewModel.mainViewState.collectAsState().value.equippedItemSlots
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text(text = "Characteristics", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = textColor, modifier = Modifier.align(Alignment.CenterHorizontally))
 
-    Player.STAT_LIST.forEach { stat ->
-        val baseValue = player.playerStats[stat] ?: 0
-        var totalBuffNerf = 0
+        val equippedItems = itemViewModel.mainViewState.collectAsState().value.equippedItemSlots
+        Player.STAT_LIST.chunked(3).forEachIndexed { index, chunkedStats ->
+            Row(
+                horizontalArrangement = if (index == 0) Arrangement.SpaceBetween else Arrangement.Center,
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+            ) {
+                chunkedStats.forEach { stat ->
+                    val baseValue = player.playerStats[stat] ?: 0
+                    var totalBuffNerf = 0
 
-        equippedItems.values.filterNotNull().forEach { item ->
-            item.updateItemStatsFromJSON()
-            totalBuffNerf += item.itemStats.getOrDefault(stat, 0)
-        }
+                    equippedItems.values.filterNotNull().forEach { item ->
+                        item.updateItemStatsFromJSON()
+                        totalBuffNerf += item.itemStats.getOrDefault(stat, 0)
+                    }
 
-        val statDisplay = buildString {
-            append("$stat: $baseValue")
-            if (totalBuffNerf != 0) {
-                append(" (${if (totalBuffNerf > 0) "+" else ""}$totalBuffNerf)")
+                    Card(
+                        backgroundColor = cardBackgroundColor,
+                        modifier = Modifier
+                            .padding(4.dp)
+                            .width(110.dp),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.padding(16.dp)
+                        ) {
+                            Text(text = stat, style = statNameStyle)
+                            Text(text = "$baseValue ${if (totalBuffNerf != 0) "%+d".format(totalBuffNerf) else ""}", style = statValueStyle)
+                        }
+                    }
+                }
             }
         }
-
-        Text(text = statDisplay, fontSize = 20.sp)
     }
 }
+
 
 @Composable
 fun displayPlayerAbilities(player: Player){
