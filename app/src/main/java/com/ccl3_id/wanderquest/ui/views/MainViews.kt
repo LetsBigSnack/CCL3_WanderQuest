@@ -1,6 +1,7 @@
 package com.ccl3_id.wanderquest.ui.views
 
 import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -77,7 +78,6 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.TimeUnit
-
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.runtime.LaunchedEffect
@@ -87,6 +87,9 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.input.pointer.PointerInputScope
 import androidx.compose.ui.input.pointer.consumePositionChange
@@ -98,7 +101,16 @@ import com.ccl3_id.wanderquest.data.models.rooms.Room
 import kotlinx.coroutines.coroutineScope
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.Card
+import androidx.compose.material.Divider
+import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.graphics.StrokeCap
 import com.ccl3_id.wanderquest.data.models.entities.Enemy
+import com.ccl3_id.wanderquest.ui.composables.ButtonSettings
+import com.ccl3_id.wanderquest.ui.composables.MultiStyleText
+import com.ccl3_id.wanderquest.ui.composables.WanderButton
+import kotlin.math.abs
 
 sealed class Screen(val route: String){
     object Character: Screen("Character")
@@ -210,8 +222,19 @@ fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
         }
     }
 
+    var lineColor = MaterialTheme.colorScheme.secondary
+    var selectedColor = Color(0f, 0f, 0f, 0.25f)
+    var adjacentRoomColor = MaterialTheme.colorScheme.onSurface
+    var unexploredRoomColor = MaterialTheme.colorScheme.surface
+    var startingRoomColor = Color(0xFF6AC8E4)
+    var itemRoomColor = Color(0xFF00C2A2)
+    var monsterRoomColor = Color(0xFFFF859A)
+    var emptyRoomColor = Color(0xFF6AC8E4)
+
     Column {
-        Canvas(modifier = canvasModifier.fillMaxSize().weight(1f)
+        Canvas(modifier = canvasModifier
+            .fillMaxSize()
+            .weight(1f)
             .pointerInput(Unit) {
                 detectDragGestures { _, dragAmount ->
                     println("DRAG detected")
@@ -220,7 +243,8 @@ fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
                         verticalScrollState.scrollBy(-dragAmount.y)
                     }
                 }
-            }.pointerInput(Unit) {
+            }
+            .pointerInput(Unit) {
                 detectTapGestures { offset ->
                     dungeonRooms!!.forEach { row ->
                         row.forEach { room ->
@@ -251,7 +275,7 @@ fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
                         // Draw line to the right
                         if (j < dungeonRooms!![i].lastIndex && dungeonRooms!![i][j + 1] != null) {
                             drawLine(
-                                color = Color.Black,
+                                color = lineColor,
                                 start = currentRoom!!.centerPos!!,
                                 end = dungeonRooms!![i][j + 1]!!.centerPos!!,
                                 strokeWidth = 30f
@@ -260,7 +284,7 @@ fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
                         // Draw line below
                         if (i < dungeonRooms!!.lastIndex && dungeonRooms!![i + 1][j] != null) {
                             drawLine(
-                                color = Color.Black,
+                                color = lineColor,
                                 start = currentRoom!!.centerPos!!,
                                 end = dungeonRooms!![i + 1][j]!!.centerPos!!,
                                 strokeWidth = 30f
@@ -271,14 +295,15 @@ fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
             }
 
             if(state.value.currentSelectedRoom != null){
-                val selectSize = 40
+                val selectSize = 60
                 val center = state.value.currentSelectedRoom!!.centerPos!!
                 val topLeft = Offset((center.x - rectSize / 2)-selectSize/2, (center.y - rectSize / 2)-selectSize/2)
 
-                drawRect(
-                    color = Color.Black,
+                drawRoundRect(
+                    color = selectedColor,
                     topLeft = topLeft,
-                    size = Size(rectSize+selectSize, rectSize+selectSize)
+                    size = Size(rectSize+selectSize, rectSize+selectSize),
+                    cornerRadius = CornerRadius(10.dp.toPx())
                 )
 
             }
@@ -290,26 +315,27 @@ fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
                         val center = room.centerPos!!
                         val topLeft = Offset(center.x - rectSize / 2, center.y - rectSize / 2)
 
-                        var color = Color.Blue
+                        var color = startingRoomColor
 
                         if(room.hasBeenVisited){
                             when (room.roomType) {
-                                "Monster" -> color = Color.Red
-                                "Item" -> color = Color.Yellow
-                                "Empty" -> color = Color.Cyan
+                                "Monster" -> color = monsterRoomColor
+                                "Item" -> color = itemRoomColor
+                                "Empty" -> color = emptyRoomColor
                             }
                         }else{
                             if(adjacentRooms.find { adjacentRoom: Room -> adjacentRoom.xIndex == room.xIndex && adjacentRoom.yIndex == room.yIndex } != null){
-                                color = Color.Gray
+                                color = adjacentRoomColor
                             }else{
-                                color = Color.DarkGray
+                                color = unexploredRoomColor
                             }
                         }
 
-                        drawRect(
+                        drawRoundRect(
                             color = color,
                             topLeft = topLeft,
-                            size = Size(rectSize, rectSize)
+                            size = Size(rectSize, rectSize),
+                            cornerRadius = CornerRadius(10.dp.toPx())
                         )
                     }
                 }
@@ -321,29 +347,28 @@ fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
             verticalArrangement = Arrangement.Bottom
 
         ) {
-            Button(
-                onClick = {
+
+            WanderButton(
+                text = "Enter Room",
+                color = MaterialTheme.colorScheme.primary,
+                onClickEvent = {
                     mainViewModel.openDungeonDialog()
                 },
-                modifier = Modifier
-                    .padding(start = 20.dp, end = 20.dp, bottom = 15.dp)
-                    .fillMaxWidth(),
+                fontSize = ButtonSettings.BUTTON_FONT_SIZE_BIG,
+                textColor = Color.White,
                 enabled = mainViewModel.checkRoomEnabled()
-            ) {
-                Text(text = "Enter Room", fontSize = 25.sp)
+            )
 
-            }
-
-            Button(
-                onClick = {
+            WanderButton(
+                text = "Leave Dungeon",
+                color = MaterialTheme.colorScheme.tertiary,
+                onClickEvent = {
                     mainViewModel.leaveDungeon()
                 },
-                modifier = Modifier
-                    .padding(start = 20.dp, end = 20.dp)
-                    .fillMaxWidth()
-            ) {
-                Text(text = "Leave Dungeon", fontSize = 25.sp)
-            }
+                fontSize = ButtonSettings.BUTTON_FONT_SIZE_BIG,
+                textColor = Color.White,
+            )
+
         }
 
     }
@@ -374,25 +399,35 @@ fun displayPopUpDungeon(mainViewModel: MainViewModel) {
 @Composable
 fun alreadyVisited(mainViewModel: MainViewModel){
 
-    androidx.compose.material.AlertDialog(
+
+    AlertDialog(
+        containerColor = MaterialTheme.colorScheme.background,
+        shape = RoundedCornerShape(10.dp),
         onDismissRequest = {
             mainViewModel.dismissDialog()
         },
+        title = {
+            Text(text = "Already Visited", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM)
+        },
         text = {
             Column {
-                Text(text = "You already visited this room!")
+                Text(text = "You already visited this room!", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM)
             }
-
         },
         confirmButton = {
-            androidx.compose.material.Button(
-                onClick = {
+            WanderButton(
+                text = "Okay",
+                color = MaterialTheme.colorScheme.primary,
+                onClickEvent = {
                     mainViewModel.dismissDialog()
-                }
-            ) {
-                Text(text = "Okay")
-            }
+                },
+                fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+                textColor = Color.White,
+                modifier = Modifier
+            )
+
         }
+
     )
 }
 
@@ -416,81 +451,140 @@ fun displayRoomContents(mainViewModel: MainViewModel){
 }
 @Composable
 fun displayRoomMonster(monster : Enemy, mainViewModel: MainViewModel) {
-    androidx.compose.material.AlertDialog(
+
+    AlertDialog(
+        containerColor = MaterialTheme.colorScheme.background,
+        shape = RoundedCornerShape(10.dp),
         onDismissRequest = {
             mainViewModel.dismissDialog()
         },
+        title = {
+            Text(text = "Monster Encounter", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM)
+        },
         text = {
             Column {
-                Text(text = "You encountered a Monster")
-                Text(text = "${monster.entityName}")
+                Text(text = "You encountered a Monster", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM)
+                Text(text = "${monster.entityName}", color = MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM)
             }
-
         },
         confirmButton = {
-            androidx.compose.material.Button(
-                onClick = {
+            WanderButton(
+                text = "Okay",
+                color = MaterialTheme.colorScheme.primary,
+                onClickEvent = {
                     mainViewModel.startBattle(monster.copy())
                     mainViewModel.dismissDialog()
-                }
-            ) {
-                Text(text = "Fight")
-            }
+                },
+                fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+                textColor = Color.White,
+                modifier = Modifier
+            )
+
         }
+
     )
 
 }
 
 @Composable
 fun displayRoomItem(item: Item, mainViewModel: MainViewModel) {
-    androidx.compose.material.AlertDialog(
+
+    AlertDialog(
+        containerColor = MaterialTheme.colorScheme.background,
+        shape = RoundedCornerShape(10.dp),
         onDismissRequest = {
             mainViewModel.dismissDialog()
         },
+        title = {
+            Text(text = "Item Encounter", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM)
+        },
         text = {
             Column {
-                Text(text = "You found an Item!")
-                Text(text = "${item.name}")
-                Text(text = "${item.itemStatsJSON}")
-            }
+                Text(text = "You found an Item!", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM)
+                MultiStyleText("Name: ", Color.White, item.name, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
+                MultiStyleText("Type: ", Color.White, item.type, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
 
+                val itemStats = item.getStats()
+                if (itemStats != null) {
+                    //TODO make more fancy
+                    Text(
+                        text = "Stat Buffs:", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM
+                    )
+                    itemStats.statBuffs.entries.forEach { (k,v) ->
+                        MultiStyleText("$k: ", MaterialTheme.colorScheme.onSurface, "$v" , MaterialTheme.colorScheme.primary, fontSize = 18.sp, Modifier.padding(start = 20.dp))
+                    }
+                    if(itemStats.abilities != " "){
+                        MultiStyleText("Abilities: ", Color.White, itemStats.abilities, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
+                    }
+
+                    if(itemStats.statNerfs.entries.filter { (k,v) -> k != " "}.isNotEmpty()){
+                        Text(
+                            text = "Stat Nerfs: ", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM
+                        )
+                        itemStats.statNerfs.entries.forEach { (k,v) ->
+                            if(k != " "){
+                                MultiStyleText("$k: ", MaterialTheme.colorScheme.onSurface, "$v" , MaterialTheme.colorScheme.primary, fontSize = 18.sp, Modifier.padding(start = 20.dp))
+                            }
+                        }
+                    }
+
+                } else {
+                    Text(text = "No additional stats available.", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM)
+                }
+
+            }
         },
         confirmButton = {
-            androidx.compose.material.Button(
-                onClick = {
+            WanderButton(
+                text = "Okay",
+                color = MaterialTheme.colorScheme.primary,
+                onClickEvent = {
                     mainViewModel.getItem(item)
                     mainViewModel.completeRoom()
                     mainViewModel.dismissDialog()
-                }
-            ) {
-                Text(text = "Okay")
-            }
-        })
+                },
+                fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+                textColor = Color.White,
+                modifier = Modifier
+            )
+
+        }
+
+    )
 }
 
 @Composable
 fun displayRoomNothing(mainViewModel: MainViewModel) {
 
-    androidx.compose.material.AlertDialog(
+    AlertDialog(
+        containerColor = MaterialTheme.colorScheme.background,
+        shape = RoundedCornerShape(10.dp),
         onDismissRequest = {
             mainViewModel.dismissDialog()
         },
+        title = {
+            Text(text = "Nothing", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM)
+        },
         text = {
             Column {
-                Text(text = "You find nothing of interest in this room.")
+                Text(text = "You find nothing of interest in this room.", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM)
             }
-
         },
         confirmButton = {
-            androidx.compose.material.Button(
-                onClick = {
+            WanderButton(
+                text = "Okay",
+                color = MaterialTheme.colorScheme.primary,
+                onClickEvent = {
                     mainViewModel.completeRoom()
                     mainViewModel.dismissDialog()
-                }
-            ) {
-                Text(text = "Okay")
-            }
+                },
+                fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+                textColor = Color.White,
+                modifier = Modifier
+            )
+
         }
+
     )
 }
 
@@ -503,30 +597,31 @@ fun BottomNavigationBar(navController: NavHostController, selectedScreen: Screen
         NavigationBarItem(
             selected = (selectedScreen == Screen.Character),
             colors = androidx.compose.material3.NavigationBarItemDefaults
-                .colors(indicatorColor = MaterialTheme.colorScheme.onBackground),
+                .colors(selectedIconColor = MaterialTheme.colorScheme.primary,  indicatorColor = MaterialTheme.colorScheme.secondary),
             onClick = {
                 mainViewModel.selectScreen(Screen.Character);
                 navController.navigate(Screen.Character.route) },
-            icon = { Icon(painter = painterResource(id = R.drawable.cowled), contentDescription = "Character Screen") })
+            icon = { Icon(painter = painterResource(id = R.drawable.weight_lifting_up), contentDescription = "Character Screen",
+                tint = if (selectedScreen == Screen.Character) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(42.dp)) })
 
         NavigationBarItem(
             selected = (selectedScreen == Screen.Items),
             colors = androidx.compose.material3.NavigationBarItemDefaults
-                .colors(indicatorColor = MaterialTheme.colorScheme.onBackground),
+                .colors(selectedIconColor = MaterialTheme.colorScheme.primary, indicatorColor = MaterialTheme.colorScheme.secondary),
             onClick = {
                 mainViewModel.selectScreen(Screen.Items);
                 navController.navigate(Screen.Items.route)
                       },
-            icon = { Icon(painter = painterResource(id = R.drawable.cowled), contentDescription = "Item Screen") })
+            icon = { Icon(painter = painterResource(id = R.drawable.backpack), contentDescription = "Item Screen",  tint = if (selectedScreen == Screen.Items) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(42.dp)) })
 
         NavigationBarItem(
             selected = (selectedScreen == Screen.Dungeon),
             colors = androidx.compose.material3.NavigationBarItemDefaults
-                .colors(indicatorColor = MaterialTheme.colorScheme.onBackground),
+                .colors(selectedIconColor = MaterialTheme.colorScheme.primary, indicatorColor = MaterialTheme.colorScheme.secondary),
             onClick = {
                 mainViewModel.selectScreen(Screen.Dungeon);
                 navController.navigate(Screen.Dungeon.route) },
-            icon = { Icon( painter = painterResource(id = R.drawable.battle_gear), contentDescription = "Dungeon Screen") })
+            icon = { Icon( painter = painterResource(id = R.drawable.doorway), contentDescription = "Dungeon Screen", tint = if (selectedScreen == Screen.Dungeon) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface, modifier = Modifier.size(42.dp)) })
     }
 }
 
@@ -539,11 +634,11 @@ fun itemsScreen(itemViewModel: ItemViewModel, mainViewModel: MainViewModel){
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         displayPlayerEquipedItems(itemViewModel)
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         displayPlayerItems(itemViewModel)
     }
@@ -562,7 +657,12 @@ fun ItemCard(item: Item, itemViewModel: ItemViewModel) {
             .fillMaxWidth()
             .clickable { itemViewModel.selcetItem(item) }
             .padding(4.dp)
-            .background(MaterialTheme.colorScheme.onSecondary, shape = RoundedCornerShape(10.dp))
+            .size(80.dp)
+            .aspectRatio(1f)
+            .background(
+                MaterialTheme.colorScheme.onSecondaryContainer,
+                shape = RoundedCornerShape(10.dp)
+            )
     ) {
         // Load image dynamically from the database using the image string
         val imageResource = painterResource(id = getImageResourceId(item.img))
@@ -590,17 +690,12 @@ fun displayPlayerItems(itemViewModel: ItemViewModel){
     val mainState = itemViewModel.mainViewState.collectAsState()
     val items = mainState.value.allItems
 
-    Text(
-        text = "Items:",
-        fontSize = 32.sp,
-    )
-
-    Spacer(modifier = Modifier.height(8.dp))
+    Text(text = "Items:", fontSize = ButtonSettings.BUTTON_FONT_SIZE_MASSIVE, color = Color.White)
 
     // Display items
     LazyVerticalGrid(
         columns = GridCells.Fixed(4),
-        contentPadding = PaddingValues(4.dp),
+        contentPadding = PaddingValues(8.dp),
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 4.dp)
@@ -638,57 +733,64 @@ fun ItemPopUpEquip(clickedItem: Item, itemViewModel: ItemViewModel, player: Play
     val itemStats = clickedItem.getStats() // Get parsed stats
 
     AlertDialog(
+        modifier = Modifier.fillMaxWidth(),
+        containerColor = MaterialTheme.colorScheme.background,
+        shape = RoundedCornerShape(10.dp),
         onDismissRequest = {
             itemViewModel.deselectItem()
         },
-        containerColor = MaterialTheme.colorScheme.background,
+        title = {
+            Text(text = "Item Info", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_BIG)
+        },
         text = {
+
             Column{
-                // https://www.jetpackcompose.net/textfield-in-jetpack-compose
-                Text(
-                    text = clickedItem.name,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = clickedItem.type,
-                    fontSize = 18.sp,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+                MultiStyleText("Name: ", Color.White, clickedItem.name, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
+                MultiStyleText("Type: ", Color.White, clickedItem.type, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
+
                 if (itemStats != null) {
+                    //TODO make more fancy
                     Text(
-                        "Stat Buffs: ${itemStats.statBuffs.entries.joinToString { "${it.key}: ${it.value}" }}",
-                        color = MaterialTheme.colorScheme.onSurface
+                        text = "Stat Buffs:", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM
                     )
-                    Text(
-                        "Abilities: ${itemStats.abilities}",
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        "Stat Nerfs: ${itemStats.statNerfs.entries.joinToString { "${it.key}: ${it.value}" }}",
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    itemStats.statBuffs.entries.forEach { (k,v) ->
+                        MultiStyleText("$k: ", MaterialTheme.colorScheme.onSurface, "$v" , MaterialTheme.colorScheme.primary, fontSize = 18.sp, Modifier.padding(start = 20.dp))
+                    }
+                    if(itemStats.abilities != " "){
+                        MultiStyleText("Abilities: ", Color.White, itemStats.abilities, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
+                    }
+
+                    if(itemStats.statNerfs.entries.filter { (k,v) -> k != " "}.isNotEmpty()){
+                        Text(
+                            text = "Stat Nerfs: ", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM
+                        )
+                        itemStats.statNerfs.entries.forEach { (k,v) ->
+                            if(k != " "){
+                                MultiStyleText("$k: ", MaterialTheme.colorScheme.onSurface, "$v" , MaterialTheme.colorScheme.primary, fontSize = 18.sp, Modifier.padding(start = 20.dp))
+                            }
+                        }
+                    }
+
                 } else {
-                    Text(
-                        "No additional stats available.",
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    Text(text = "No additional stats available.", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM)
                 }
             }
         },
         confirmButton = {
-            Button(
-                onClick = {
+            WanderButton(
+                text = "Equip",
+                color = MaterialTheme.colorScheme.primary,
+                onClickEvent = {
                     itemViewModel.equipItem(clickedItem, player)
                     itemViewModel.deselectItem()
-                }
-            ) {
-                Text(
-                    text = "Equip"
-                )
-            }
+                },
+                fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+                textColor = Color.White,
+                modifier = Modifier
+            )
+
         }
+
     )
 }
 
@@ -701,59 +803,70 @@ fun isAlreadyEquippedPopUp(clickedItem: Item, itemViewModel: ItemViewModel, play
             itemViewModel.deselectItem()
         },
         containerColor = MaterialTheme.colorScheme.background,
+        title = {
+            Text(text = "Item Info", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_BIG)
+        },
         text = {
-            Column {
-                // https://www.jetpackcompose.net/textfield-in-jetpack-compose
-                Text(
-                    text = clickedItem.name,
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = clickedItem.type,
-                    fontSize = 18.sp,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+
+            Column{
+                MultiStyleText("Name: ", Color.White, clickedItem.name, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
+                MultiStyleText("Type: ", Color.White, clickedItem.type, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
+
                 if (itemStats != null) {
+                    //TODO make more fancy
                     Text(
-                        "Stat Buffs: ${itemStats.statBuffs.entries.joinToString { "${it.key}: ${it.value}" }}",
-                        color = MaterialTheme.colorScheme.onSurface
+                        text = "Stat Buffs:", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM
                     )
-                    Text(
-                        "Abilities: ${itemStats.abilities}",
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        "Stat Nerfs: ${itemStats.statNerfs.entries.joinToString { "${it.key}: ${it.value}" }}",
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    itemStats.statBuffs.entries.forEach { (k,v) ->
+                        MultiStyleText("$k: ", MaterialTheme.colorScheme.onSurface, "$v" , MaterialTheme.colorScheme.primary, fontSize = 18.sp, Modifier.padding(start = 20.dp))
+                    }
+                    if(itemStats.abilities != " "){
+                        MultiStyleText("Abilities: ", Color.White, itemStats.abilities, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
+                    }
+
+                    if(itemStats.statNerfs.entries.filter { (k,v) -> k != " "}.isNotEmpty()){
+                        Text(
+                            text = "Stat Nerfs: ", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM
+                        )
+                        itemStats.statNerfs.entries.forEach { (k,v) ->
+                            if(k != " "){
+                                MultiStyleText("$k: ", MaterialTheme.colorScheme.onSurface, "$v" , MaterialTheme.colorScheme.primary, fontSize = 18.sp, Modifier.padding(start = 20.dp))
+                            }
+                        }
+                    }
+
                 } else {
-                    Text(
-                        "No additional stats available.",
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    Text(text = "No additional stats available.", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM)
                 }
-                Text(
-                    text = "You have already equipped an item of this type. Would you like to replace it?",
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontWeight = FontWeight.Bold
-                )
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(text = "You have already equipped an item of this type. Would you like to replace it?", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM)
             }
         },
         confirmButton = {
-            Button(
-                onClick = {
+
+            WanderButton(
+                text = "Replace",
+                color = MaterialTheme.colorScheme.primary,
+                onClickEvent = {
                     itemViewModel.replaceEquippedItem(clickedItem, player)
                     itemViewModel.deselectItem()
-                }){
-                Text("Replace")
-            }
+                },
+                fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+                textColor = Color.White,
+                modifier = Modifier
+            )
         },
         dismissButton = {
-            Button(onClick = { itemViewModel.deselectItem() }) {
-                Text("Cancel")
-            }
+            WanderButton(
+                text = "Cancel",
+                color = MaterialTheme.colorScheme.tertiary,
+                onClickEvent = {
+                    itemViewModel.deselectItem()
+                },
+                fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+                textColor = Color.White,
+                modifier = Modifier
+            )
         }
     )
 }
@@ -762,9 +875,10 @@ fun isAlreadyEquippedPopUp(clickedItem: Item, itemViewModel: ItemViewModel, play
 fun EquippedItemCard(equippedItem: Item, itemViewModel: ItemViewModel){
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .size(80.dp)
             .clickable { itemViewModel.selcetEquippedItem(equippedItem) }
             .padding(4.dp)
+            .aspectRatio(1f)
             .background(
                 MaterialTheme.colorScheme.onSecondaryContainer,
                 shape = RoundedCornerShape(10.dp)
@@ -776,11 +890,8 @@ fun EquippedItemCard(equippedItem: Item, itemViewModel: ItemViewModel){
             painter = imageResource,
             contentDescription = equippedItem.name,
             modifier = Modifier
-                .size(100.dp)
-                .clip(shape = MaterialTheme.shapes.medium)
+                .size(80.dp)
         )
-
-        Spacer(modifier = Modifier.height(4.dp))
     }
 }
 
@@ -790,15 +901,12 @@ fun displayPlayerEquipedItems(itemViewModel: ItemViewModel){
     val itemState = itemViewModel.mainViewState.collectAsState()
     val equippedItems = itemState.value.equippedItemSlots
 
-    Text(
-        text = "Equipped Items:",
-        fontSize = 30.sp
-    )
+    Text(text = "Equipped Items:", fontSize = ButtonSettings.BUTTON_FONT_SIZE_MASSIVE, color = Color.White)
 
     // Display equipped items
     LazyVerticalGrid(
         columns = GridCells.Fixed(4),
-        contentPadding = PaddingValues(4.dp),
+        contentPadding = PaddingValues(8.dp),
         modifier = Modifier
             .fillMaxWidth()
             .height(115.dp)
@@ -821,8 +929,8 @@ fun EquippedItemPopUp(itemViewModel : ItemViewModel, mainViewModel: MainViewMode
     val mainMainViewState = mainViewModel.mainViewState.collectAsState()
 
 
-    if(mainViewState.value.equippedItemClicked){
-        val clickedItem = mainViewState.value.clickedItem!!
+    if(mainViewState.value.equippedItemClicked &&  mainViewState.value.clickedEquippedItem != null){
+        val clickedItem = mainViewState.value.clickedEquippedItem!!
 
         val itemStats = clickedItem.getStats() // Get parsed stats
         AlertDialog(
@@ -830,52 +938,54 @@ fun EquippedItemPopUp(itemViewModel : ItemViewModel, mainViewModel: MainViewMode
                 itemViewModel.deselectItem()
             },
             containerColor = MaterialTheme.colorScheme.background,
+            title = {
+                Text(text = "Item Info", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_BIG)
+            },
             text = {
                 Column {
-                    // https://www.jetpackcompose.net/textfield-in-jetpack-compose
-                    Text(
-                        text = mainViewState.value.clickedEquippedItem!!.name,
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Text(
-                        text = mainViewState.value.clickedEquippedItem!!.type,
-                        fontSize = 18.sp,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    MultiStyleText("Name: ", Color.White, clickedItem.name, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
+                    MultiStyleText("Type: ", Color.White, clickedItem.type, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
+
                     if (itemStats != null) {
+                        //TODO make more fancy
                         Text(
-                            "Stat Buffs: ${itemStats.statBuffs.entries.joinToString { "${it.key}: ${it.value}" }}",
-                            color = MaterialTheme.colorScheme.onSurface
+                            text = "Stat Buffs:", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM
                         )
-                        Text(
-                            "Abilities: ${itemStats.abilities}",
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            "Stat Nerfs: ${itemStats.statNerfs.entries.joinToString { "${it.key}: ${it.value}" }}",
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
+                        itemStats.statBuffs.entries.forEach { (k,v) ->
+                            MultiStyleText("$k: ", MaterialTheme.colorScheme.onSurface, "$v" , MaterialTheme.colorScheme.primary, fontSize = 18.sp, Modifier.padding(start = 20.dp))
+                        }
+                        if(itemStats.abilities != " "){
+                            MultiStyleText("Abilities: ", Color.White, itemStats.abilities, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
+                        }
+                        val test = itemStats.statNerfs.entries.filter { (k,v) -> k != " "}
+                        if(itemStats.statNerfs.entries.filter { (k, v) -> k != " " }.isNotEmpty()){
+                            Text(
+                                text = "Stat Nerfs: ", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM
+                            )
+                            itemStats.statNerfs.entries.forEach { (k,v) ->
+                                if(k != " "){
+                                    MultiStyleText("$k: ", MaterialTheme.colorScheme.onSurface, "$v" , MaterialTheme.colorScheme.primary, fontSize = 18.sp, Modifier.padding(start = 20.dp))
+                                }
+                            }
+                        }
+
                     } else {
-                        Text(
-                            "No additional stats available.",
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
+                        Text(text = "No additional stats available.", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM)
                     }
                 }
             },
             confirmButton = {
-                Button(
-                    onClick = {
+                WanderButton(
+                    text = "Unequip",
+                    color = MaterialTheme.colorScheme.primary,
+                    onClickEvent = {
                         itemViewModel.unequipItem(mainViewState.value.clickedEquippedItem!!, mainMainViewState.value.selectedPlayer!!)
                         itemViewModel.deselectItem()
                     },
-                ) {
-                    Text(
-                        text = "Unequipe"
-                    )
-                }
+                    fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+                    textColor = Color.White,
+                    modifier = Modifier
+                )
             }
         )
     }
@@ -903,21 +1013,21 @@ fun displayCharacterSheet(mainViewModel: MainViewModel, itemViewModel: ItemViewM
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(top = 20.dp, start = 12.dp, end = 12.dp)
+            .padding(20.dp)
     ) {
         if (player != null) {
 
             displayPlayerInfo(player);
 
-            Spacer(modifier = Modifier.padding(15.dp))
+            Divider(color = MaterialTheme.colorScheme.secondary, thickness = 2.dp, modifier = Modifier.padding(4.dp,16.dp))
 
             displayPlayerEquipedItems(itemViewModel)
 
-            Spacer(modifier = Modifier.padding(15.dp))
+            Divider(color = MaterialTheme.colorScheme.secondary, thickness = 2.dp, modifier = Modifier.padding(4.dp,16.dp))
 
             displayPlayerStats(player, itemViewModel);
 
-            Spacer(modifier = Modifier.padding(15.dp))
+            Divider(color = MaterialTheme.colorScheme.secondary, thickness = 2.dp, modifier = Modifier.padding(4.dp,16.dp))
 
             displayPlayerAbilities(player);
 
@@ -942,40 +1052,76 @@ fun displayCharacterSheet(mainViewModel: MainViewModel, itemViewModel: ItemViewM
 fun displayPlayerInfo(player: Player) {
 
     val context = LocalContext.current
+    val imageResource = painterResource(id = R.drawable.doorway)
 
-    Text(
-        text = player.playerName,
-        fontSize = 30.sp,
-        style = TextStyle(fontFamily = FontFamily.Monospace)
-    )
-    Text(
-        text = "Class: "+player.playerClass,
-        fontSize = 20.sp,
-    )
 
-    Text(
-        text = "Level: " + player.playerLevel,
-        fontSize = 20.sp,
-    )
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
 
-    Text(
-        text = "Max HP: " + player.entityMaxHealth,
-        fontSize = 20.sp,
-    )
+        Image(
+            painter = imageResource,
+            contentDescription = "Profile Picture",
+            modifier = Modifier
+                .weight(0.4f)
+                .aspectRatio(1f)
+        )
+        Spacer(modifier = Modifier
+            .weight(0.1f))
+
+        Column(modifier = Modifier
+            .weight(0.5f)
+            .fillMaxWidth()) {
+            Text(text = player.playerName, fontSize = 36.sp, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 4.dp))
+            Text( text = "Level: "+player.playerLevel, fontSize = 18.sp, color = Color.White, modifier = Modifier.padding(bottom = 4.dp))
+            Text( text = "Class: "+player.playerClass, fontSize = 18.sp, color = Color.White,  modifier = Modifier.padding(bottom = 4.dp))
+        }
+
+    }
+    
+    Spacer(modifier = Modifier.height(6.dp))
+    
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        LinearProgressIndicator(progress = player.entityCurrentHealth.toFloat()/player.entityMaxHealth.toFloat(), modifier = Modifier
+            .fillMaxWidth()
+            .height(24.dp), color = Color(0xFFF95B78),strokeCap = StrokeCap.Round)
+        Text(text =  "HP ${player.entityCurrentHealth}/${player.entityMaxHealth}", fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, color = Color.White, modifier = Modifier.padding(10.dp))
+    }
+
+
     //player.playerCurrentXP >= player.playerXPToNextLevel
     if(player.playerCurrentXP >= player.playerXPToNextLevel){
-        Button(
-            onClick = {
-                val intent = Intent(context, LevelUpActivity::class.java); context.startActivity(intent);
-            }
+
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable {
+                    val intent =
+                        Intent(context, LevelUpActivity::class.java); context.startActivity(intent);
+                },
         ) {
-            Text(text = "Level UP!", fontSize = 15.sp)
+            LinearProgressIndicator(progress = 1f, modifier = Modifier
+                .fillMaxWidth()
+                .height(24.dp), color = Color(0xFF00C2A2),strokeCap = StrokeCap.Round)
+            Text(text =  "Level UP!", fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, color = Color.White, modifier = Modifier.padding(10.dp))
         }
+
     }else{
-        Text(
-            text = "XP: " + player.playerCurrentXP + "/" + player.playerXPToNextLevel,
-            fontSize = 20.sp,
-        )
+
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            LinearProgressIndicator(progress =  player.playerCurrentXP.toFloat() / player.playerXPToNextLevel.toFloat(), modifier = Modifier
+                .fillMaxWidth()
+                .height(24.dp), color = Color(0xFF6AC8E4),strokeCap = StrokeCap.Round)
+            Text(text =  "XP ${player.playerCurrentXP}/${player.playerXPToNextLevel}", fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, color = Color.White, modifier = Modifier.padding(10.dp))
+        }
     }
 }
 
@@ -983,16 +1129,15 @@ fun displayPlayerInfo(player: Player) {
 fun EmptySlotPlaceholder() {
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .size(80.dp)
             .padding(4.dp)
+            .aspectRatio(1f)
             .background(
-                MaterialTheme.colorScheme.onSecondaryContainer,
+                MaterialTheme.colorScheme.secondary,
                 shape = RoundedCornerShape(10.dp)
             )
     ) {
-        Spacer(modifier = Modifier
-            .size(104.dp)
-            .clip(shape = MaterialTheme.shapes.medium))
+
     }
 }
 
@@ -1004,14 +1149,80 @@ fun displayPlayerStats(player: Player, itemViewModel: ItemViewModel){
     val statNameStyle = TextStyle(fontSize = 14.sp, fontWeight = FontWeight.Bold, color = textColor)
     val statValueStyle = TextStyle(fontSize = 18.sp, color = textColor)
 
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text(text = "Characteristics", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = textColor, modifier = Modifier.align(Alignment.CenterHorizontally))
+    Text(text = "Statistics:", fontSize = ButtonSettings.BUTTON_FONT_SIZE_MASSIVE, color = Color.White)
 
+    Column(modifier = Modifier.padding(4.dp)) {
         val equippedItems = itemViewModel.mainViewState.collectAsState().value.equippedItemSlots
+        Player.STAT_LIST.forEach {stat ->
+
+            val baseValue = player.playerStats[stat] ?: 0
+            var totalBuffNerf = 0
+
+            equippedItems.values.filterNotNull().forEach { item ->
+                item.updateItemStatsFromJSON()
+                totalBuffNerf += item.itemStats.getOrDefault(stat, 0)
+            }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+                    .padding(vertical = 8.dp)
+            ){
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                        .background(
+                            color = cardBackgroundColor,
+                            shape = RoundedCornerShape(10.dp)
+                        )
+                        .weight(0.5f)
+                        .fillMaxHeight()
+                        .padding(10.dp)
+                ) {
+                    Text(text = stat, fontSize = 24.sp, color = Color.White, modifier = Modifier.padding(4.dp))
+                 }
+                
+                Spacer(modifier = Modifier.width(10.dp))
+                
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                        .background(
+                            color = cardBackgroundColor,
+                            shape = RoundedCornerShape(10.dp)
+                        )
+                        .weight(0.4f)
+                        .fillMaxHeight()
+                        .padding(10.dp)
+                ) {
+
+                    if (totalBuffNerf == 0){
+                        Text(text = "$baseValue", fontSize = 24.sp, color = Color.White, modifier = Modifier.padding(4.dp))
+
+                    }else{
+
+                        if(totalBuffNerf < 0){
+                            MultiStyleText("$baseValue ", Color.White, "- "+abs(totalBuffNerf), Color(0xFFF95B78), fontSize = 24.sp , modifier = Modifier.padding(4.dp))
+                        }else{
+                            MultiStyleText("$baseValue ", Color.White, "+ "+abs(totalBuffNerf), Color(0xFF00C2A2), fontSize = 24.sp, modifier = Modifier.padding(4.dp))
+                        }
+                    }
+                }
+
+            }
+
+        }
+
+
+        /*
         Player.STAT_LIST.chunked(3).forEachIndexed { index, chunkedStats ->
             Row(
                 horizontalArrangement = if (index == 0) Arrangement.SpaceBetween else Arrangement.Center,
-                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
             ) {
                 chunkedStats.forEach { stat ->
                     val baseValue = player.playerStats[stat] ?: 0
@@ -1026,8 +1237,8 @@ fun displayPlayerStats(player: Player, itemViewModel: ItemViewModel){
                         backgroundColor = cardBackgroundColor,
                         modifier = Modifier
                             .padding(4.dp)
-                            .width(110.dp),
-                        shape = RoundedCornerShape(8.dp)
+                            .weight(1f),
+                        shape = RoundedCornerShape(10.dp)
                     ) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -1041,16 +1252,14 @@ fun displayPlayerStats(player: Player, itemViewModel: ItemViewModel){
                 }
             }
         }
+        */
     }
 }
 
 
 @Composable
 fun displayPlayerAbilities(player: Player){
-    Text(
-        text = "Abilities: ",
-        fontSize = 30.sp,
-    )
+    Text(text = "Statistics:", fontSize = ButtonSettings.BUTTON_FONT_SIZE_MASSIVE, color = Color.White)
 
     Text(
         text = player.abilityOneName+ ": " + player.abilityOneDescription,
@@ -1084,31 +1293,34 @@ fun displayDungeons(mainViewModel: MainViewModel){
         Column (
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 10.dp, start = 5.dp, end = 5.dp)
+                .padding(10.dp)
         ) {
+
             Text(
-                text = "Active Dungeons ${activeDungeon.size}/3",
-                fontSize = 25.sp,
-                style = TextStyle(fontFamily = FontFamily.Monospace)
+                text = "Active Dungeons - ${activeDungeon.size}/3",
+                fontSize = 24.sp,
+                color = Color.White
             )
 
             displayActiveDungeons(activeDungeon, mainViewModel);
 
             Text(
-                text = "Open Dungeons",
-                fontSize = 25.sp,
-                style = TextStyle(fontFamily = FontFamily.Monospace)
+                text = "Open Dungeons - 7",
+                fontSize =  24.sp,
+                color = Color.White
             )
 
             displayOpenDungeons(openDungeon, mainViewModel);
 
         }
     }else{
+        //state.value.battleStarted
         if(state.value.battleStarted){
             displayBattleContent(mainViewModel);
         }else{
             ScrollableCanvasWithRectangles(mainViewModel)
         }
+
     }
 }
 
@@ -1146,61 +1358,106 @@ fun OpenDungeonItem(dungeon: Dungeon, mainViewModel: MainViewModel) {
     val state = mainViewModel.mainViewState.collectAsState()
     val context= LocalContext.current;
     val activeDungeonNumber = state.value.allActiveDungeon.size;
+
+    Spacer(modifier = Modifier.height(10.dp))
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(10.dp)
-            .background(Color(128, 128, 128)),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(bottom = 5.dp)
+            .background(
+                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                shape = RoundedCornerShape(10.dp)
+            )
+        ,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
-        Column( modifier = Modifier.weight(1f)){
-            Text(text = dungeon.dungeonName, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-            Text(text = "Distance: ${dungeon.displayTotalDistance()}", fontSize = 20.sp)
+        Column( modifier = Modifier
+            .weight(1f)
+            .padding(10.dp)){
+
+            Text(text = dungeon.dungeonName, fontSize = 20.sp, color = Color.White)
+            Text(text = "Distance: ${dungeon.displayTotalDistance()}", fontSize = 15.sp, color = Color.White)
             CountdownTimer(convertDateStringToMillis(dungeon.dungeonExpiresIn),dungeon.id)
         }
-        Button(
-            onClick = { mainViewModel.enterDungeon(dungeon,context) },
+
+        WanderButton(
+            text = "Enter",
+            color = MaterialTheme.colorScheme.primary,
+            onClickEvent = {
+                mainViewModel.enterDungeon(dungeon,context)
+            },
+            fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+            textColor = Color.White,
+            modifier = Modifier.padding(end = 10.dp),
             enabled = activeDungeonNumber < 3
-        ) {
-            Text(text = "Enter")
-        }
+        )
     }
 }
 
 @Composable
 fun ActiveDungeonItem(dungeon: Dungeon? = null, mainViewModel: MainViewModel) {
 
-    val density = LocalDensity.current
-    val slotSize = with(density) { Room.SLOT_SIZE.dp.toPx() }
-    val rectSize = with(density) { Room.ROOM_SIZE.dp.toPx() }
+    var color = MaterialTheme.colorScheme.secondary
 
+    if(dungeon != null){
+        color = MaterialTheme.colorScheme.onSecondaryContainer
+    }
+
+
+    Spacer(modifier = Modifier.height(10.dp))
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(75.dp)
-            .padding(10.dp)
-            .background(Color(128, 128, 128)),
+            .padding(bottom = 5.dp)
+            .background(
+                color = color,
+                shape = RoundedCornerShape(10.dp)
+            )
+        ,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         if(dungeon != null){
 
-            Column( modifier = Modifier.weight(1f)){
-                Text(text = dungeon.dungeonName, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Column( modifier = Modifier
+                .weight(1f)
+                .padding(10.dp)){
+                Text(text = dungeon.dungeonName, fontSize = 20.sp, color = Color.White)
+                Text(text = "Distance: ${dungeon.displayTotalDistance()}", fontSize = 15.sp, color = Color.White)
                 if(dungeon.dungeonWalkedDistance < dungeon.dungeonTotalDistance){
-                    Text(text = "Distance:  ${dungeon.displayWalkedDistance()} / ${dungeon.displayTotalDistance()}", fontSize = 20.sp)
+                    //TODO change so 1.750 km --> 1.7 km
+                    Text(text = "Walked:  ${dungeon.displayWalkedDistance()}", fontSize = 15.sp, color = Color.White)
+                }else{
+                    Text(text = "", fontSize = 16.sp, color = Color.White)
                 }
             }
             //TODO add Dialog if you are sure
-            IconButton(onClick = { mainViewModel.deleteDungeon(dungeon) }) {
-                Icon(Icons.Default.Delete,"Delete")
+            IconButton(onClick = { mainViewModel.deleteDungeon(dungeon) }, modifier = Modifier.padding(10.dp)) {
+                Icon(Icons.Default.Delete, "Delete", tint =  MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(32.dp))
             }
             if(dungeon.dungeonWalkedDistance >= dungeon.dungeonTotalDistance){
-                Button(
-                    onClick = { mainViewModel.selectDungeon(dungeon)  },
-                ) {
-                    Text(text = "Enter")
-                }
+
+
+                WanderButton(
+                    text = "Enter",
+                    color = MaterialTheme.colorScheme.primary,
+                    onClickEvent = {
+                        mainViewModel.selectDungeon(dungeon)
+                    },
+                    fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+                    textColor = Color.White,
+                    modifier = Modifier.padding(end = 10.dp)
+                )
+
+            }
+        }else{
+            Column( modifier = Modifier
+                .weight(1f)
+                .padding(10.dp)){
+                Text(text = "", fontSize = 20.sp, color = Color.White)
+                Text(text = "", fontSize = 15.sp, color = Color.White)
+                Text(text = "", fontSize = 15.sp, color = Color.White)
             }
         }
     }
@@ -1248,9 +1505,7 @@ fun CountdownTimer(expireTime: Long, dungeonID : Int) {
             coroutineScope.cancel() // Cancels all coroutines launched in this scope
         }
     }
-
-    // Display the remaining time
-    Text(text = "Expires in: $remainingTime")
+    Text(text = "Expires in: $remainingTime", fontSize = 15.sp, color = Color.White)
 }
 
 fun formatRemainingTime(millisUntilFinished: Long): String {
@@ -1266,148 +1521,166 @@ fun displayBattleContent(mainViewModel: MainViewModel){
 
     val state = mainViewModel.mainViewState.collectAsState()
     val enemy = state.value.enemy;
+    //val enemy = Enemy("Monster")
     val player = state.value.selectedPlayer;
 
     val enemyText =  state.value.enemyText;
     val playerText = state.value.playerText;
 
     val enemyCurrentHealth = state.value.currentEnemyHealth;
-    val playerCurrentHealth = state.value.currentPlayerHealth;
     val battleCompleteText = state.value.battleCompleteText;
 
     Column(modifier = Modifier
         .fillMaxSize()
-        .padding(10.dp)) {
+        .padding(16.dp)) {
+
+        Spacer(modifier = Modifier.weight(1f))
 
         // Enemy Section (Aligned Right)
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f),
+                .padding(5.dp),
             horizontalArrangement = Arrangement.End, // Aligns content to the right
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier
-                .fillMaxWidth(0.5f)) {
-                Box(modifier = Modifier
-                    .size(100.dp, 100.dp)
-                    .background(Color.Gray))
-                Text(text = "${enemy!!.entityName}", modifier = Modifier.padding(top = 4.dp))
-                Row( verticalAlignment = Alignment.CenterVertically){
-                    Text(text = "$enemyCurrentHealth/${enemy!!.entityMaxHealth}", modifier = Modifier.padding(4.dp))
+            Column(horizontalAlignment = Alignment.Start, modifier = Modifier
+                .fillMaxWidth()) {
+
+                Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(text =  "${enemy!!.entityName}", fontSize = 50.sp, color = Color.White, modifier = Modifier.padding(bottom = 10.dp))
+
+                    //Enemy Image
+                    Box(modifier = Modifier
+                        .size(150.dp, 150.dp)
+                        .background(Color.Gray)
+                        .padding(bottom = 10.dp))
+
+                }
+
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     LinearProgressIndicator(progress = (enemyCurrentHealth.toFloat()/enemy!!.entityMaxHealth.toFloat()).toFloat(), modifier = Modifier
-                        .padding(top = 8.dp)
                         .fillMaxWidth()
-                        .height(10.dp), color = Color.Red)
+                        .height(24.dp), color = Color(0xFFF95B78),strokeCap = StrokeCap.Round)
+                    Text(text =  "$enemyCurrentHealth/${enemy!!.entityMaxHealth}", fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, color = Color.White, modifier = Modifier.padding(10.dp))
                 }
             }
         }
 
-        // Player Section (Aligned Left)
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            horizontalArrangement = Arrangement.Start, // Aligns content to the left
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier
-                .fillMaxWidth(0.5f)) {
+        Column( modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp)
+            .background(
+                color = MaterialTheme.colorScheme.surface,
+                shape = RoundedCornerShape(10.dp)
+            )) {
 
-                Box(modifier = Modifier
-                    .size(100.dp, 100.dp)
-                    .background(Color.Blue))
-                Text(text = "${player!!.entityName}", modifier = Modifier.padding(top = 4.dp))
-                Row( verticalAlignment = Alignment.CenterVertically){
-                    Text(text = "$playerCurrentHealth/${player!!.entityMaxHealth}", modifier = Modifier.padding(4.dp))
-                    LinearProgressIndicator(progress = (playerCurrentHealth.toFloat()/player!!.entityMaxHealth.toFloat()).toFloat(), modifier = Modifier
-                        .padding(top = 8.dp)
-                        .fillMaxWidth()
-                        .height(10.dp), color = Color.Green)
-                }
-
+            if(!state.value.battleComplete){
+                Text(text = "$enemyText", fontSize =  ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, color = Color.White, modifier = Modifier.padding(8.dp))
+                Text(text = "$playerText",  fontSize =  ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, color = Color.White, modifier = Modifier.padding(8.dp))
+            }else{
+                Text(text = "$battleCompleteText",  fontSize =  ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, color = Color.White, modifier = Modifier.padding(16.dp))
             }
         }
 
-
-        Text(text = "$enemyText", fontSize = 20.sp)
-        Text(text = "$playerText", fontSize = 20.sp)
-
+        Spacer(modifier = Modifier.weight(1f))
 
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f)
+                .fillMaxHeight()
         ) {
 
-            if(!state.value.battleComplete){
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Button(
-                        onClick = { mainViewModel.useAbility(1) },
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(end = 4.dp)
-                    ) {
-                        Text(text = player!!.abilityOneName, fontSize = 20.sp)
-                    }
-                    Button(
-                        onClick = {  mainViewModel.useAbility(2) },
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(start = 4.dp)
-                    ) {
-                        Text(text = player!!.abilityTwoName, fontSize = 20.sp)
-                    }
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                    ,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Button(
-                        onClick = {  mainViewModel.useAbility(3) },
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(end = 4.dp)
-                    ) {
-                        Text(text = player!!.abilityThreeName, fontSize = 20.sp)
-                    }
-                    Button(
-                        onClick = {  mainViewModel.useAbility(4) },
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(start = 4.dp)
-                    ) {
-                        Text(text = player!!.abilityFourName, fontSize = 20.sp)
-                    }
-                }
-            }else{
-                Text(text = "$battleCompleteText", fontSize = 20.sp)
-            }
-
-
-
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-            ){
-                Button(
-                    onClick = {
-                        mainViewModel.leaveBattle();
-                    },
+                    .fillMaxHeight()
+                    .verticalScroll(rememberScrollState())
+                    .weight(1f)
+            ) {
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .weight(1f)
+                        .padding(5.dp)
                 ) {
-                    Text(text = "Leave Battle", fontSize = 20.sp)
+                    WanderButton(
+                        text = player!!.abilityOneName,
+                        color = MaterialTheme.colorScheme.primary,
+                        onClickEvent = {
+                            mainViewModel.useAbility(1)
+                        },
+                        fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+                        textColor = Color.White,
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .padding(5.dp),
+                        enabled = !state.value.battleComplete
+                    )
+                    WanderButton(
+                        text = player!!.abilityTwoName,
+                        color = MaterialTheme.colorScheme.primary,
+                        onClickEvent = {
+                            mainViewModel.useAbility(2)
+                        },
+                        fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+                        textColor = Color.White,
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .padding(5.dp),
+                        enabled = !state.value.battleComplete
+                    )
+                }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                ) {
+                    WanderButton(
+                        text = player!!.abilityThreeName,
+                        color = MaterialTheme.colorScheme.primary,
+                        onClickEvent = {
+                            mainViewModel.useAbility(3)
+                        },
+                        fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+                        textColor = Color.White,
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .padding(5.dp),
+                        enabled = !state.value.battleComplete
+                    )
+                    WanderButton(
+                        text = player!!.abilityFourName,
+                        color = MaterialTheme.colorScheme.primary,
+                        onClickEvent = {
+                            mainViewModel.useAbility(4)
+                        },
+                        fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+                        textColor = Color.White,
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .padding(5.dp),
+                        enabled = !state.value.battleComplete
+                    )
                 }
             }
-
+            WanderButton(
+                text = "Leave Battle",
+                color = MaterialTheme.colorScheme.tertiary,
+                onClickEvent = {
+                    mainViewModel.leaveBattle();
+                },
+                fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+                textColor = Color.White,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }

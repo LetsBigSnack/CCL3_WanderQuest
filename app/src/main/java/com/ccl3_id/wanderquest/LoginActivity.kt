@@ -50,13 +50,12 @@ class LoginActivity : ComponentActivity() {
 
         setContent {
             WanderQuestTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
                     loginViewModel.getPlayers();
-                    LoginView(loginViewModel, this);
+                    LoginView(loginViewModel);
                 }
             }
         }
@@ -70,12 +69,11 @@ class LoginActivity : ComponentActivity() {
             if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU) {
                 if (permissionHandler.hasPermissions(requiredPermissionsLowerVersion)) {
                     startLocationTrackingService()
-                    println("PERMISSION given")
                 }else{
-                    println("PERMISSION not given")
+                    //TODO Display Explanation why it must be enabled
                 }
             }else{
-                println("PERMISSION not given")
+                //TODO Display Explanation why it must be enabled
             }
         }
     }

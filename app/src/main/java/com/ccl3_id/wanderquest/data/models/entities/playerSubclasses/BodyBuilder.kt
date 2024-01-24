@@ -23,7 +23,7 @@ class BodyBuilder(
 ) {
     init {
         this.abilityOneName = "Body 1";
-        this.abilityTwoName = "Body 2";
+        this.abilityTwoName = "Igor SuperPunch";
         this.abilityThreeName = "Body 3";
         this.abilityFourName = "Body 4";
 

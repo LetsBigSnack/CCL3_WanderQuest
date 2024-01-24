@@ -28,7 +28,7 @@ class CreationActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    CreationView(creationViewModel, this)
+                    CreationView(creationViewModel)
                 }
             }
         }

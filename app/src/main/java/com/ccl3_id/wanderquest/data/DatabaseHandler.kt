@@ -722,7 +722,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
 
     fun generateDungeonName(): String {
         val sportAdjectives = listOf("Endless", "Mighty", "Olympic", "Raging", "Thundering")
-        val sportLocations = listOf("Stadium", "Arena", "Track", "Field", "Gym")
+        val sportLocations = listOf("Stadium", "Arena", "Track", "Field", "Gym", "Hike")
         return sportAdjectives.random() + " " + sportLocations.random()
     }
 
