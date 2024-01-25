@@ -104,12 +104,16 @@ import androidx.compose.material.Card
 import androidx.compose.material.Divider
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
+import androidx.compose.material.TopAppBar
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.StrokeCap
 import com.ccl3_id.wanderquest.data.models.entities.Enemy
 import com.ccl3_id.wanderquest.ui.composables.ButtonSettings
 import com.ccl3_id.wanderquest.ui.composables.MultiStyleText
 import com.ccl3_id.wanderquest.ui.composables.WanderButton
+import com.ccl3_id.wanderquest.ui.theme.RobotoFontFamily
 import kotlin.math.abs
 
 sealed class Screen(val route: String){
@@ -126,6 +130,11 @@ fun MainView(mainViewModel : MainViewModel, itemViewModel: ItemViewModel) {
     val navController = rememberNavController()
 
     Scaffold(
+
+        topBar = {
+            WanderQuestAppBar(mainViewModel,navController)
+        },
+
         bottomBar = {BottomNavigationBar(navController, state.value.selectedScreen,mainViewModel)}
     ) {
         NavHost(
@@ -137,7 +146,7 @@ fun MainView(mainViewModel : MainViewModel, itemViewModel: ItemViewModel) {
                 LaunchedEffect(Unit) { // Unit can be replaced with a specific key if needed
                     mainViewModel.selectScreen(Screen.Character)
                 }
-                mainViewModel.getPlayer()
+                //mainViewModel.getPlayer()
                 displayCharacterSheet(mainViewModel, itemViewModel)
             }
             composable(Screen.Items.route){
@@ -152,7 +161,7 @@ fun MainView(mainViewModel : MainViewModel, itemViewModel: ItemViewModel) {
                 LaunchedEffect(Unit) { // Unit can be replaced with a specific key if needed
                     mainViewModel.selectScreen(Screen.Dungeon);
                 }
-                mainViewModel.getPlayer();
+                //mainViewModel.getPlayer();
                 mainViewModel.getOpenDungeons()
                 mainViewModel.getActiveDungeons()
                 displayDungeons(mainViewModel)
@@ -162,6 +171,46 @@ fun MainView(mainViewModel : MainViewModel, itemViewModel: ItemViewModel) {
         }
     }
 }
+
+@Composable
+fun WanderQuestAppBar(mainViewModel: MainViewModel, navController : NavHostController){
+
+    val state = mainViewModel.mainViewState.collectAsState()
+    val player = state.value.selectedPlayer
+
+    TopAppBar(
+        title = {
+
+        },
+        navigationIcon = {
+
+        },
+        actions = {
+
+            if(player != null){
+                Text(text =  "HP ${player.entityCurrentHealth}/${player.entityMaxHealth}", fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, color = Color.White, modifier = Modifier.padding(10.dp))
+
+            }
+
+            val imageResource = painterResource(id = R.drawable.doorway)
+
+            Image(
+                painter = imageResource,
+                contentDescription = "Profile Picture",
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .padding(4.dp)
+                    .aspectRatio(1f)
+                    .clickable {
+                        mainViewModel.selectScreen(Screen.Character)
+                        navController.navigate(Screen.Character.route)
+                    }
+            )
+        },
+        backgroundColor = MaterialTheme.colorScheme.secondary
+    )
+}
+
 
 @Composable
 fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
@@ -237,7 +286,6 @@ fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
             .weight(1f)
             .pointerInput(Unit) {
                 detectDragGestures { _, dragAmount ->
-                    println("DRAG detected")
                     coroutineScope.launch {
                         horizontalScrollState.scrollBy(-dragAmount.x)
                         verticalScrollState.scrollBy(-dragAmount.y)
@@ -258,7 +306,6 @@ fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
                                     // Display toast with the indices
                                     //CALL Function
                                     mainViewModel.selectRoom(room)
-                                    println("CLicked on Rect ${room.xIndex} ${room.yIndex}")
                                     return@detectTapGestures
                                 }
                             }
@@ -1031,20 +1078,24 @@ fun displayCharacterSheet(mainViewModel: MainViewModel, itemViewModel: ItemViewM
 
             displayPlayerAbilities(player);
 
+            Divider(color = MaterialTheme.colorScheme.secondary, thickness = 2.dp, modifier = Modifier.padding(4.dp,16.dp))
+
         }
 
-        Button(
-            onClick = {
+        WanderButton(
+            text = "Logout",
+            color = MaterialTheme.colorScheme.primary,
+            onClickEvent = {
                 val intent = Intent(context, LoginActivity::class.java);
                 context.startActivity(intent);
             },
-            modifier = Modifier
-                .padding(top = 20.dp, start = 20.dp, end = 20.dp)
-                .fillMaxWidth()
-        ) {
-            Text(text = "Logout", fontSize = 25.sp)
-        }
+            fontSize = ButtonSettings.BUTTON_FONT_SIZE_BIG,
+            textColor = Color.White
+        )
 
+    }
+    Column {
+        EquippedItemPopUp(itemViewModel, mainViewModel)
     }
 }
 
@@ -1259,24 +1310,156 @@ fun displayPlayerStats(player: Player, itemViewModel: ItemViewModel){
 
 @Composable
 fun displayPlayerAbilities(player: Player){
-    Text(text = "Statistics:", fontSize = ButtonSettings.BUTTON_FONT_SIZE_MASSIVE, color = Color.White)
 
-    Text(
-        text = player.abilityOneName+ ": " + player.abilityOneDescription,
-        fontSize = 20.sp,
-    )
-    Text(
-        text = player.abilityTwoName+ ": " + player.abilityTwoDescription,
-        fontSize = 20.sp,
-    )
-    Text(
-        text = player.abilityThreeName+ ": " + player.abilityThreeDescription,
-        fontSize = 20.sp,
-    )
-    Text(
-        text = player.abilityFourName+ ": " + player.abilityFourDescription,
-        fontSize = 20.sp,
-    )
+    Text(text = "Abilities:", fontSize = ButtonSettings.BUTTON_FONT_SIZE_MASSIVE, color = Color.White)
+
+    Spacer(modifier = Modifier.height(12.dp))
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+
+        Column(modifier = Modifier
+            .background(
+                color = MaterialTheme.colorScheme.secondary,
+                shape = RoundedCornerShape(
+                    topStart = 10.dp,
+                    topEnd = 10.dp,
+                    bottomEnd = 0.dp,
+                    bottomStart = 0.dp
+                )
+            )
+            .padding(14.dp)) {
+            Text(text = player.abilityOneName, fontSize = 24.sp, color = MaterialTheme.colorScheme.primary)
+        }
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                color = MaterialTheme.colorScheme.secondary,
+                shape = RoundedCornerShape(
+                    topStart = 0.dp,
+                    topEnd = 10.dp,
+                    bottomEnd = 10.dp,
+                    bottomStart = 10.dp
+                )
+            )
+            .padding(14.dp)) {
+            Text(text = player.abilityOneDescription, fontSize = 24.sp, color = Color.White)
+        }
+
+    }
+
+    Spacer(modifier = Modifier.height(24.dp))
+    
+    Column(modifier = Modifier.fillMaxWidth()) {
+
+        Column(modifier = Modifier
+            .background(
+                color = MaterialTheme.colorScheme.secondary,
+                shape = RoundedCornerShape(
+                    topStart = 10.dp,
+                    topEnd = 10.dp,
+                    bottomEnd = 0.dp,
+                    bottomStart = 0.dp
+                )
+            )
+            .padding(14.dp)) {
+            Text(text = player.abilityTwoName, fontSize = 24.sp, color = MaterialTheme.colorScheme.primary)
+        }
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                color = MaterialTheme.colorScheme.secondary,
+                shape = RoundedCornerShape(
+                    topStart = 0.dp,
+                    topEnd = 10.dp,
+                    bottomEnd = 10.dp,
+                    bottomStart = 10.dp
+                )
+            )
+            .padding(14.dp)) {
+            Text(text = player.abilityTwoDescription, fontSize = 24.sp, color = Color.White)
+        }
+
+    }
+
+    Spacer(modifier = Modifier.height(24.dp))
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+
+        Column(modifier = Modifier
+            .background(
+                color = MaterialTheme.colorScheme.secondary,
+                shape = RoundedCornerShape(
+                    topStart = 10.dp,
+                    topEnd = 10.dp,
+                    bottomEnd = 0.dp,
+                    bottomStart = 0.dp
+                )
+            )
+            .padding(14.dp)) {
+            Text(text = player.abilityThreeName, fontSize = 24.sp, color = MaterialTheme.colorScheme.primary)
+        }
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                color = MaterialTheme.colorScheme.secondary,
+                shape = RoundedCornerShape(
+                    topStart = 0.dp,
+                    topEnd = 10.dp,
+                    bottomEnd = 10.dp,
+                    bottomStart = 10.dp
+                )
+            )
+            .padding(14.dp)) {
+            Text(text = player.abilityThreeDescription, fontSize = 24.sp, color = Color.White)
+        }
+
+    }
+
+    Spacer(modifier = Modifier.height(24.dp))
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+
+        Column(modifier = Modifier
+            .background(
+                color = MaterialTheme.colorScheme.secondary,
+                shape = RoundedCornerShape(
+                    topStart = 10.dp,
+                    topEnd = 10.dp,
+                    bottomEnd = 0.dp,
+                    bottomStart = 0.dp
+                )
+            )
+            .padding(14.dp)) {
+            Text(text = player.abilityFourName, fontSize = 24.sp, color = MaterialTheme.colorScheme.primary)
+        }
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                color = MaterialTheme.colorScheme.secondary,
+                shape = RoundedCornerShape(
+                    topStart = 0.dp,
+                    topEnd = 10.dp,
+                    bottomEnd = 10.dp,
+                    bottomStart = 10.dp
+                )
+            )
+            .padding(14.dp)) {
+            Text(text = player.abilityFourDescription, fontSize = 24.sp, color = Color.White)
+        }
+
+    }
 
 }
 
@@ -1296,11 +1479,18 @@ fun displayDungeons(mainViewModel: MainViewModel){
                 .padding(10.dp)
         ) {
 
-            Text(
-                text = "Active Dungeons - ${activeDungeon.size}/3",
-                fontSize = 24.sp,
-                color = Color.White
-            )
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(
+                    text = "Active Dungeons - ${activeDungeon.size}/3",
+                    fontSize = 24.sp,
+                    color = Color.White
+                )
+
+                IconButton(onClick = { mainViewModel.getActiveDungeons()}, modifier = Modifier.padding(2.dp)) {
+                    Icon(Icons.Default.Refresh, "Refresh", tint =  MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+                }
+
+            }
 
             displayActiveDungeons(activeDungeon, mainViewModel);
 

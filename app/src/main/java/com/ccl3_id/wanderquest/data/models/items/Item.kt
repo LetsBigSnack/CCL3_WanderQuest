@@ -62,7 +62,6 @@ open class Item(
 
 
         private fun generateItemImg(itemName: String): String{
-            println("GENERATE ITEM IMG")
             // Split the input string into words
             val words = itemName.split(" ")
             var itemImages = ""
@@ -107,7 +106,6 @@ open class Item(
                 "abilities" to abilities,
                 "statNerfs" to statNerfs,
             )
-            println("Generate stat JSON" + Gson().toJson(itemAttributes))
             return Gson().toJson(itemAttributes)
         }
     }

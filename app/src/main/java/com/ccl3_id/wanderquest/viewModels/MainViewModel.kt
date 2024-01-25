@@ -54,6 +54,9 @@ class MainViewModel (val db: DatabaseHandler, private val locationRepository: Lo
         _mainViewState.value.selectedPlayer!!.getNewHealth();
         _mainViewState.update { it.copy(enemy = monster) }
         _mainViewState.update { it.copy(battleStarted = true) }
+        _mainViewState.update { it.copy(battleCompleteText = "")}
+        _mainViewState.update { it.copy(playerText = "") };
+        _mainViewState.update { it.copy(enemyText = "") };
         _mainViewState.update { it.copy(currentEnemyHealth =  _mainViewState.value.enemy!!.entityCurrentHealth) }
         _mainViewState.update { it.copy(currentPlayerHealth =  _mainViewState.value.selectedPlayer!!.entityCurrentHealth) }
     }
@@ -163,22 +166,25 @@ class MainViewModel (val db: DatabaseHandler, private val locationRepository: Lo
             }
         }
 
-        getActiveDungeons()
+        //getActiveDungeons()
 
     }
 
     fun selectDungeon(dungeon: Dungeon){
 
+        var tempDungeon = dungeon
+
         if(!dungeon.dungeonGenerated){
             generateDungeonRooms(dungeon)
+            tempDungeon = db.getDungeonById(dungeon.id)
         }
-
-        _mainViewState.update { it.copy(selectedDungeon = dungeon)}
-        _mainViewState.update { it.copy(dungeonRooms = dungeon.rooms)}
+        //doesn't update Dungeon correctly
+        _mainViewState.update { it.copy(selectedDungeon = tempDungeon)}
+        _mainViewState.update { it.copy(dungeonRooms = tempDungeon.rooms)}
         getAdjacentRooms()
     }
 
-    fun generateDungeonRooms(dungeon: Dungeon){
+    private fun generateDungeonRooms(dungeon: Dungeon){
         dungeon.generateRooms();
 
         dungeon.dungeonGenerated = true
@@ -198,7 +204,6 @@ class MainViewModel (val db: DatabaseHandler, private val locationRepository: Lo
 
     fun selectRoom(room: Room){
         _mainViewState.update { it.copy(currentSelectedRoom = room)}
-        println(_mainViewState.value.currentSelectedRoom)
     }
 
     fun leaveDungeon(){
@@ -270,6 +275,7 @@ class MainViewModel (val db: DatabaseHandler, private val locationRepository: Lo
         selectedRoom.hasBeenVisited = true;
         getAdjacentRooms()
         db.updateRoom(selectedRoom)
+        getActiveDungeons()
     }
 
     fun openDungeonDialog() {

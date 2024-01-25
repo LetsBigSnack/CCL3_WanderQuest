@@ -31,7 +31,7 @@ private val DarkColorScheme = darkColorScheme(
     tertiary = Color(0xFF365C71),
     //ItemBg
     onSecondary = Color(0xFFB3B3B3),
-    onSecondaryContainer = Color(0xFF727374),
+    onSecondaryContainer = Color(0xFF6B6B79),
     //Red/Health
     onTertiary = Color(0xFFFF784E),
 )
@@ -51,7 +51,7 @@ private val LightColorScheme = lightColorScheme(
     tertiary = Color(0xFF365C71),
     //ItemBg
     onSecondary = Color(0xFFB3B3B3),
-    onSecondaryContainer = Color(0xFF727374),
+    onSecondaryContainer = Color(0xFF6B6B79),
     //Red/Health
     onTertiary = Color(0xFFFF784E),
 
