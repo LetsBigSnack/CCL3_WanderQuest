@@ -110,7 +110,7 @@ fun LoginView(loginViewModel: LoginViewModel) {
             }
 
             WanderButton(
-                text = "Select Character",
+                text = "Characters",
                 color = MaterialTheme.colorScheme.onSecondaryContainer,
                 onClickEvent = {
                     val intent = Intent(context, CharactersActivity::class.java);

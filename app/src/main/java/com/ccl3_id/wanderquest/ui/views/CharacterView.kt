@@ -51,6 +51,7 @@ import androidx.compose.ui.draw.clip
 import com.ccl3_id.wanderquest.ui.composables.ButtonSettings
 import com.ccl3_id.wanderquest.ui.theme.RobotoFontFamily
 import androidx.compose.material3.AlertDialog
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import com.ccl3_id.wanderquest.ui.composables.WanderButton
 
@@ -127,17 +128,18 @@ fun CharacterView(characterViewModel: CharacterViewModel, context: Context) {
                         Text(text = "Class: ${it.playerClass}", fontSize = 20.sp, color = Color.White)
                         Text(text = "Level: ${it.playerLevel}", fontSize = 20.sp, color = Color.White)
                     }
+                    val imageResource = painterResource(id = com.ccl3_id.wanderquest.R.drawable.pencil)
                     IconButton(
                         onClick = {
                             characterViewModel.selectEditCharacter(it);
                         }) {
-                        Icon(Icons.Default.Settings, "Update",  tint = MaterialTheme.colorScheme.onSecondary, modifier = Modifier.size(32.dp))
+                        Icon(imageResource, "Update",  tint = MaterialTheme.colorScheme.onSecondary, modifier = Modifier.size(32.dp))
                     }
                     IconButton(
                         onClick = {
                             characterViewModel.selectDeleteCharacter(it);
                         }) {
-                        Icon(Icons.Default.Delete, "Delete", tint =  MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(32.dp))
+                        Icon(Icons.Default.Delete, "Delete", tint =  MaterialTheme.colorScheme.onSecondary, modifier = Modifier.size(32.dp))
                     }
                 }
             }
@@ -213,6 +215,7 @@ fun deleteCharacterModal(characterViewModel: CharacterViewModel) {
 fun selectCharacterModal(characterViewModel: CharacterViewModel) {
 
     val state = characterViewModel.characterViewState.collectAsState()
+    val context = LocalContext.current
 
     if(state.value.openPlayerSelectDialog && state.value.selectedPlayer != null){
         AlertDialog(
@@ -235,6 +238,10 @@ fun selectCharacterModal(characterViewModel: CharacterViewModel) {
                     text = "Yes",
                     color = MaterialTheme.colorScheme.primary,
                     onClickEvent = {
+                        val text = "Character selected"
+                        val duration = Toast.LENGTH_SHORT
+                        val toast = Toast.makeText(context , text, duration)
+
                         characterViewModel.selectCharacter();
                         characterViewModel.dismissDialog();
                     },

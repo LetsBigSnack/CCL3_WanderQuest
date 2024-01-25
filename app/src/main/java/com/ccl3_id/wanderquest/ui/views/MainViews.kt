@@ -1139,7 +1139,7 @@ fun displayPlayerInfo(player: Player) {
     ) {
         LinearProgressIndicator(progress = player.entityCurrentHealth.toFloat()/player.entityMaxHealth.toFloat(), modifier = Modifier
             .fillMaxWidth()
-            .height(24.dp), color = Color(0xFFF95B78),strokeCap = StrokeCap.Round)
+            .height(24.dp), color = MaterialTheme.colorScheme.primary,strokeCap = StrokeCap.Round)
         Text(text =  "HP ${player.entityCurrentHealth}/${player.entityMaxHealth}", fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, color = Color.White, modifier = Modifier.padding(10.dp))
     }
 
@@ -1149,21 +1149,15 @@ fun displayPlayerInfo(player: Player) {
 
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable {
-                    val intent =
-                        Intent(context, LevelUpActivity::class.java); context.startActivity(intent);
-                },
+            modifier = Modifier.fillMaxWidth()
         ) {
-            LinearProgressIndicator(progress = 1f, modifier = Modifier
+            LinearProgressIndicator(progress =  player.playerCurrentXP.toFloat() / player.playerXPToNextLevel.toFloat(), modifier = Modifier
                 .fillMaxWidth()
-                .height(24.dp), color = Color(0xFF00C2A2),strokeCap = StrokeCap.Round)
-            Text(text =  "Level UP!", fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, color = Color.White, modifier = Modifier.padding(10.dp))
+                .height(24.dp), color = Color(0xFF6AC8E4),strokeCap = StrokeCap.Round)
+            Text(text =  "XP ${player.playerXPToNextLevel}/${player.playerXPToNextLevel}", fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, color = Color.White, modifier = Modifier.padding(10.dp))
         }
 
     }else{
-
         Box(
             contentAlignment = Alignment.Center,
             modifier = Modifier.fillMaxWidth()
@@ -1174,6 +1168,21 @@ fun displayPlayerInfo(player: Player) {
             Text(text =  "XP ${player.playerCurrentXP}/${player.playerXPToNextLevel}", fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, color = Color.White, modifier = Modifier.padding(10.dp))
         }
     }
+
+    if(player.playerCurrentXP >= player.playerXPToNextLevel) {
+        WanderButton(
+            text = "Level Up",
+            color = MaterialTheme.colorScheme.primary,
+            onClickEvent = {
+                val intent =
+                    Intent(context, LevelUpActivity::class.java); context.startActivity(intent);
+            },
+            fontSize = ButtonSettings.BUTTON_FONT_SIZE_BIG,
+            textColor = Color.White,
+            modifier = Modifier.fillMaxWidth().padding(top=10.dp)
+        )
+    }
+
 }
 
 @Composable
@@ -1567,7 +1576,7 @@ fun OpenDungeonItem(dungeon: Dungeon, mainViewModel: MainViewModel) {
         }
 
         WanderButton(
-            text = "Enter",
+            text = "Add",
             color = MaterialTheme.colorScheme.primary,
             onClickEvent = {
                 mainViewModel.enterDungeon(dungeon,context)
@@ -1619,7 +1628,7 @@ fun ActiveDungeonItem(dungeon: Dungeon? = null, mainViewModel: MainViewModel) {
             }
             //TODO add Dialog if you are sure
             IconButton(onClick = { mainViewModel.deleteDungeon(dungeon) }, modifier = Modifier.padding(10.dp)) {
-                Icon(Icons.Default.Delete, "Delete", tint =  MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(32.dp))
+                Icon(Icons.Default.Delete, "Delete", tint =  MaterialTheme.colorScheme.onSecondary, modifier = Modifier.size(32.dp))
             }
             if(dungeon.dungeonWalkedDistance >= dungeon.dungeonTotalDistance){
 

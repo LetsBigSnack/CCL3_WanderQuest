@@ -2,6 +2,7 @@ package com.ccl3_id.wanderquest.ui.views
 
 import android.content.Context
 import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -51,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.PopupProperties
 import com.ccl3_id.wanderquest.LoginActivity
+import com.ccl3_id.wanderquest.MainActivity
 import com.ccl3_id.wanderquest.R
 import com.ccl3_id.wanderquest.data.models.entities.Player
 import com.ccl3_id.wanderquest.ui.composables.ButtonSettings
@@ -405,8 +407,13 @@ fun StepFourReview(creationViewModel: CreationViewModel, context: Context){
                     text = "Create Character",
                     color = MaterialTheme.colorScheme.primary,
                     onClickEvent = {
+
+                        val text = "Character Created"
+                        val duration = Toast.LENGTH_SHORT
+                        val toast = Toast.makeText(context , text, duration) // in Activity
+                        toast.show()
                         creationViewModel.createCharacter()
-                        val intent = Intent(context, LoginActivity::class.java);
+                        val intent = Intent(context, MainActivity::class.java);
                         context.startActivity(intent);
                     },
                     fontSize = ButtonSettings.BUTTON_FONT_SIZE_BIG,
