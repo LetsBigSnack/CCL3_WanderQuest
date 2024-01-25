@@ -695,6 +695,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
         val values = ContentValues().apply {
             put(dungeonName,dungeon.dungeonName)
             put(dungeonTotalDistance, dungeon.dungeonTotalDistance)
+            //Change to walked
             put(dungeonWalkedDistance, dungeon.dungeonWalkedDistance)
             put(dungeonActive, dungeon.dungeonActive)
             put(dungeonCompleted,  dungeon.dungeonCompleted)

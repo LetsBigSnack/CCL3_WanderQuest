@@ -55,7 +55,7 @@ class LocationTrackingService : Service(), LocationListener {
         val notification: Notification = Notification.Builder(this, channelId)
             .setContentTitle("Location Service")
             .setContentText("Tracking your location")
-            .setSmallIcon(R.drawable.cap)
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
             .build()
 
         startForeground(1, notification)

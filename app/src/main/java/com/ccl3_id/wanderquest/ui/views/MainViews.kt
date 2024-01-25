@@ -1485,11 +1485,6 @@ fun displayDungeons(mainViewModel: MainViewModel){
                     fontSize = 24.sp,
                     color = Color.White
                 )
-
-                IconButton(onClick = { mainViewModel.getActiveDungeons()}, modifier = Modifier.padding(2.dp)) {
-                    Icon(Icons.Default.Refresh, "Refresh", tint =  MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
-                }
-
             }
 
             displayActiveDungeons(activeDungeon, mainViewModel);

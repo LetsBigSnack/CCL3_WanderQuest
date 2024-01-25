@@ -62,6 +62,7 @@ class MainViewModel (val db: DatabaseHandler, private val locationRepository: Lo
     }
 
     fun leaveBattle(){
+        _mainViewState.value.selectedPlayer!!.getNewHealth();
         _mainViewState.update { it.copy(battleComplete = false) }
         _mainViewState.update { it.copy(battleStarted = false) }
     }
@@ -148,7 +149,7 @@ class MainViewModel (val db: DatabaseHandler, private val locationRepository: Lo
                 if(_mainViewState.value.selectedPlayer != null){
                     subtractDistanceFromDungeon()
                     resetDistance()
-
+                    getActiveDungeons()
                 }
                 delay(10000) // Delay for 10 seconds
             }
