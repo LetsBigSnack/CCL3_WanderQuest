@@ -24,6 +24,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -60,6 +61,7 @@ import com.ccl3_id.wanderquest.viewModels.LevelUpViewModel
 import kotlin.system.exitProcess
 import androidx.compose.material3.Scaffold
 import com.ccl3_id.wanderquest.ui.composables.ButtonSettings
+import com.ccl3_id.wanderquest.ui.composables.WanderButton
 import com.ccl3_id.wanderquest.ui.theme.RobotoFontFamily
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -102,27 +104,28 @@ fun LevelUpView(levelUpViewModel: LevelUpViewModel, context: Context) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "Stats", fontSize = 40.sp)
-            Text(text = "Available Stat points: $statPoints", fontSize = 20.sp)
+            Text(text = "Stats", fontSize = 40.sp, color = Color.White)
+            Text(text = "Available Stat points: $statPoints", fontSize = 20.sp, color = Color.White)
 
             stats.forEach { (statName,statValue) ->
                 Stats(statName, statValue, levelUpViewModel);
             };
 
-            Button(
-                onClick = {
+            WanderButton(
+                text = "Next Step",
+                color = MaterialTheme.colorScheme.primary,
+                onClickEvent =
+                {
                     levelUpViewModel.saveStats();
-                    val intent = Intent(
-                        context,
-                        MainActivity::class.java
-                    ); context.startActivity(intent);
+                    val intent = Intent(context,
+                        MainActivity::class.java);
+                    context.startActivity(intent);
                 },
-                modifier = Modifier
-                    .padding(top = 20.dp, start = 20.dp, end = 20.dp)
-                    .fillMaxWidth()
-            ) {
-                Text(text = "Save Stats", fontSize = 25.sp)
-            }
+                fontSize = ButtonSettings.BUTTON_FONT_SIZE_BIG,
+                textColor = Color.White,
+                enabled =  statPoints == 0
+            )
+
         }
     }
 }
@@ -134,33 +137,41 @@ fun Stats(statName : String, statValue: Int, levelUpViewModel: LevelUpViewModel)
 
     Row(modifier = Modifier
         .fillMaxWidth()
-        .padding(15.dp),
+        .padding(top = 24.dp, bottom = 16.dp, end = 40.dp, start = 30.dp),
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.End
     ){
-        Column (modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = "$statName", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-        }
-        IconButton(onClick = { levelUpViewModel.subStat(statName) },
-            modifier = Modifier
-                .size(20.dp) // Set the size of the IconButton
-                .background(MaterialTheme.colorScheme.primary, shape = CircleShape)) {
-            Icon(Icons.Default.ArrowBack,"Subtract")
-        }
         Column (modifier = Modifier
-            .weight(1f)
-            .fillMaxSize(),
+            .weight(1f),
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = "$statValue", fontSize = 25.sp)
+            horizontalAlignment = Alignment.Start) {
+            Text(text = "$statName", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.White)
         }
-        IconButton(onClick = {levelUpViewModel.addStat(statName) },
-            modifier = Modifier
-                .size(20.dp) // Set the size of the IconButton
-                .background(MaterialTheme.colorScheme.primary, shape = CircleShape) // Set a round background
-        ) {
-            Icon(Icons.Default.ArrowForward,"Add")
+        Row(modifier = Modifier
+            .weight(0.8f)
+            .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,)
+        {
+            IconButton(onClick = { levelUpViewModel.subStat(statName) },
+                modifier = Modifier
+                    .size(20.dp) // Set the size of the IconButton
+                    .background(MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(10.dp))) {
+                Icon(Icons.Default.ArrowBack,"Subtract", tint = Color.White)
+            }
+            Column (modifier = Modifier
+                .weight(1f)
+                .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(text = "$statValue", fontSize = 25.sp, color = Color.White)
+            }
+            IconButton(onClick = {levelUpViewModel.addStat(statName) },
+                modifier = Modifier
+                    .size(20.dp) // Set the size of the IconButton
+                    .background(MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(10.dp)) // Set a round background
+            ) {
+                Icon(Icons.Default.ArrowForward,"Add", tint = Color.White)
+            }
         }
     }
 

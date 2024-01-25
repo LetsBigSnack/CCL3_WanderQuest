@@ -451,12 +451,13 @@ fun StatAllocation(statName : String, statPoint : Int, creationViewModel : Creat
     //TODO horzontal Arrangement is a bit fucked
     Row(modifier = Modifier
         .fillMaxWidth()
-        .padding(bottom = 16.dp),
+        .padding(bottom = 16.dp, end = 20.dp, start = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
     ){
         Column (modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally) {
+            horizontalAlignment = Alignment.Start) {
             Text(text = "$statName", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = Color.White)
         }
 
@@ -468,8 +469,9 @@ fun StatAllocation(statName : String, statPoint : Int, creationViewModel : Creat
             IconButton(onClick = { creationViewModel.subStat(statName) },
                 modifier = Modifier
                     .size(20.dp) // Set the size of the IconButton
-                    .background(MaterialTheme.colorScheme.primary, shape = CircleShape)) {
-                Icon(Icons.Default.ArrowBack,"Subtract")
+                    .background(MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(10.dp))
+            ) {
+                Icon(Icons.Default.ArrowBack,"Subtract", tint = Color.White)
             }
             Column (modifier = Modifier
                 .weight(1f)
@@ -481,9 +483,9 @@ fun StatAllocation(statName : String, statPoint : Int, creationViewModel : Creat
             IconButton(onClick = { creationViewModel.addStat(statName) },
                 modifier = Modifier
                     .size(20.dp) // Set the size of the IconButton
-                    .background(MaterialTheme.colorScheme.primary, shape = CircleShape) // Set a round background
+                    .background(MaterialTheme.colorScheme.primary, shape =RoundedCornerShape(10.dp)) // Set a round background
             ) {
-                Icon(Icons.Default.ArrowForward,"Add")
+                Icon(Icons.Default.ArrowForward,"Add", tint = Color.White)
             }
         }
     }
