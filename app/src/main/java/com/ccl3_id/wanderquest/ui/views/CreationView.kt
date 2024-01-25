@@ -122,7 +122,17 @@ fun StepOneName(creationViewModel: CreationViewModel, context: Context)
                     .padding(top = 20.dp)
                     .fillMaxWidth(),
                 value = characterName,
-                onValueChange = { newChar -> creationViewModel.changeCharacterName(newChar)  },
+                singleLine = true,
+                onValueChange = { newChar -> creationViewModel.changeCharacterName(newChar)
+
+                    if(newChar.length > 30){
+                        val text = "Name can't be longer than 30 Characters"
+                        val duration = Toast.LENGTH_SHORT
+                        val toast = Toast.makeText(context , text, duration) // in Activity
+                        toast.show()
+                    }
+
+                                },
                 label = {
                     Text(
                         text = "Character Name",
@@ -148,7 +158,7 @@ fun StepOneName(creationViewModel: CreationViewModel, context: Context)
                     onClickEvent = { creationViewModel.nextStep(); },
                     fontSize = ButtonSettings.BUTTON_FONT_SIZE_BIG,
                     textColor = Color.White,
-                    enabled = !characterName.isNullOrEmpty()
+                    enabled = !characterName.isNullOrEmpty() && characterName.length <= 30
                 )
 
                 WanderButton(

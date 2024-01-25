@@ -21,16 +21,4 @@ class PersonalTrainer(
     playerCurrentXP,
     id
 ) {
-    init {
-        this.abilityOneName = "Trainer 1";
-        this.abilityTwoName = "Trainer 2";
-        this.abilityThreeName = "Trainer 3";
-        this.abilityFourName = "Trainer 4";
-
-        this.abilityOneDescription = "Trainer Description 1";
-        this.abilityTwoDescription = "Trainer Description 2";
-        this.abilityThreeDescription = "Trainer Description 3";
-        this.abilityFourDescription = "Trainer Description 4";
-
-    }
 }

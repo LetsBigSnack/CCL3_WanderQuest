@@ -23,17 +23,5 @@ class MartialArtist(
     playerCurrentXP,
     id
 ) {
-    init {
-        this.abilityOneName = "Martial 1";
-        this.abilityTwoName = "Martial 2";
-        this.abilityThreeName = "Martial 3";
-        this.abilityFourName = "Martial 4";
-
-        this.abilityOneDescription = "Martial Description 1";
-        this.abilityTwoDescription = "Martial Description 2";
-        this.abilityThreeDescription = "Martial Description 3";
-        this.abilityFourDescription = "Martial Description 4";
-
-    }
 
 }

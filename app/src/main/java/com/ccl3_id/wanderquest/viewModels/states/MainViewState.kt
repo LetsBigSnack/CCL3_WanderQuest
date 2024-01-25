@@ -39,4 +39,11 @@ data class MainViewState (
     var currentSelectedRoom : Room? = null,
     var displayDungeonPopUp : Boolean = false,
     var currentRoomContent : GameObject? = null,
-)
+    val openPlayerDeleteDialog: Boolean = false,
+    val openPlayerEditDialog: Boolean = false,
+    val displayCompleteDialog: Boolean = false,
+    val dungeonDeleteDialog: Boolean = false,
+    val deletedDungeon: Dungeon? = null
+) {
+
+}

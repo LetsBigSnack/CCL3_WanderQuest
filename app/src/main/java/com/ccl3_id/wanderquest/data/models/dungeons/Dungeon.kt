@@ -106,9 +106,7 @@ class Dungeon(
         }
 
         createdRooms.map {
-            if(it.roomType != "starting"){
-                it.hasBeenVisited = false
-            }
+            it.hasBeenVisited = false
             it.dungeonID = this.id
         }
 

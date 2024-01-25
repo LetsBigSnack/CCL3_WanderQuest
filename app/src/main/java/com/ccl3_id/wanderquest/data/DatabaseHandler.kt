@@ -607,7 +607,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
     fun getOpenDungeons(playerID : Int) : List<Dungeon> {
         val db = this.readableDatabase
         val dungeons = mutableListOf<Dungeon>()
-        val cursor = db.rawQuery("SELECT * FROM $dungeonTableName WHERE $dungeonActive = FALSE AND $dungeonPlayerId = $playerID;", null)
+        val cursor = db.rawQuery("SELECT * FROM $dungeonTableName WHERE $dungeonActive = 0 AND $dungeonPlayerId = $playerID;", null)
 
         while(cursor.moveToNext()){
             val idId = cursor.getColumnIndex(dungeonId)
@@ -648,7 +648,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
     fun getExpiredDungeons(playerID : Int) : List<Dungeon> {
         val db = this.readableDatabase
         val dungeons = mutableListOf<Dungeon>()
-        val cursor = db.rawQuery("SELECT * FROM $dungeonTableName WHERE $dungeonActive = FALSE AND $dungeonPlayerId = $playerID AND  strftime('%s',$dungeonExpiresIn) < strftime('%s',datetime('now', 'localtime'));", null)
+        val cursor = db.rawQuery("SELECT * FROM $dungeonTableName WHERE $dungeonActive = 0 AND $dungeonPlayerId = $playerID AND  strftime('%s',$dungeonExpiresIn) < strftime('%s',datetime('now', 'localtime'));", null)
 
         while(cursor.moveToNext()){
             val idId = cursor.getColumnIndex(dungeonId)

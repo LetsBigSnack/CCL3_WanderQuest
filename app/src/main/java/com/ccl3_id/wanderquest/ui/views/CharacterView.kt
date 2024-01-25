@@ -66,10 +66,10 @@ fun CharacterView(characterViewModel: CharacterViewModel, context: Context) {
         topBar = {
             TopAppBar(
                 title = { Text("Characters",fontSize = ButtonSettings.BUTTON_FONT_SIZE_MASSIVE,
-                    fontFamily = RobotoFontFamily, color = MaterialTheme.colorScheme.primary)},
+                    fontFamily = RobotoFontFamily, color = Color.White)},
                 navigationIcon = {
                     IconButton(onClick = { val intent = Intent(context, LoginActivity::class.java); context.startActivity(intent);  }) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onBackground)
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.primary)
                     }
                 },
                 backgroundColor = MaterialTheme.colorScheme.secondary
@@ -160,6 +160,7 @@ fun CharacterView(characterViewModel: CharacterViewModel, context: Context) {
 fun deleteCharacterModal(characterViewModel: CharacterViewModel) {
 
     val state = characterViewModel.characterViewState.collectAsState()
+    val context = LocalContext.current
 
     if(state.value.openPlayerDeleteDialog && state.value.deletePlayer != null){
         AlertDialog(
@@ -184,6 +185,10 @@ fun deleteCharacterModal(characterViewModel: CharacterViewModel) {
                     text = "Yes",
                     color = MaterialTheme.colorScheme.primary,
                     onClickEvent = {
+                        val text = "Character Deleted"
+                        val duration = Toast.LENGTH_SHORT
+                        val toast = Toast.makeText(context , text, duration) // in Activity
+                        toast.show()
                         characterViewModel.deleteCharacter();
                         characterViewModel.dismissDialog();
                     },
@@ -241,9 +246,12 @@ fun selectCharacterModal(characterViewModel: CharacterViewModel) {
                         val text = "Character selected"
                         val duration = Toast.LENGTH_SHORT
                         val toast = Toast.makeText(context , text, duration)
-
+                        toast.show()
                         characterViewModel.selectCharacter();
                         characterViewModel.dismissDialog();
+                        val intent = Intent(context, LoginActivity::class.java);
+                        context.startActivity(intent);
+
                     },
                     fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
                     textColor = Color.White,
@@ -298,6 +306,7 @@ fun editCharacterModal(characterViewModel: CharacterViewModel) {
                                 color = MaterialTheme.colorScheme.onSurface,
                             )
                         },
+                        singleLine = true,
                         //TODO cursor color
                         textStyle = TextStyle(color = Color.White, fontSize = 24.sp),
                         colors = TextFieldDefaults.textFieldColors(
@@ -321,13 +330,20 @@ fun editCharacterModal(characterViewModel: CharacterViewModel) {
                             toast.show()
                         }else{
 
-                            var tempPlayer = state.value.editPlayer;
-                            if (tempPlayer != null) {
-                                tempPlayer.playerName = name;
-                                characterViewModel.selectEditCharacter(tempPlayer);
-                                characterViewModel.updateCharacter();
-                                characterViewModel.dismissDialog();
-                            };
+                            if(name.length > 30){
+                                val text = "Name can't be longer than 30 Characters"
+                                val duration = Toast.LENGTH_SHORT
+                                val toast = Toast.makeText(context , text, duration) // in Activity
+                                toast.show()
+                            }else{
+                                var tempPlayer = state.value.editPlayer;
+                                if (tempPlayer != null) {
+                                    tempPlayer.playerName = name;
+                                    characterViewModel.selectEditCharacter(tempPlayer);
+                                    characterViewModel.updateCharacter();
+                                    characterViewModel.dismissDialog();
+                                };
+                            }
                         }
                     },
                     fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,

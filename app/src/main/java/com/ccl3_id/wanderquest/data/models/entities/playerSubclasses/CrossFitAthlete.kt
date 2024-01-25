@@ -21,16 +21,4 @@ class CrossFitAthlete(
     playerCurrentXP,
     id
 ) {
-    init {
-        this.abilityOneName = "Cross 1";
-        this.abilityTwoName = "Cross 2";
-        this.abilityThreeName = "Cross 3";
-        this.abilityFourName = "Cross 4";
-
-        this.abilityOneDescription = "Cross Description 1";
-        this.abilityTwoDescription = "Cross Description 2";
-        this.abilityThreeDescription = "Cross Description 3";
-        this.abilityFourDescription = "Cross Description 4";
-
-    }
 }

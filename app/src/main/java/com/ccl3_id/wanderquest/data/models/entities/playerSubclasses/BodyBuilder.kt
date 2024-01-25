@@ -21,16 +21,4 @@ class BodyBuilder(
     playerCurrentXP,
     id
 ) {
-    init {
-        this.abilityOneName = "Body 1";
-        this.abilityTwoName = "Igor SuperPunch";
-        this.abilityThreeName = "Body 3";
-        this.abilityFourName = "Body 4";
-
-        this.abilityOneDescription = "Body Description 1";
-        this.abilityTwoDescription = "Body Description 2";
-        this.abilityThreeDescription = "Body Description 3";
-        this.abilityFourDescription = "Body Description 4";
-
-    }
 }

@@ -107,8 +107,17 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.res.vectorResource
+import com.ccl3_id.wanderquest.MainActivity
 import com.ccl3_id.wanderquest.data.models.entities.Enemy
 import com.ccl3_id.wanderquest.ui.composables.ButtonSettings
 import com.ccl3_id.wanderquest.ui.composables.MultiStyleText
@@ -177,13 +186,29 @@ fun WanderQuestAppBar(mainViewModel: MainViewModel, navController : NavHostContr
 
     val state = mainViewModel.mainViewState.collectAsState()
     val player = state.value.selectedPlayer
+    val context = LocalContext.current
 
     TopAppBar(
         title = {
 
         },
         navigationIcon = {
+            IconButton(onClick = {
+                val text = "User logged out"
+                val duration = Toast.LENGTH_SHORT
+                val toast = Toast.makeText(context , text, duration) // in Activity
+                toast.show()
 
+                val intent = Intent(
+                    context,
+                    LoginActivity::class.java
+                );
+
+                context.startActivity(intent);
+
+            }) {
+                Icon(Icons.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.primary)
+            }
         },
         actions = {
 
@@ -192,7 +217,7 @@ fun WanderQuestAppBar(mainViewModel: MainViewModel, navController : NavHostContr
 
             }
 
-            val imageResource = painterResource(id = R.drawable.doorway)
+            val imageResource = painterResource(id = R.drawable.cowled)
 
             Image(
                 painter = imageResource,
@@ -279,6 +304,15 @@ fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
     var itemRoomColor = Color(0xFF00C2A2)
     var monsterRoomColor = Color(0xFFFF859A)
     var emptyRoomColor = Color(0xFF6AC8E4)
+
+
+    var vector = ImageVector.vectorResource(id = R.drawable.doorway)
+    val painter = rememberVectorPainter(image = vector)
+    val tint = MaterialTheme.colorScheme.secondary
+
+
+    var vectorOpen = ImageVector.vectorResource(id = R.drawable.opendoor)
+    val painterOpen = rememberVectorPainter(image = vectorOpen)
 
     Column {
         Canvas(modifier = canvasModifier
@@ -376,7 +410,13 @@ fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
                             }else{
                                 color = unexploredRoomColor
                             }
+
+                            if(room.xIndex == 2 && room.yIndex == 2){
+                                color = adjacentRoomColor
+                            }
                         }
+
+
 
                         drawRoundRect(
                             color = color,
@@ -384,6 +424,20 @@ fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
                             size = Size(rectSize, rectSize),
                             cornerRadius = CornerRadius(10.dp.toPx())
                         )
+
+                        if(room.hasBeenVisited){
+                            translate(topLeft.x, topLeft.y) {
+                                with(painterOpen) {
+                                    draw(Size(rectSize, rectSize),colorFilter = ColorFilter.tint(tint))
+                                }
+                            }
+                        }else{
+                            translate(topLeft.x, topLeft.y) {
+                                with(painter) {
+                                    draw(Size(rectSize, rectSize),colorFilter = ColorFilter.tint(tint))
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -422,6 +476,48 @@ fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
 
     Column {
         displayPopUpDungeon(mainViewModel)
+    }
+
+    Column {
+        displayPopUpCompleted(mainViewModel)
+    }
+
+}
+
+@Composable
+fun displayPopUpCompleted(mainViewModel: MainViewModel) {
+
+    val state = mainViewModel.mainViewState.collectAsState()
+
+    if(state.value.displayCompleteDialog){
+
+        AlertDialog(
+            containerColor = MaterialTheme.colorScheme.background,
+            shape = RoundedCornerShape(10.dp),
+            onDismissRequest = {
+                mainViewModel.dismissComplete()
+            },
+            title = {
+                Text(text = "Completed", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM)
+            },
+            text = {
+                Column {
+                    Text(text = "You have completed the Dungeon.", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM)
+                }
+            },
+            confirmButton = {
+                WanderButton(
+                    text = "Okay",
+                    color = MaterialTheme.colorScheme.primary,
+                    onClickEvent = {
+                        mainViewModel.dismissComplete()
+                    },
+                    fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+                    textColor = Color.White,
+                    modifier = Modifier
+                )
+            }
+        )
     }
 }
 
@@ -836,6 +932,18 @@ fun ItemPopUpEquip(clickedItem: Item, itemViewModel: ItemViewModel, player: Play
                 modifier = Modifier
             )
 
+        },
+        dismissButton = {
+            WanderButton(
+                text = "Cancel",
+                color = MaterialTheme.colorScheme.tertiary,
+                onClickEvent = {
+                    itemViewModel.deselectItem()
+                },
+                fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+                textColor = Color.White,
+                modifier = Modifier
+            )
         }
 
     )
@@ -1033,6 +1141,18 @@ fun EquippedItemPopUp(itemViewModel : ItemViewModel, mainViewModel: MainViewMode
                     textColor = Color.White,
                     modifier = Modifier
                 )
+            },
+            dismissButton = {
+                WanderButton(
+                    text = "Cancel",
+                    color = MaterialTheme.colorScheme.tertiary,
+                    onClickEvent = {
+                        itemViewModel.deselectItem()
+                    },
+                    fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+                    textColor = Color.White,
+                    modifier = Modifier
+                )
             }
         )
     }
@@ -1064,7 +1184,7 @@ fun displayCharacterSheet(mainViewModel: MainViewModel, itemViewModel: ItemViewM
     ) {
         if (player != null) {
 
-            displayPlayerInfo(player);
+            displayPlayerInfo(player, mainViewModel);
 
             Divider(color = MaterialTheme.colorScheme.secondary, thickness = 2.dp, modifier = Modifier.padding(4.dp,16.dp))
 
@@ -1093,17 +1213,187 @@ fun displayCharacterSheet(mainViewModel: MainViewModel, itemViewModel: ItemViewM
             textColor = Color.White
         )
 
+
+        Divider(color = MaterialTheme.colorScheme.secondary, thickness = 2.dp, modifier = Modifier.padding(4.dp,16.dp))
+
+        Text(text = "DANGER ZONE:", fontSize = ButtonSettings.BUTTON_FONT_SIZE_MASSIVE, color = Color.White)
+
+        WanderButton(
+            text = "Delete Character",
+            color = MaterialTheme.colorScheme.tertiary,
+            onClickEvent = {
+               mainViewModel.deletePlayer()
+            },
+            fontSize = ButtonSettings.BUTTON_FONT_SIZE_BIG,
+            textColor = Color.White
+        )
+
     }
     Column {
         EquippedItemPopUp(itemViewModel, mainViewModel)
     }
+    Column {
+        editCharacterModalMain(mainViewModel)
+    }
+    Column {
+        deleteCharacterModalMain(mainViewModel)
+    }
+
+
 }
 
 @Composable
-fun displayPlayerInfo(player: Player) {
+fun deleteCharacterModalMain(mainViewModel: MainViewModel) {
+
+    val state = mainViewModel.mainViewState.collectAsState()
+    val context = LocalContext.current
+
+    if(state.value.openPlayerDeleteDialog){
+        AlertDialog(
+            containerColor = MaterialTheme.colorScheme.background,
+            shape = RoundedCornerShape(10.dp),
+            onDismissRequest = {
+                mainViewModel.dismissDialog()
+            },
+            title = {
+                Text(text = "Delete Character", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM)
+
+            },
+            text = {
+                Column {
+                    // https://www.jetpackcompose.net/textfield-in-jetpack-compose
+                    Text(text = "Are you sure you want to delete this character?", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM)
+                }
+            },
+            confirmButton = {
+
+                WanderButton(
+                    text = "Yes",
+                    color = MaterialTheme.colorScheme.primary,
+                    onClickEvent = {
+                        mainViewModel.deleteCharacter();
+                        mainViewModel.dismissDialog();
+                        val text = "Character Deleted"
+                        val duration = Toast.LENGTH_SHORT
+                        val toast = Toast.makeText(context , text, duration) // in Activity
+                        toast.show()
+
+                        val intent =
+                            Intent(context, LoginActivity::class.java); context.startActivity(intent);
+
+
+                    },
+                    fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+                    textColor = Color.White,
+                    modifier = Modifier
+                )
+            },
+            dismissButton = {
+
+                WanderButton(
+                    text = "No",
+                    color = MaterialTheme.colorScheme.tertiary,
+                    onClickEvent = {
+                        mainViewModel.dismissDialog()
+                    },
+                    fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+                    textColor = Color.White,
+                    modifier = Modifier
+                )
+            }
+
+        )
+    }
+
+}
+
+@Composable
+fun editCharacterModalMain(mainViewModel: MainViewModel) {
+
+    val state = mainViewModel.mainViewState.collectAsState()
+    val context= LocalContext.current;
+
+    if(state.value.openPlayerEditDialog){
+
+        var name by rememberSaveable { mutableStateOf(state.value.selectedPlayer!!.playerName) }
+        AlertDialog(
+            containerColor = MaterialTheme.colorScheme.background,
+            shape = RoundedCornerShape(10.dp),
+            onDismissRequest = {
+                mainViewModel.dismissDialog()
+            },
+            title = {
+                Text(text = "Update Character", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM)
+            },
+            text = {
+                Column {
+                    TextField(
+                        modifier = Modifier
+                            .padding(top = 20.dp)
+                            .fillMaxWidth(),
+                        value = name,
+                        onValueChange = { newText -> name = newText },
+                        singleLine = true,
+                        label = {
+                            Text(
+                                text = "Character Name:",
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                        },
+                        //TODO cursor color
+                        textStyle = TextStyle(color = Color.White, fontSize = 24.sp),
+                        colors = TextFieldDefaults.textFieldColors(
+                            backgroundColor = MaterialTheme.colorScheme.secondary,
+                            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                            unfocusedIndicatorColor = Color.Transparent
+                        )
+                    )
+                }
+            },
+            confirmButton = {
+
+                WanderButton(
+                    text = "Update",
+                    color = MaterialTheme.colorScheme.primary,
+                    onClickEvent = {
+                        if(name.isNullOrEmpty()){
+                            val text = "Please fill out all options"
+                            val duration = Toast.LENGTH_SHORT
+                            val toast = Toast.makeText(context , text, duration) // in Activity
+                            toast.show()
+                        }else{
+
+                            if(name.length > 30){
+                                val text = "Name can't be longer than 30 Characters"
+                                val duration = Toast.LENGTH_SHORT
+                                val toast = Toast.makeText(context , text, duration) // in Activity
+                                toast.show()
+                            }else{
+                                var tempPlayer = state.value.selectedPlayer;
+                                if (tempPlayer != null) {
+                                    tempPlayer.playerName = name;
+                                    mainViewModel.updateCharacter(tempPlayer);
+                                    mainViewModel.dismissDialog();
+                                };
+                            }
+                        }
+                    },
+                    fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+                    textColor = Color.White,
+                    modifier = Modifier
+                )
+
+            }
+
+        )
+    }
+}
+
+@Composable
+fun displayPlayerInfo(player: Player, mainViewModel: MainViewModel) {
 
     val context = LocalContext.current
-    val imageResource = painterResource(id = R.drawable.doorway)
+    val imageResource = painterResource(id = R.drawable.cowled)
 
 
     Row(
@@ -1115,18 +1405,32 @@ fun displayPlayerInfo(player: Player) {
             painter = imageResource,
             contentDescription = "Profile Picture",
             modifier = Modifier
-                .weight(0.4f)
+                .weight(0.3f)
                 .aspectRatio(1f)
         )
         Spacer(modifier = Modifier
             .weight(0.1f))
 
         Column(modifier = Modifier
-            .weight(0.5f)
+            .weight(0.6f)
             .fillMaxWidth()) {
-            Text(text = player.playerName, fontSize = 36.sp, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(bottom = 4.dp))
+
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Text(text = player.playerName, fontSize = ButtonSettings.BUTTON_FONT_SIZE_BIG, color = MaterialTheme.colorScheme.primary, modifier = Modifier
+                    .padding(bottom = 4.dp)
+                    .weight(1f))
+                val imageResource = painterResource(id = com.ccl3_id.wanderquest.R.drawable.pencil)
+                IconButton(
+                    onClick = {
+                        mainViewModel.editPlayer();
+                    }) {
+                    Icon(imageResource, "Update",  tint = Color.White, modifier = Modifier.size(24.dp))
+                }
+            }
+
             Text( text = "Level: "+player.playerLevel, fontSize = 18.sp, color = Color.White, modifier = Modifier.padding(bottom = 4.dp))
             Text( text = "Class: "+player.playerClass, fontSize = 18.sp, color = Color.White,  modifier = Modifier.padding(bottom = 4.dp))
+
         }
 
     }
@@ -1179,7 +1483,9 @@ fun displayPlayerInfo(player: Player) {
             },
             fontSize = ButtonSettings.BUTTON_FONT_SIZE_BIG,
             textColor = Color.White,
-            modifier = Modifier.fillMaxWidth().padding(top=10.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 10.dp)
         )
     }
 
@@ -1507,6 +1813,11 @@ fun displayDungeons(mainViewModel: MainViewModel){
             displayOpenDungeons(openDungeon, mainViewModel);
 
         }
+
+        Column {
+            deleteDungeonModalMain(mainViewModel)
+        }
+
     }else{
         //state.value.battleStarted
         if(state.value.battleStarted){
@@ -1516,6 +1827,70 @@ fun displayDungeons(mainViewModel: MainViewModel){
         }
 
     }
+}
+
+
+@Composable
+fun deleteDungeonModalMain(mainViewModel: MainViewModel) {
+
+    val state = mainViewModel.mainViewState.collectAsState()
+    val context = LocalContext.current
+
+    if(state.value.dungeonDeleteDialog){
+        AlertDialog(
+            containerColor = MaterialTheme.colorScheme.background,
+            shape = RoundedCornerShape(10.dp),
+            onDismissRequest = {
+                mainViewModel.dismissDialog()
+            },
+            title = {
+                Text(text = "Delete Dungeon", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM)
+
+            },
+            text = {
+                Column {
+                    // https://www.jetpackcompose.net/textfield-in-jetpack-compose
+                    Text(text = "Are you sure you want to delete the Dungeon?", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM)
+                }
+            },
+            confirmButton = {
+
+                WanderButton(
+                    text = "Yes",
+                    color = MaterialTheme.colorScheme.primary,
+                    onClickEvent = {
+
+                        val text = "Dungeon Deleted"
+                        val duration = Toast.LENGTH_SHORT
+                        val toast = Toast.makeText(context , text, duration) // in Activity
+                        toast.show()
+
+                        mainViewModel.deleteDungeon(state.value.deletedDungeon!!)
+                        mainViewModel.dismissDialog()
+
+                    },
+                    fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+                    textColor = Color.White,
+                    modifier = Modifier
+                )
+            },
+            dismissButton = {
+
+                WanderButton(
+                    text = "No",
+                    color = MaterialTheme.colorScheme.tertiary,
+                    onClickEvent = {
+                        mainViewModel.dismissDialog()
+                    },
+                    fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+                    textColor = Color.White,
+                    modifier = Modifier
+                )
+            }
+
+        )
+    }
+
 }
 
 @Composable
@@ -1618,16 +1993,21 @@ fun ActiveDungeonItem(dungeon: Dungeon? = null, mainViewModel: MainViewModel) {
                 .weight(1f)
                 .padding(10.dp)){
                 Text(text = dungeon.dungeonName, fontSize = 20.sp, color = Color.White)
-                Text(text = "Distance: ${dungeon.displayTotalDistance()}", fontSize = 15.sp, color = Color.White)
-                if(dungeon.dungeonWalkedDistance < dungeon.dungeonTotalDistance){
-                    //TODO change so 1.750 km --> 1.7 km
-                    Text(text = "Walked:  ${dungeon.displayWalkedDistance()}", fontSize = 15.sp, color = Color.White)
+
+                if(dungeon.dungeonCompleted){
+                    Text(text = "Completed", fontSize = 20.sp, color = MaterialTheme.colorScheme.primary)
                 }else{
-                    Text(text = "", fontSize = 16.sp, color = Color.White)
+                    Text(text = "Distance: ${dungeon.displayTotalDistance()}", fontSize = 15.sp, color = Color.White)
+                    if(dungeon.dungeonWalkedDistance < dungeon.dungeonTotalDistance){
+                        //TODO change so 1.750 km --> 1.7 km
+                        Text(text = "Walked:  ${dungeon.displayWalkedDistance()}", fontSize = 15.sp, color = Color.White)
+                    }else{
+                        Text(text = "", fontSize = 16.sp, color = Color.White)
+                    }
                 }
             }
             //TODO add Dialog if you are sure
-            IconButton(onClick = { mainViewModel.deleteDungeon(dungeon) }, modifier = Modifier.padding(10.dp)) {
+            IconButton(onClick = { mainViewModel.openDeleteDungeon(dungeon) }, modifier = Modifier.padding(10.dp)) {
                 Icon(Icons.Default.Delete, "Delete", tint =  MaterialTheme.colorScheme.onSecondary, modifier = Modifier.size(32.dp))
             }
             if(dungeon.dungeonWalkedDistance >= dungeon.dungeonTotalDistance){
@@ -1744,11 +2124,16 @@ fun displayBattleContent(mainViewModel: MainViewModel){
                 Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(text =  "${enemy!!.entityName}", fontSize = 50.sp, color = Color.White, modifier = Modifier.padding(bottom = 10.dp))
 
-                    //Enemy Image
-                    Box(modifier = Modifier
-                        .size(150.dp, 150.dp)
-                        .background(Color.Gray)
-                        .padding(bottom = 10.dp))
+                    
+                    val imageResource = painterResource(id = R.drawable.monster)
+
+                    Image(
+                        painter = imageResource,
+                        contentDescription = "Monster Picture",
+                        modifier = Modifier
+                            .size(175.dp, 175.dp)
+                            .padding(bottom = 10.dp)
+                    )
 
                 }
 

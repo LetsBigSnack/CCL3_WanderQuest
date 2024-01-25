@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.ccl3_id.wanderquest.data.DatabaseHandler
 import com.ccl3_id.wanderquest.data.models.dungeons.Dungeon
 import com.ccl3_id.wanderquest.data.models.entities.Enemy
+import com.ccl3_id.wanderquest.data.models.entities.Player
 import com.ccl3_id.wanderquest.data.models.items.Item
 import com.ccl3_id.wanderquest.data.models.rooms.Room
 import com.ccl3_id.wanderquest.repository.LocationRepository
@@ -250,6 +251,10 @@ class MainViewModel (val db: DatabaseHandler, private val locationRepository: Lo
     fun checkRoomEnabled(): Boolean {
         val selectedRoom = _mainViewState.value.currentSelectedRoom ?: return false
 
+        if(selectedRoom.xIndex == 2 && selectedRoom.yIndex == 2){
+            return true
+        }
+
         if(selectedRoom!!.hasBeenVisited){
             return true
         }
@@ -270,6 +275,7 @@ class MainViewModel (val db: DatabaseHandler, private val locationRepository: Lo
     fun completeRoom(){
         val dungeonRooms = _mainViewState.value.dungeonRooms?: return
         val selectedRoom = _mainViewState.value.currentSelectedRoom ?: return
+        val selectedDungeon = _mainViewState.value.selectedDungeon ?: return
 
         dungeonRooms[selectedRoom.yIndex][selectedRoom.xIndex]!!.hasBeenVisited = true
         _mainViewState.update { it.copy(dungeonRooms = dungeonRooms)}
@@ -277,6 +283,22 @@ class MainViewModel (val db: DatabaseHandler, private val locationRepository: Lo
         getAdjacentRooms()
         db.updateRoom(selectedRoom)
         getActiveDungeons()
+
+        var complete : Boolean = true
+
+        dungeonRooms!!.forEach { row ->
+            row.forEach { room ->
+                if (room != null && !room.hasBeenVisited) {
+                    complete = false
+                }
+            }
+        }
+
+        if(complete && !selectedDungeon.dungeonCompleted){
+            selectedDungeon.dungeonCompleted = true;
+            db.updateDungeon(selectedDungeon)
+            _mainViewState.update { it.copy(displayCompleteDialog = true)}
+        }
     }
 
     fun openDungeonDialog() {
@@ -285,6 +307,13 @@ class MainViewModel (val db: DatabaseHandler, private val locationRepository: Lo
 
     fun dismissDialog() {
         _mainViewState.update { it.copy(displayDungeonPopUp = false)}
+        _mainViewState.update { it.copy(openPlayerDeleteDialog = false)}
+        _mainViewState.update { it.copy(openPlayerEditDialog = false)}
+        _mainViewState.update { it.copy(dungeonDeleteDialog = false)}
+    }
+
+    fun dismissComplete(){
+        _mainViewState.update { it.copy(displayCompleteDialog = false)}
     }
 
     fun getItem(item : Item) {
@@ -295,6 +324,28 @@ class MainViewModel (val db: DatabaseHandler, private val locationRepository: Lo
             item.itemPlayerId = player!!.id
             db.insertItem(item)
         }
+    }
+
+    fun deleteCharacter() {
+        db.deletePlayer(mainViewState.value.selectedPlayer!!)
+    }
+
+    fun updateCharacter(tempPlayer: Player) {
+        db.updatePlayer(tempPlayer)
+        getPlayer()
+    }
+
+    fun editPlayer() {
+        _mainViewState.update { it.copy(openPlayerEditDialog = true)}
+    }
+
+    fun deletePlayer(){
+        _mainViewState.update { it.copy(openPlayerDeleteDialog = true)}
+    }
+
+    fun openDeleteDungeon(dungeon: Dungeon) {
+        _mainViewState.update { it.copy(deletedDungeon = dungeon)}
+        _mainViewState.update { it.copy(dungeonDeleteDialog = true)}
     }
 
 }

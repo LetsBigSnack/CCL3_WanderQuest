@@ -22,15 +22,15 @@ open class Player (
 
     var savedStats : MutableMap<String, Int> = mutableMapOf()
 
-    var abilityOneName : String = "ab1";
-    var abilityTwoName : String = "ab2";
-    var abilityThreeName : String = "ab3";
-    var abilityFourName : String = "ab4";
+    var abilityOneName : String = "Fast Punch";
+    var abilityTwoName : String = "Heal";
+    var abilityThreeName : String = "Heavy Punch";
+    var abilityFourName : String = "Drop Kick";
 
-    var abilityOneDescription : String = "ab1";
-    var abilityTwoDescription  : String = "ab2";
-    var abilityThreeDescription  : String = "ab3";
-    var abilityFourDescription  : String = "ab4";
+    var abilityOneDescription : String = "Do 1d8 + Dexterity DMG to an Enemy";
+    var abilityTwoDescription  : String = "Heal for 2d4 + Motivation ";
+    var abilityThreeDescription  : String = "Do 1d6 + Strength DMG to an Enemy";
+    var abilityFourDescription  : String = "Do 1d6 + Dexterity + Strength DMG to an Enemy";
 
 
 
@@ -84,7 +84,7 @@ open class Player (
     }
 
     open fun abilityOne(entity: Entity): String {
-        val dmgDealt = Random.nextInt(1, 2);
+        val dmgDealt = Random.nextInt(1, 8) + this.playerStats[Player.STAT_DEXTERITY]!!;
 
         entity.takeDmg(dmgDealt);
 
@@ -92,7 +92,7 @@ open class Player (
 
     }
     open fun abilityTwo(entity: Entity): String {
-        val heal = Random.nextInt(1, 10);
+        val heal = Random.nextInt(1, 4) +  Random.nextInt(1, 4) + this.playerStats[Player.STAT_MOTIVATION]!!;
 
         this.heal(heal);
 
@@ -100,7 +100,7 @@ open class Player (
 
     }
     open fun abilityThree(entity: Entity): String {
-        val dmgDealt = Random.nextInt(1, 10);
+        val dmgDealt = Random.nextInt(1, 6) + this.playerStats[Player.STAT_STRENGTH]!!;
 
         entity.takeDmg(dmgDealt);
 
@@ -108,7 +108,7 @@ open class Player (
 
     }
     open fun abilityFour(entity: Entity): String {
-        val dmgDealt = Random.nextInt(1, 10);
+        val dmgDealt = Random.nextInt(1, 6) + this.playerStats[Player.STAT_STRENGTH]!! +  + this.playerStats[Player.STAT_DEXTERITY]!!;
 
         entity.takeDmg(dmgDealt);
 

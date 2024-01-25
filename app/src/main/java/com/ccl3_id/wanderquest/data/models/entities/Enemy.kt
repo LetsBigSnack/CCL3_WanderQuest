@@ -2,7 +2,7 @@ package com.ccl3_id.wanderquest.data.models.entities
 
 import kotlin.random.Random
 
-class Enemy(monsterName: String = "Monster") : Entity(monsterName) {
+class Enemy(monsterName: String = "DIE-abitits") : Entity(monsterName) {
 
     var entityDMG = 4;
 

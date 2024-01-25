@@ -59,6 +59,8 @@ import com.ccl3_id.wanderquest.MainActivity
 import com.ccl3_id.wanderquest.viewModels.LevelUpViewModel
 import kotlin.system.exitProcess
 import androidx.compose.material3.Scaffold
+import com.ccl3_id.wanderquest.ui.composables.ButtonSettings
+import com.ccl3_id.wanderquest.ui.theme.RobotoFontFamily
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,12 +77,8 @@ fun LevelUpView(levelUpViewModel: LevelUpViewModel, context: Context) {
         topBar = {
             TopAppBar(
                 title = {
-                    Text(
-                        "LEVEL UP",
-                        fontSize = 30.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.background
-                    )
+                    Text("Level Up!",fontSize = ButtonSettings.BUTTON_FONT_SIZE_MASSIVE,
+                        fontFamily = RobotoFontFamily, color = Color.White)
                 },
                 navigationIcon = {
                     IconButton(onClick = {
@@ -89,7 +87,7 @@ fun LevelUpView(levelUpViewModel: LevelUpViewModel, context: Context) {
                             MainActivity::class.java
                         ); context.startActivity(intent);
                     }) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.primary)
                     }
                 },
                 backgroundColor = MaterialTheme.colorScheme.secondary
