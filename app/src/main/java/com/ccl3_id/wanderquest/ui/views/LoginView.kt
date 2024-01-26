@@ -43,8 +43,6 @@ fun LoginView(loginViewModel: LoginViewModel, hasPermissions: MutableState<Boole
 
     val players = state.value.players;
 
-
-
         Column (
             modifier = Modifier
                 .fillMaxSize()
