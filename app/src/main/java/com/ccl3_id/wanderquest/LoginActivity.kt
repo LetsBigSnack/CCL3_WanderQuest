@@ -16,6 +16,7 @@ import com.ccl3_id.wanderquest.ui.theme.WanderQuestTheme
 import com.ccl3_id.wanderquest.ui.views.LoginView
 import com.ccl3_id.wanderquest.viewModels.LoginViewModel
 import android.provider.Settings
+import androidx.compose.runtime.mutableStateOf
 
 
 class LoginActivity : ComponentActivity() {
@@ -24,7 +25,7 @@ class LoginActivity : ComponentActivity() {
     private val db = DatabaseHandler(this)
     private val loginViewModel = LoginViewModel(db)
 
-    private var hasPermissions : Boolean = false
+    var hasPermissions = mutableStateOf(false)
 
     private val requiredPermissions = arrayOf(
         Manifest.permission.ACTIVITY_RECOGNITION,
@@ -45,7 +46,7 @@ class LoginActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         if (permissionHandler.hasPermissions(requiredPermissions)) {
-            hasPermissions = true
+            hasPermissions.value = true
             startLocationTrackingService()
         } else {
             permissionHandler.requestPermissions(requiredPermissions)
@@ -67,11 +68,12 @@ class LoginActivity : ComponentActivity() {
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (permissionHandler.onRequestPermissionsResult(requestCode, permissions, grantResults)) {
+            hasPermissions.value = true
             startLocationTrackingService()
         } else {
             if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.TIRAMISU) {
                 if (permissionHandler.hasPermissions(requiredPermissionsLowerVersion)) {
-                    hasPermissions = true
+                    hasPermissions.value = true
                     startLocationTrackingService()
                 }else{
                     //TODO Display Explanation why it must be enabled

@@ -17,6 +17,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
@@ -35,7 +36,7 @@ import com.ccl3_id.wanderquest.viewModels.LoginViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginView(loginViewModel: LoginViewModel, hasPermissions: Boolean) {
+fun LoginView(loginViewModel: LoginViewModel, hasPermissions: MutableState<Boolean>) {
     //TODO remove Context variable
     val context= LocalContext.current;
     val state = loginViewModel.loginViewState.collectAsState()
@@ -66,7 +67,7 @@ fun LoginView(loginViewModel: LoginViewModel, hasPermissions: Boolean) {
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
             )
 
-            if (!hasPermissions) {
+            if (!hasPermissions.value) {
 
                 Column(modifier = Modifier.fillMaxSize().padding(10.dp) ) {
                     Text(

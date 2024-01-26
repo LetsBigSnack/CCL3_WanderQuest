@@ -696,7 +696,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
             put(dungeonName,dungeon.dungeonName)
             put(dungeonTotalDistance, dungeon.dungeonTotalDistance)
             //Change to walked
-            put(dungeonWalkedDistance, dungeon.dungeonWalkedDistance)
+            put(dungeonWalkedDistance, dungeon.dungeonTotalDistance)
             put(dungeonActive, dungeon.dungeonActive)
             put(dungeonCompleted,  dungeon.dungeonCompleted)
             put(dungeonCreatedAt,  dateFormat.format(Date()))

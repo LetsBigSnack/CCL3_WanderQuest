@@ -152,7 +152,7 @@ class MainViewModel (val db: DatabaseHandler, private val locationRepository: Lo
                     resetDistance()
                     getActiveDungeons()
                 }
-                delay(10000) // Delay for 10 seconds
+                delay(1000) // Delay for 10 seconds
             }
         }
     }
