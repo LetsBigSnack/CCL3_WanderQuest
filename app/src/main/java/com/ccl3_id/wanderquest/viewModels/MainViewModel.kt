@@ -72,20 +72,20 @@ class MainViewModel (val db: DatabaseHandler, private val locationRepository: Lo
 
         when(abilityNumber){
             1 -> {
-                _mainViewState.update { it.copy(playerText = _mainViewState.value.selectedPlayer!!.abilityOne(_mainViewState.value.enemy!!)) };
                 _mainViewState.update { it.copy(enemyText = _mainViewState.value.enemy!!.battle(_mainViewState.value.selectedPlayer!!)) };
+                _mainViewState.update { it.copy(playerText = _mainViewState.value.selectedPlayer!!.abilityOne(_mainViewState.value.enemy!!)) };
             }
             2 -> {
+                _mainViewState.update { it.copy(enemyText = _mainViewState.value.enemy!!.battle(_mainViewState.value.selectedPlayer!!)) };
                 _mainViewState.update { it.copy(playerText = _mainViewState.value.selectedPlayer!!.abilityTwo(_mainViewState.value.enemy!!)) };
-                _mainViewState.update { it.copy(enemyText = _mainViewState.value.enemy!!.battle(_mainViewState.value.selectedPlayer!!)) };
-            }
+             }
             3 -> {
+                _mainViewState.update { it.copy(enemyText = _mainViewState.value.enemy!!.battle(_mainViewState.value.selectedPlayer!!)) };
                 _mainViewState.update { it.copy(playerText = _mainViewState.value.selectedPlayer!!.abilityThree(_mainViewState.value.enemy!!)) };
-                _mainViewState.update { it.copy(enemyText = _mainViewState.value.enemy!!.battle(_mainViewState.value.selectedPlayer!!)) };
-            }
+             }
             4 -> {
-                _mainViewState.update { it.copy(playerText = _mainViewState.value.selectedPlayer!!.abilityFour(_mainViewState.value.enemy!!)) };
                 _mainViewState.update { it.copy(enemyText = _mainViewState.value.enemy!!.battle(_mainViewState.value.selectedPlayer!!)) };
+                _mainViewState.update { it.copy(playerText = _mainViewState.value.selectedPlayer!!.abilityFour(_mainViewState.value.enemy!!)) };
             }
         }
 

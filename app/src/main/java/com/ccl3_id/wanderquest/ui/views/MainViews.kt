@@ -2122,16 +2122,16 @@ fun displayBattleContent(mainViewModel: MainViewModel){
                 .fillMaxWidth()) {
 
                 Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(text =  "${enemy!!.entityName}", fontSize = 50.sp, color = Color.White, modifier = Modifier.padding(bottom = 10.dp))
+                    Text(text =  "${enemy!!.entityName}", fontSize = ButtonSettings.BUTTON_FONT_SIZE_BIG, color = Color.White, modifier = Modifier.padding(bottom = 10.dp))
 
-                    
+
                     val imageResource = painterResource(id = R.drawable.monster)
 
                     Image(
                         painter = imageResource,
                         contentDescription = "Monster Picture",
                         modifier = Modifier
-                            .size(175.dp, 175.dp)
+                            .size(160.dp, 160.dp)
                             .padding(bottom = 10.dp)
                     )
 
@@ -2171,85 +2171,70 @@ fun displayBattleContent(mainViewModel: MainViewModel){
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight()
+                .verticalScroll(rememberScrollState())
         ) {
 
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight()
-                    .verticalScroll(rememberScrollState())
-                    .weight(1f)
-            ) {
-                Row(
+
+            if(!state.value.battleComplete){
+
+                WanderButton(
+                    text = player!!.abilityOneName,
+                    color = MaterialTheme.colorScheme.primary,
+                    onClickEvent = {
+                        mainViewModel.useAbility(1)
+                    },
+                    fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+                    textColor = Color.White,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f)
-                        .padding(5.dp)
-                ) {
-                    WanderButton(
-                        text = player!!.abilityOneName,
-                        color = MaterialTheme.colorScheme.primary,
-                        onClickEvent = {
-                            mainViewModel.useAbility(1)
-                        },
-                        fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
-                        textColor = Color.White,
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .padding(5.dp),
-                        enabled = !state.value.battleComplete
-                    )
-                    WanderButton(
-                        text = player!!.abilityTwoName,
-                        color = MaterialTheme.colorScheme.primary,
-                        onClickEvent = {
-                            mainViewModel.useAbility(2)
-                        },
-                        fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
-                        textColor = Color.White,
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .padding(5.dp),
-                        enabled = !state.value.battleComplete
-                    )
-                }
-                Row(
+                        .padding(5.dp),
+                    enabled = !state.value.battleComplete
+                )
+
+                WanderButton(
+                    text = player!!.abilityTwoName,
+                    color = MaterialTheme.colorScheme.primary,
+                    onClickEvent = {
+                        mainViewModel.useAbility(2)
+                    },
+                    fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+                    textColor = Color.White,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f)
-                ) {
-                    WanderButton(
-                        text = player!!.abilityThreeName,
-                        color = MaterialTheme.colorScheme.primary,
-                        onClickEvent = {
-                            mainViewModel.useAbility(3)
-                        },
-                        fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
-                        textColor = Color.White,
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .padding(5.dp),
-                        enabled = !state.value.battleComplete
-                    )
-                    WanderButton(
-                        text = player!!.abilityFourName,
-                        color = MaterialTheme.colorScheme.primary,
-                        onClickEvent = {
-                            mainViewModel.useAbility(4)
-                        },
-                        fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
-                        textColor = Color.White,
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .padding(5.dp),
-                        enabled = !state.value.battleComplete
-                    )
-                }
+                        .padding(5.dp),
+                    enabled = !state.value.battleComplete
+                )
+
+                WanderButton(
+                    text = player!!.abilityThreeName,
+                    color = MaterialTheme.colorScheme.primary,
+                    onClickEvent = {
+                        mainViewModel.useAbility(3)
+                    },
+                    fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+                    textColor = Color.White,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(5.dp),
+                    enabled = !state.value.battleComplete
+                )
+
+                WanderButton(
+                    text = player!!.abilityFourName,
+                    color = MaterialTheme.colorScheme.primary,
+                    onClickEvent = {
+                        mainViewModel.useAbility(4)
+                    },
+                    fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+                    textColor = Color.White,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(5.dp),
+                    enabled = !state.value.battleComplete
+                )
+
             }
+
             WanderButton(
                 text = "Leave Battle",
                 color = MaterialTheme.colorScheme.tertiary,
