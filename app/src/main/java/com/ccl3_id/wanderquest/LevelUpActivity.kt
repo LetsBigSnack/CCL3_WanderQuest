@@ -24,9 +24,9 @@ import com.ccl3_id.wanderquest.ui.views.LevelUpView
 import com.ccl3_id.wanderquest.viewModels.LevelUpViewModel
 
 class LevelUpActivity : ComponentActivity() {
+
     private val db = DatabaseHandler(this)
     private val levelUpViewModel = LevelUpViewModel(db)
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

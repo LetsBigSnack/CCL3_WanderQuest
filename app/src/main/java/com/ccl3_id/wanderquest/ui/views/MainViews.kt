@@ -32,7 +32,6 @@ import androidx.compose.material.LinearProgressIndicator
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -46,7 +45,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -87,42 +85,28 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.scrollBy
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.offset
-import androidx.compose.ui.input.pointer.PointerInputScope
-import androidx.compose.ui.input.pointer.consumePositionChange
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.positionChange
-import androidx.compose.ui.input.pointer.positionChanged
-import androidx.compose.ui.unit.IntOffset
 import com.ccl3_id.wanderquest.data.models.rooms.Room
-import kotlinx.coroutines.coroutineScope
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.Card
 import androidx.compose.material.Divider
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.vectorResource
-import com.ccl3_id.wanderquest.MainActivity
 import com.ccl3_id.wanderquest.data.models.entities.Enemy
 import com.ccl3_id.wanderquest.ui.composables.ButtonSettings
-import com.ccl3_id.wanderquest.ui.composables.MultiStyleText
+import com.ccl3_id.wanderquest.ui.composables.MultiColorText
 import com.ccl3_id.wanderquest.ui.composables.WanderButton
-import com.ccl3_id.wanderquest.ui.theme.RobotoFontFamily
 import kotlin.math.abs
 
 sealed class Screen(val route: String){
@@ -644,8 +628,8 @@ fun displayRoomItem(item: Item, mainViewModel: MainViewModel) {
         text = {
             Column {
                 Text(text = "You found an Item!", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM)
-                MultiStyleText("Name: ", Color.White, item.name, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
-                MultiStyleText("Type: ", Color.White, item.type, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
+                MultiColorText("Name: ", Color.White, item.name, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
+                MultiColorText("Type: ", Color.White, item.type, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
 
                 val itemStats = item.getStats()
                 if (itemStats != null) {
@@ -654,10 +638,10 @@ fun displayRoomItem(item: Item, mainViewModel: MainViewModel) {
                         text = "Stat Buffs:", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM
                     )
                     itemStats.statBuffs.entries.forEach { (k,v) ->
-                        MultiStyleText("$k: ", MaterialTheme.colorScheme.onSurface, "$v" , MaterialTheme.colorScheme.primary, fontSize = 18.sp, Modifier.padding(start = 20.dp))
+                        MultiColorText("$k: ", MaterialTheme.colorScheme.onSurface, "$v" , MaterialTheme.colorScheme.primary, fontSize = 18.sp, Modifier.padding(start = 20.dp))
                     }
                     if(itemStats.abilities != " "){
-                        MultiStyleText("Abilities: ", Color.White, itemStats.abilities, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
+                        MultiColorText("Abilities: ", Color.White, itemStats.abilities, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
                     }
 
                     if(itemStats.statNerfs.entries.filter { (k,v) -> k != " "}.isNotEmpty()){
@@ -666,7 +650,7 @@ fun displayRoomItem(item: Item, mainViewModel: MainViewModel) {
                         )
                         itemStats.statNerfs.entries.forEach { (k,v) ->
                             if(k != " "){
-                                MultiStyleText("$k: ", MaterialTheme.colorScheme.onSurface, "$v" , MaterialTheme.colorScheme.primary, fontSize = 18.sp, Modifier.padding(start = 20.dp))
+                                MultiColorText("$k: ", MaterialTheme.colorScheme.onSurface, "$v" , MaterialTheme.colorScheme.primary, fontSize = 18.sp, Modifier.padding(start = 20.dp))
                             }
                         }
                     }
@@ -888,8 +872,8 @@ fun ItemPopUpEquip(clickedItem: Item, itemViewModel: ItemViewModel, player: Play
         text = {
 
             Column{
-                MultiStyleText("Name: ", Color.White, clickedItem.name, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
-                MultiStyleText("Type: ", Color.White, clickedItem.type, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
+                MultiColorText("Name: ", Color.White, clickedItem.name, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
+                MultiColorText("Type: ", Color.White, clickedItem.type, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
 
                 if (itemStats != null) {
                     //TODO make more fancy
@@ -897,10 +881,10 @@ fun ItemPopUpEquip(clickedItem: Item, itemViewModel: ItemViewModel, player: Play
                         text = "Stat Buffs:", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM
                     )
                     itemStats.statBuffs.entries.forEach { (k,v) ->
-                        MultiStyleText("$k: ", MaterialTheme.colorScheme.onSurface, "$v" , MaterialTheme.colorScheme.primary, fontSize = 18.sp, Modifier.padding(start = 20.dp))
+                        MultiColorText("$k: ", MaterialTheme.colorScheme.onSurface, "$v" , MaterialTheme.colorScheme.primary, fontSize = 18.sp, Modifier.padding(start = 20.dp))
                     }
                     if(itemStats.abilities != " "){
-                        MultiStyleText("Abilities: ", Color.White, itemStats.abilities, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
+                        MultiColorText("Abilities: ", Color.White, itemStats.abilities, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
                     }
 
                     if(itemStats.statNerfs.entries.filter { (k,v) -> k != " "}.isNotEmpty()){
@@ -909,7 +893,7 @@ fun ItemPopUpEquip(clickedItem: Item, itemViewModel: ItemViewModel, player: Play
                         )
                         itemStats.statNerfs.entries.forEach { (k,v) ->
                             if(k != " "){
-                                MultiStyleText("$k: ", MaterialTheme.colorScheme.onSurface, "$v" , MaterialTheme.colorScheme.primary, fontSize = 18.sp, Modifier.padding(start = 20.dp))
+                                MultiColorText("$k: ", MaterialTheme.colorScheme.onSurface, "$v" , MaterialTheme.colorScheme.primary, fontSize = 18.sp, Modifier.padding(start = 20.dp))
                             }
                         }
                     }
@@ -964,8 +948,8 @@ fun isAlreadyEquippedPopUp(clickedItem: Item, itemViewModel: ItemViewModel, play
         text = {
 
             Column{
-                MultiStyleText("Name: ", Color.White, clickedItem.name, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
-                MultiStyleText("Type: ", Color.White, clickedItem.type, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
+                MultiColorText("Name: ", Color.White, clickedItem.name, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
+                MultiColorText("Type: ", Color.White, clickedItem.type, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
 
                 if (itemStats != null) {
                     //TODO make more fancy
@@ -973,10 +957,10 @@ fun isAlreadyEquippedPopUp(clickedItem: Item, itemViewModel: ItemViewModel, play
                         text = "Stat Buffs:", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM
                     )
                     itemStats.statBuffs.entries.forEach { (k,v) ->
-                        MultiStyleText("$k: ", MaterialTheme.colorScheme.onSurface, "$v" , MaterialTheme.colorScheme.primary, fontSize = 18.sp, Modifier.padding(start = 20.dp))
+                        MultiColorText("$k: ", MaterialTheme.colorScheme.onSurface, "$v" , MaterialTheme.colorScheme.primary, fontSize = 18.sp, Modifier.padding(start = 20.dp))
                     }
                     if(itemStats.abilities != " "){
-                        MultiStyleText("Abilities: ", Color.White, itemStats.abilities, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
+                        MultiColorText("Abilities: ", Color.White, itemStats.abilities, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
                     }
 
                     if(itemStats.statNerfs.entries.filter { (k,v) -> k != " "}.isNotEmpty()){
@@ -985,7 +969,7 @@ fun isAlreadyEquippedPopUp(clickedItem: Item, itemViewModel: ItemViewModel, play
                         )
                         itemStats.statNerfs.entries.forEach { (k,v) ->
                             if(k != " "){
-                                MultiStyleText("$k: ", MaterialTheme.colorScheme.onSurface, "$v" , MaterialTheme.colorScheme.primary, fontSize = 18.sp, Modifier.padding(start = 20.dp))
+                                MultiColorText("$k: ", MaterialTheme.colorScheme.onSurface, "$v" , MaterialTheme.colorScheme.primary, fontSize = 18.sp, Modifier.padding(start = 20.dp))
                             }
                         }
                     }
@@ -1098,8 +1082,8 @@ fun EquippedItemPopUp(itemViewModel : ItemViewModel, mainViewModel: MainViewMode
             },
             text = {
                 Column {
-                    MultiStyleText("Name: ", Color.White, clickedItem.name, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
-                    MultiStyleText("Type: ", Color.White, clickedItem.type, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
+                    MultiColorText("Name: ", Color.White, clickedItem.name, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
+                    MultiColorText("Type: ", Color.White, clickedItem.type, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
 
                     if (itemStats != null) {
                         //TODO make more fancy
@@ -1107,10 +1091,10 @@ fun EquippedItemPopUp(itemViewModel : ItemViewModel, mainViewModel: MainViewMode
                             text = "Stat Buffs:", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM
                         )
                         itemStats.statBuffs.entries.forEach { (k,v) ->
-                            MultiStyleText("$k: ", MaterialTheme.colorScheme.onSurface, "$v" , MaterialTheme.colorScheme.primary, fontSize = 18.sp, Modifier.padding(start = 20.dp))
+                            MultiColorText("$k: ", MaterialTheme.colorScheme.onSurface, "$v" , MaterialTheme.colorScheme.primary, fontSize = 18.sp, Modifier.padding(start = 20.dp))
                         }
                         if(itemStats.abilities != " "){
-                            MultiStyleText("Abilities: ", Color.White, itemStats.abilities, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
+                            MultiColorText("Abilities: ", Color.White, itemStats.abilities, MaterialTheme.colorScheme.primary, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, Modifier)
                         }
                         val test = itemStats.statNerfs.entries.filter { (k,v) -> k != " "}
                         if(itemStats.statNerfs.entries.filter { (k, v) -> k != " " }.isNotEmpty()){
@@ -1119,7 +1103,7 @@ fun EquippedItemPopUp(itemViewModel : ItemViewModel, mainViewModel: MainViewMode
                             )
                             itemStats.statNerfs.entries.forEach { (k,v) ->
                                 if(k != " "){
-                                    MultiStyleText("$k: ", MaterialTheme.colorScheme.onSurface, "$v" , MaterialTheme.colorScheme.primary, fontSize = 18.sp, Modifier.padding(start = 20.dp))
+                                    MultiColorText("$k: ", MaterialTheme.colorScheme.onSurface, "$v" , MaterialTheme.colorScheme.primary, fontSize = 18.sp, Modifier.padding(start = 20.dp))
                                 }
                             }
                         }
@@ -1570,9 +1554,9 @@ fun displayPlayerStats(player: Player, itemViewModel: ItemViewModel){
                     }else{
 
                         if(totalBuffNerf < 0){
-                            MultiStyleText("$baseValue ", Color.White, "- "+abs(totalBuffNerf), Color(0xFFF95B78), fontSize = 24.sp , modifier = Modifier.padding(4.dp))
+                            MultiColorText("$baseValue ", Color.White, "- "+abs(totalBuffNerf), Color(0xFFF95B78), fontSize = 24.sp , modifier = Modifier.padding(4.dp))
                         }else{
-                            MultiStyleText("$baseValue ", Color.White, "+ "+abs(totalBuffNerf), Color(0xFF00C2A2), fontSize = 24.sp, modifier = Modifier.padding(4.dp))
+                            MultiColorText("$baseValue ", Color.White, "+ "+abs(totalBuffNerf), Color(0xFF00C2A2), fontSize = 24.sp, modifier = Modifier.padding(4.dp))
                         }
                     }
                 }
