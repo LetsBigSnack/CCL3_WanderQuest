@@ -53,31 +53,27 @@ import com.ccl3_id.wanderquest.ui.theme.RobotoFontFamily
 import androidx.compose.material3.AlertDialog
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import com.ccl3_id.wanderquest.ui.composables.SimpleTopBar
 import com.ccl3_id.wanderquest.ui.composables.WanderButton
 
 @Composable
-fun CharacterView(characterViewModel: CharacterViewModel, context: Context) {
+fun CharacterView(characterViewModel: CharacterViewModel) {
 
     val state = characterViewModel.characterViewState.collectAsState()
-    //TODO switch everything to LocalContext
     val context= LocalContext.current;
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Characters",fontSize = ButtonSettings.BUTTON_FONT_SIZE_MASSIVE,
-                    fontFamily = RobotoFontFamily, color = Color.White)},
-                navigationIcon = {
-                    IconButton(onClick = { val intent = Intent(context, LoginActivity::class.java); context.startActivity(intent);  }) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.primary)
-                    }
-                },
-                backgroundColor = MaterialTheme.colorScheme.secondary
+            SimpleTopBar(
+                text = "Characters",
+                onClickEvent = {
+                    val intent = Intent(context, LoginActivity::class.java);
+                    context.startActivity(intent);
+                }
             )
         }
     ) { contentPadding ->
 
-        // https://developer.android.com/jetpack/compose/lists
         LazyColumn(
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally,

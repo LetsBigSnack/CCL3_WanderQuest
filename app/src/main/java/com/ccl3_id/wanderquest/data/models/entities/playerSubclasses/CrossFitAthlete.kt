@@ -10,8 +10,13 @@ class CrossFitAthlete(
     playerAttributePoints: Int,
     lastPlayed: Boolean,
     playerCurrentXP: Int,
-    id: Int
-) : Player(
+    id: Int,
+    tut1: Boolean,
+    tut2: Boolean,
+    tut3: Boolean,
+    tut4: Boolean,
+
+    ) : Player(
     playerName,
     playerClass,
     playerLevel,
@@ -19,6 +24,10 @@ class CrossFitAthlete(
     playerAttributePoints,
     lastPlayed,
     playerCurrentXP,
-    id
+    id,
+    tut1,
+    tut2,
+    tut3,
+    tut4
 ) {
 }

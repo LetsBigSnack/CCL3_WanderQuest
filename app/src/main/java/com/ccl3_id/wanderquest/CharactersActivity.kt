@@ -6,15 +6,18 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import com.ccl3_id.wanderquest.data.DatabaseHandler
 import com.ccl3_id.wanderquest.ui.theme.WanderQuestTheme
 import com.ccl3_id.wanderquest.ui.views.CharacterView
 import com.ccl3_id.wanderquest.viewModels.CharacterViewModel
 
+/**
+ * The Characters-Activity for WanderQuest.
+ *
+ * @author Igor van Duifhuizen / David Kupert
+ * @since 01-02-2024
+ */
 class CharactersActivity : ComponentActivity() {
 
     private val db = DatabaseHandler(this)
@@ -23,13 +26,12 @@ class CharactersActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             WanderQuestTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
                     characterViewModel.getCharacters()
-                    CharacterView(characterViewModel, this)
+                    CharacterView(characterViewModel)
                 }
             }
         }

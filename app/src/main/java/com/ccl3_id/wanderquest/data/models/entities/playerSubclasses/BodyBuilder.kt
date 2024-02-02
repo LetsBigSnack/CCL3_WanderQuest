@@ -10,7 +10,12 @@ class BodyBuilder(
     playerAttributePoints: Int,
     lastPlayed: Boolean,
     playerCurrentXP: Int,
-    id: Int
+    id: Int,
+    tut1: Boolean,
+    tut2: Boolean,
+    tut3: Boolean,
+    tut4: Boolean,
+
 ) : Player(
     playerName,
     playerClass,
@@ -19,6 +24,10 @@ class BodyBuilder(
     playerAttributePoints,
     lastPlayed,
     playerCurrentXP,
-    id
+    id,
+    tut1,
+    tut2,
+    tut3,
+    tut4
 ) {
 }

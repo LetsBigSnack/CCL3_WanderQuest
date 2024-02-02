@@ -1,8 +1,14 @@
 package com.ccl3_id.wanderquest.ui.composables
 
+import android.content.Intent
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.TopAppBar
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
@@ -16,6 +22,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ccl3_id.wanderquest.LoginActivity
 import com.ccl3_id.wanderquest.ui.theme.RobotoFontFamily
 
 
@@ -31,13 +38,20 @@ class ButtonSettings(){
 class TextSettings(){
     companion object{
         val TEXT_FONT_SIZE_MEDIUM = 20.sp
+        val TEXT_FONT_SIZE_LARGE = 24.sp
         val TEXT_FONT_SIZE_BIG = 28.sp
     }
 
 }
 
 @Composable
-fun MultiColorText(text1: String, color1: Color, text2: String, color2: Color, fontSize : TextUnit = 50.sp, modifier: Modifier = Modifier.padding(top = 10.dp, bottom = 10.dp) ) {
+fun MultiColorText(text1: String,
+                   color1: Color,
+                   text2: String,
+                   color2: Color,
+                   fontSize : TextUnit = 50.sp,
+                   modifier: Modifier = Modifier.padding(top = 10.dp, bottom = 10.dp)
+) {
     androidx.compose.material.Text(
         text = buildAnnotatedString {
             withStyle(style = SpanStyle(color = color1)) {
@@ -64,7 +78,7 @@ fun WanderButton(text : String,
                  modifier: Modifier = Modifier
                      .padding(top = 20.dp, start = 20.dp, end = 20.dp)
                      .fillMaxWidth()
-    ){
+){
     Button(
         onClick = onClickEvent,
         modifier = modifier,
@@ -120,7 +134,8 @@ fun WanderMenuButtonCancel(
 @Composable
 fun MediumText(text: String,
                color: Color = Color.White,
-               modifier: Modifier = Modifier){
+               modifier: Modifier = Modifier
+){
 
     Text(
         text = text,
@@ -132,9 +147,25 @@ fun MediumText(text: String,
 }
 
 @Composable
+fun LargeText(text: String,
+            color: Color = Color.White,
+            modifier: Modifier = Modifier
+){
+
+    Text(
+        text = text,
+        color = color,
+        fontSize = TextSettings.TEXT_FONT_SIZE_LARGE,
+        modifier = modifier
+    )
+
+}
+
+@Composable
 fun BigText(text: String,
                color: Color = Color.White,
-               modifier: Modifier = Modifier){
+               modifier: Modifier = Modifier
+){
 
     Text(
         text = text,
@@ -143,4 +174,18 @@ fun BigText(text: String,
         modifier = modifier
     )
 
+}
+
+@Composable
+fun SimpleTopBar(text:String, onClickEvent: () -> Unit){
+    TopAppBar(
+        title = { Text(text,fontSize = ButtonSettings.BUTTON_FONT_SIZE_MASSIVE,
+            fontFamily = RobotoFontFamily, color = Color.White)},
+        navigationIcon = {
+            IconButton(onClick = onClickEvent) {
+                Icon(Icons.Filled.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.primary)
+            }
+        },
+        backgroundColor = MaterialTheme.colorScheme.secondary
+    )
 }

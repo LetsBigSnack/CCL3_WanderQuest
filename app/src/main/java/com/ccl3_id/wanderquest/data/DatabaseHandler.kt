@@ -40,6 +40,14 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
         private const val playerAttributePoints = "playerAttributePoints"
         private const val lastPlayed = "lastPlayed"
         private const val currentXP = "currentXP"
+        private const val tutorialCharPage = "tutorialCharPage"
+        private const val tutorialDungeonPage = "tutorialDungeonPage"
+        private const val tutorialExplorePage = "tutorialExplorePage"
+        private const val tutorialItemPage = "tutorialItemPage"
+
+
+
+
 
         private const val itemTableName = "Items"
         private const val itemId = "itemId"
@@ -105,7 +113,11 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
                 "$playerMotivation INTEGER," +
                 "$playerAttributePoints INTEGER," +
                 "$lastPlayed BOOLEAN," +
-                "$currentXP INTEGER" +
+                "$currentXP INTEGER," +
+                "$tutorialCharPage BOOLEAN,"+
+                "$tutorialDungeonPage BOOLEAN,"+
+                "$tutorialExplorePage BOOLEAN,"+
+                "$tutorialItemPage BOOLEAN"+
                 ");")
 
         db?.execSQL("CREATE TABLE IF NOT EXISTS $itemTableName (" +
@@ -281,7 +293,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
     }
 
     fun generateItemAbilities(): String{
-        val possibleStats = listOf("Lucky Chucky", "Health Regen", "Magic Shield", " ", " ", " ", " ")
+        val possibleStats = listOf(" ", " ", " ", " ")
 
         return possibleStats.random()
     }
@@ -378,6 +390,10 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
             put(playerAttributePoints, player.playerAttributePoints)
             put(lastPlayed, true)
             put(currentXP, 0)
+            put(tutorialCharPage, player.tutorialCharPage)
+            put(tutorialDungeonPage, player.tutorialDungeonPage)
+            put(tutorialExplorePage, player.tutorialExplorePage)
+            put(tutorialItemPage, player.tutorialItemPage)
         }
 
         return db.insert(playerTableName, null, values)
@@ -398,6 +414,10 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
             put(playerAttributePoints, player.playerAttributePoints)
             put(lastPlayed, player.lastPlayed)
             put(currentXP, player.playerCurrentXP)
+            put(tutorialCharPage, player.tutorialCharPage)
+            put(tutorialDungeonPage, player.tutorialDungeonPage)
+            put(tutorialExplorePage, player.tutorialExplorePage)
+            put(tutorialItemPage, player.tutorialItemPage)
         }
         db.update(playerTableName,values,"${playerId} = ?", arrayOf(player.id.toString()))
         
@@ -420,6 +440,11 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
             val attributesId = cursor.getColumnIndex(playerAttributePoints)
             val lastPlayedId = cursor.getColumnIndex(lastPlayed)
             val currentXPId = cursor.getColumnIndex(currentXP)
+            val tut1 = cursor.getColumnIndex(tutorialCharPage)
+            val tut2 = cursor.getColumnIndex(tutorialItemPage)
+            val tut3 = cursor.getColumnIndex(tutorialDungeonPage)
+            val tut4 = cursor.getColumnIndex(tutorialExplorePage)
+
             //
             if(nameId >= 0){
 
@@ -439,7 +464,11 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
                     cursor.getInt(attributesId),
                     cursor.getInt(lastPlayedId) > 0,
                     cursor.getInt(currentXPId),
-                    cursor.getInt(idId)
+                    cursor.getInt(idId),
+                    cursor.getInt(tut1) > 0,
+                    cursor.getInt(tut2) > 0,
+                    cursor.getInt(tut3) > 0,
+                    cursor.getInt(tut4) > 0
                 )
 
                 players.add(tempPlayer)
@@ -468,6 +497,10 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
             val attributesId = cursor.getColumnIndex(playerAttributePoints)
             val lastPlayedId = cursor.getColumnIndex(lastPlayed)
             val currentXPId = cursor.getColumnIndex(currentXP)
+            val tut1 = cursor.getColumnIndex(tutorialCharPage)
+            val tut2 = cursor.getColumnIndex(tutorialItemPage)
+            val tut3 = cursor.getColumnIndex(tutorialDungeonPage)
+            val tut4 = cursor.getColumnIndex(tutorialExplorePage)
             //
             if(nameId >= 0){
 
@@ -487,7 +520,11 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
                     cursor.getInt(attributesId),
                     cursor.getInt(lastPlayedId) > 0,
                     cursor.getInt(currentXPId),
-                    cursor.getInt(idId)
+                    cursor.getInt(idId),
+                    cursor.getInt(tut1) > 0,
+                    cursor.getInt(tut2) > 0,
+                    cursor.getInt(tut3) > 0,
+                    cursor.getInt(tut4) > 0
                 )
 
                 players.add(tempPlayer)
@@ -499,14 +536,16 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
         return players;
     }
 
-    fun createPlayer(className: String, name: String, level: Int, stats: MutableMap<String, Int>, attributePoints: Int, lastPlayed: Boolean, currentXP: Int, id: Int): Player {
+    fun createPlayer(className: String, name: String, level: Int, stats: MutableMap<String, Int>, attributePoints: Int, lastPlayed: Boolean, currentXP: Int, id: Int,
+    tut1 : Boolean,  tut2 : Boolean, tut3 : Boolean, tut4 : Boolean
+    ): Player {
         return when (className) {
-            "Bodybuilder" -> BodyBuilder(name, className, level, stats, attributePoints, lastPlayed, currentXP, id)
-            "Martial Artist" -> MartialArtist(name, className, level, stats, attributePoints, lastPlayed, currentXP, id)
-            "Endurance Runner" -> EnduranceRunner(name, className, level, stats, attributePoints, lastPlayed, currentXP, id)
-            "CrossFit Athlete" -> CrossFitAthlete(name, className, level, stats, attributePoints, lastPlayed, currentXP, id)
-            "Personal Trainer" -> PersonalTrainer(name, className, level, stats, attributePoints, lastPlayed, currentXP, id)
-            else -> Player(name, className, level, stats, attributePoints, lastPlayed, currentXP, id)
+            "Bodybuilder" -> BodyBuilder(name, className, level, stats, attributePoints, lastPlayed, currentXP, id, tut1, tut2,tut3,tut4)
+            "Martial Artist" -> MartialArtist(name, className, level, stats, attributePoints, lastPlayed, currentXP, id, tut1, tut2,tut3,tut4)
+            "Endurance Runner" -> EnduranceRunner(name, className, level, stats, attributePoints, lastPlayed, currentXP, id, tut1, tut2,tut3,tut4)
+            "CrossFit Athlete" -> CrossFitAthlete(name, className, level, stats, attributePoints, lastPlayed, currentXP, id, tut1, tut2,tut3,tut4)
+            "Personal Trainer" -> PersonalTrainer(name, className, level, stats, attributePoints, lastPlayed, currentXP, id, tut1, tut2,tut3,tut4)
+            else -> Player(name, className, level, stats, attributePoints, lastPlayed, currentXP, id, tut1, tut2,tut3,tut4)
         }
     }
 
@@ -695,8 +734,7 @@ class DatabaseHandler(context : Context) : SQLiteOpenHelper(context, dbName, nul
         val values = ContentValues().apply {
             put(dungeonName,dungeon.dungeonName)
             put(dungeonTotalDistance, dungeon.dungeonTotalDistance)
-            //Change to walked
-            put(dungeonWalkedDistance, dungeon.dungeonTotalDistance)
+            put(dungeonWalkedDistance, dungeon.dungeonWalkedDistance)
             put(dungeonActive, dungeon.dungeonActive)
             put(dungeonCompleted,  dungeon.dungeonCompleted)
             put(dungeonCreatedAt,  dateFormat.format(Date()))

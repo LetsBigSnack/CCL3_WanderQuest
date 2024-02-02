@@ -4,6 +4,7 @@ import com.ccl3_id.wanderquest.data.models.entities.Player
 
 data class CreationViewState(
     val stepNumber : Int = 1,
+    val tutorial : Boolean = true,
     val characterName: String = "",
     val characterClass: String = "",
     val statPoints : Int = 10,

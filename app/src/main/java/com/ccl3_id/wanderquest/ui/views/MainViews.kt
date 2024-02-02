@@ -95,6 +95,7 @@ import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.Checkbox
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.ColorFilter
@@ -466,6 +467,10 @@ fun ScrollableCanvasWithRectangles(mainViewModel: MainViewModel) {
         displayPopUpCompleted(mainViewModel)
     }
 
+    Column {
+        ExplorePageTutorial(mainViewModel)
+    }
+
 }
 
 @Composable
@@ -774,6 +779,9 @@ fun itemsScreen(itemViewModel: ItemViewModel, mainViewModel: MainViewModel){
     }
     Column {
         EquippedItemPopUp(itemViewModel, mainViewModel)
+    }
+    Column {
+        ItemPageTutorial(mainViewModel)
     }
 }
 
@@ -1203,6 +1211,16 @@ fun displayCharacterSheet(mainViewModel: MainViewModel, itemViewModel: ItemViewM
         Text(text = "DANGER ZONE:", fontSize = ButtonSettings.BUTTON_FONT_SIZE_MASSIVE, color = Color.White)
 
         WanderButton(
+            text = "Reset Tutorial",
+            color = MaterialTheme.colorScheme.tertiary,
+            onClickEvent = {
+                mainViewModel.resetTutorial()
+            },
+            fontSize = ButtonSettings.BUTTON_FONT_SIZE_BIG,
+            textColor = Color.White
+        )
+
+        WanderButton(
             text = "Delete Character",
             color = MaterialTheme.colorScheme.tertiary,
             onClickEvent = {
@@ -1223,6 +1241,227 @@ fun displayCharacterSheet(mainViewModel: MainViewModel, itemViewModel: ItemViewM
         deleteCharacterModalMain(mainViewModel)
     }
 
+    Column {
+        CharacterPageTutorial(mainViewModel)
+    }
+
+
+}
+
+@Composable
+fun CharacterPageTutorial(mainViewModel: MainViewModel) {
+    val state = mainViewModel.mainViewState.collectAsState()
+    val context = LocalContext.current
+    val checkedState = remember { mutableStateOf(false) }
+
+    if(state.value.selectedPlayer!!.tutorialCharPage){
+
+        AlertDialog(
+            containerColor = MaterialTheme.colorScheme.background,
+            shape = RoundedCornerShape(10.dp),
+            onDismissRequest = {
+
+            },
+            title = {
+                Text(text = "Tutorial - Character", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM)
+
+            },
+            text = {
+                Column {
+                    // https://www.jetpackcompose.net/textfield-in-jetpack-compose
+                    Text(text = "Welcome to your character page! Here, you can view your stats and abilities by scrolling down. You also have options to modify or delete your character and level up right from this page. You can also re-enable all Tutorials here", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM)
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = checkedState.value,
+                            onCheckedChange = { checkedState.value = it }
+                        )
+
+                        Text(text = "Disable Tutorials", fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, color =  Color.White)
+
+                    }
+                }
+            },
+            confirmButton = {
+
+                WanderButton(
+                    text = "Okay",
+                    color = MaterialTheme.colorScheme.primary,
+                    onClickEvent = {
+                        mainViewModel.completeTutorial(1, checkedState.value);
+                    },
+                    fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+                    textColor = Color.White,
+                    modifier = Modifier
+                )
+            }
+        )
+    }
+
+}
+
+@Composable
+fun ItemPageTutorial(mainViewModel: MainViewModel) {
+    val state = mainViewModel.mainViewState.collectAsState()
+    val context = LocalContext.current
+    val checkedState = remember { mutableStateOf(false) }
+
+    if(state.value.selectedPlayer!!.tutorialItemPage){
+
+        AlertDialog(
+            containerColor = MaterialTheme.colorScheme.background,
+            shape = RoundedCornerShape(10.dp),
+            onDismissRequest = {
+
+            },
+            title = {
+                Text(text = "Tutorial - Item", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM)
+
+            },
+            text = {
+                Column {
+                    // https://www.jetpackcompose.net/textfield-in-jetpack-compose
+                    Text(text = "Welcome to your Item page! This is where you can see all the items you've collected. You can equip them to enhance your character. Remember, you have four slots to fill: head, chest, arms, and legs, and you can only equip one item per slot. Choose wisely to boost your abilities!", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM)
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = checkedState.value,
+                            onCheckedChange = { checkedState.value = it }
+                        )
+
+                        Text(text = "Disable Tutorials", fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, color =  Color.White)
+
+                    }
+                }
+            },
+            confirmButton = {
+
+                WanderButton(
+                    text = "Okay",
+                    color = MaterialTheme.colorScheme.primary,
+                    onClickEvent = {
+                        mainViewModel.completeTutorial(2, checkedState.value);
+                    },
+                    fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+                    textColor = Color.White,
+                    modifier = Modifier
+                )
+            }
+        )
+    }
+
+}
+
+
+@Composable
+fun DungeonPageTutorial(mainViewModel: MainViewModel) {
+    val state = mainViewModel.mainViewState.collectAsState()
+    val context = LocalContext.current
+    val checkedState = remember { mutableStateOf(false) }
+
+    if(state.value.selectedPlayer!!.tutorialDungeonPage){
+
+        AlertDialog(
+            containerColor = MaterialTheme.colorScheme.background,
+            shape = RoundedCornerShape(10.dp),
+            onDismissRequest = {
+
+            },
+            title = {
+                Text(text = "Tutorial - Dungeon", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM)
+
+            },
+            text = {
+                Column {
+                    // https://www.jetpackcompose.net/textfield-in-jetpack-compose
+                    Text(text = "Welcome to your Dungeon page! Here, you can manage and view all your active Dungeons. Each Dungeon requires you to walk a certain distance to complete it. Once you've covered the required distance, the Dungeon is ready for you to enter and explore the treasures that await inside. Get moving and start your adventure!", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM)
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = checkedState.value,
+                            onCheckedChange = { checkedState.value = it }
+                        )
+
+                        Text(text = "Disable Tutorials", fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, color =  Color.White)
+
+                    }
+                }
+            },
+            confirmButton = {
+
+                WanderButton(
+                    text = "Okay",
+                    color = MaterialTheme.colorScheme.primary,
+                    onClickEvent = {
+                        mainViewModel.completeTutorial(3, checkedState.value);
+                    },
+                    fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+                    textColor = Color.White,
+                    modifier = Modifier
+                )
+            }
+        )
+    }
+
+}
+
+@Composable
+fun ExplorePageTutorial(mainViewModel: MainViewModel) {
+    val state = mainViewModel.mainViewState.collectAsState()
+    val context = LocalContext.current
+    val checkedState = remember { mutableStateOf(false) }
+
+    if(state.value.selectedPlayer!!.tutorialExplorePage){
+
+        AlertDialog(
+            containerColor = MaterialTheme.colorScheme.background,
+            shape = RoundedCornerShape(10.dp),
+            onDismissRequest = {
+
+            },
+            title = {
+                Text(text = "Tutorial - Explore", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM)
+
+            },
+            text = {
+                Column {
+                    // https://www.jetpackcompose.net/textfield-in-jetpack-compose
+                    Text(text = "Welcome to Explore! Here, you'll navigate a randomly generated map. Click on the rectangles, which represent different rooms. As you explore, you'll find that each room might hold nothing, valuable items, or monsters. Choose your path wisely and discover what lies within each space!", color = Color.White, fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM)
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = checkedState.value,
+                            onCheckedChange = { checkedState.value = it }
+                        )
+
+                        Text(text = "Disable Tutorials", fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM, color =  Color.White)
+
+                    }
+                }
+            },
+            confirmButton = {
+
+                WanderButton(
+                    text = "Okay",
+                    color = MaterialTheme.colorScheme.primary,
+                    onClickEvent = {
+                        mainViewModel.completeTutorial(4, checkedState.value);
+                    },
+                    fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,
+                    textColor = Color.White,
+                    modifier = Modifier
+                )
+            }
+        )
+    }
 
 }
 
@@ -1811,6 +2050,10 @@ fun displayDungeons(mainViewModel: MainViewModel){
         }
 
     }
+
+    Column {
+        DungeonPageTutorial(mainViewModel)
+    }
 }
 
 
@@ -1938,6 +2181,11 @@ fun OpenDungeonItem(dungeon: Dungeon, mainViewModel: MainViewModel) {
             text = "Add",
             color = MaterialTheme.colorScheme.primary,
             onClickEvent = {
+                val text = "Dungeon added"
+                val duration = Toast.LENGTH_SHORT
+                val toast = Toast.makeText(context , text, duration) // in Activity
+                toast.show()
+
                 mainViewModel.enterDungeon(dungeon,context)
             },
             fontSize = ButtonSettings.BUTTON_FONT_SIZE_MEDIUM,

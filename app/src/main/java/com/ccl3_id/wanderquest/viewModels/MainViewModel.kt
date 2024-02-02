@@ -348,4 +348,40 @@ class MainViewModel (val db: DatabaseHandler, private val locationRepository: Lo
         _mainViewState.update { it.copy(dungeonDeleteDialog = true)}
     }
 
+    fun completeTutorial(tutorialStep: Int, disableAll: Boolean) {
+
+        val player = mainViewState.value.selectedPlayer
+
+        if(player != null){
+            if(disableAll){
+                player.tutorialCharPage = false
+                player.tutorialDungeonPage = false
+                player.tutorialExplorePage = false
+                player.tutorialItemPage = false
+            }else{
+                when (tutorialStep){
+                    1 ->   player.tutorialCharPage = false
+                    2 ->   player.tutorialItemPage = false
+                    3 ->   player.tutorialDungeonPage = false
+                    4 ->   player.tutorialExplorePage = false
+                }
+            }
+            db.updatePlayer(player);
+            getPlayer();
+        }
+    }
+
+    fun resetTutorial() {
+        val player = mainViewState.value.selectedPlayer
+
+        if(player != null){
+            player.tutorialCharPage = true
+            player.tutorialDungeonPage = true
+            player.tutorialExplorePage = true
+            player.tutorialItemPage = true
+            db.updatePlayer(player);
+            getPlayer();
+        }
+    }
+
 }

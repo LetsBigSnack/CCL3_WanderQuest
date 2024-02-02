@@ -78,11 +78,19 @@ class CreationViewModel (val db: DatabaseHandler) : ViewModel() {
             1,
             stats,
             creationViewState.value.statPoints,
-            true
+            true,
+            tutorialCharPage = creationViewState.value.tutorial,
+            tutorialDungeonPage = creationViewState.value.tutorial,
+            tutorialExplorePage = creationViewState.value.tutorial,
+            tutorialItemPage = creationViewState.value.tutorial
         )
 
         val id = db.insertPlayer(createdPlayer);
         db.generateDungeons(id, 5);
+    }
+
+    fun toggleTutorial(){
+        _creationViewState.update { it.copy(tutorial = !creationViewState.value.tutorial) }
     }
 
 

@@ -16,6 +16,11 @@ open class Player (
     var lastPlayed : Boolean,
     var playerCurrentXP : Int = 0,
     var id:Int = 0,
+    var tutorialCharPage : Boolean = true,
+    var tutorialItemPage : Boolean = true,
+    var tutorialDungeonPage : Boolean = true,
+    var tutorialExplorePage : Boolean = true,
+
 ) : Entity(playerName){
 
     var playerXPToNextLevel : Int = 0;

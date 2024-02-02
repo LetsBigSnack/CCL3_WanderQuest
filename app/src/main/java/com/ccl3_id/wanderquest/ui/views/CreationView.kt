@@ -20,7 +20,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.DropdownMenu
@@ -31,10 +30,10 @@ import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material.TextField
+import androidx.compose.material3.Checkbox
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,7 +42,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -56,9 +54,11 @@ import com.ccl3_id.wanderquest.MainActivity
 import com.ccl3_id.wanderquest.R
 import com.ccl3_id.wanderquest.data.models.entities.Player
 import com.ccl3_id.wanderquest.ui.composables.ButtonSettings
+import com.ccl3_id.wanderquest.ui.composables.LargeText
+import com.ccl3_id.wanderquest.ui.composables.MultiColorText
+import com.ccl3_id.wanderquest.ui.composables.TextSettings
 import com.ccl3_id.wanderquest.ui.composables.WanderButton
 import com.ccl3_id.wanderquest.viewModels.CreationViewModel
-import kotlin.random.Random
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -80,7 +80,8 @@ fun CreationView(creationViewModel: CreationViewModel) {
             creationViewModel = creationViewModel
         )
         3 -> StepThreeStats(creationViewModel = creationViewModel)
-        4 -> StepFourReview(creationViewModel = creationViewModel, context)
+        4 -> StepFourTutorial(creationViewModel)
+        5 -> StepFiveReview(creationViewModel = creationViewModel, context)
     }
 }
 
@@ -263,9 +264,33 @@ fun StepTwoClass(expanded : Boolean, onExpandedChange: (Boolean) -> Unit,
             }
 
             if(characterClass != "") {
-                //TODO rework this View
-                Player.CLASS_ATTRIBUTES[characterClass]?.let { Text(text = "Preferred Stats: $it", fontSize = 20.sp, fontWeight = FontWeight.Bold) }
-                Player.CLASS_DESCRIPTION[characterClass]?.let { Text(text = it, fontSize = 20.sp) }
+
+                Column(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 20.dp, horizontal = 10.dp)) {
+
+                    Player.CLASS_ATTRIBUTES[characterClass]?.let{
+                        MultiColorText(
+                            text1 = "Preferred Stats: ",
+                            color1 = MaterialTheme.colorScheme.primary,
+                            text2 = it,
+                            color2 = Color.White,
+                            fontSize = TextSettings.TEXT_FONT_SIZE_MEDIUM
+                        )
+                    }
+
+                    Player.CLASS_DESCRIPTION[characterClass]?.let{
+                        MultiColorText(
+                            text1 = "Description: ",
+                            color1 = MaterialTheme.colorScheme.primary,
+                            text2 = it,
+                            color2 = Color.White,
+                            fontSize = TextSettings.TEXT_FONT_SIZE_MEDIUM
+                        )
+                    }
+
+                }
+
             }
 
             Spacer(modifier = Modifier.weight(1f))
@@ -366,7 +391,7 @@ fun StepThreeStats(creationViewModel : CreationViewModel){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StepFourReview(creationViewModel: CreationViewModel, context: Context){
+fun StepFiveReview(creationViewModel: CreationViewModel, context: Context){
 
     val state = creationViewModel.creationViewState.collectAsState()
 
@@ -400,12 +425,40 @@ fun StepFourReview(creationViewModel: CreationViewModel, context: Context){
             Column(modifier = Modifier
                 .fillMaxSize(),
                 horizontalAlignment = Alignment.Start) {
-                Text(text = "Name: ${state.value.characterName}", fontSize = 24.sp, color = Color.White)
-                Text(text = "Class: ${state.value.characterClass}", fontSize =  24.sp, color = Color.White)
-                Text(text = "Stats: ", fontSize =  24.sp, color = Color.White)
-                state.value.stats.forEach { (statName, statValue) ->
-                    Text(text = "${statName} : ${statValue} ", fontSize = 20.sp, color = Color.White)
-                };
+
+                MultiColorText(
+                    text1 = "Name: ",
+                    color1 = MaterialTheme.colorScheme.primary,
+                    text2 = state.value.characterName,
+                    color2 = Color.White,
+                    fontSize = TextSettings.TEXT_FONT_SIZE_LARGE
+                )
+
+                MultiColorText(
+                    text1 = "Class: ",
+                    color1 = MaterialTheme.colorScheme.primary,
+                    text2 = state.value.characterClass,
+                    color2 = Color.White,
+                    fontSize = TextSettings.TEXT_FONT_SIZE_LARGE
+                )
+
+                LargeText("Stats", MaterialTheme.colorScheme.primary);
+
+                Column(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 20.dp)) {
+                    state.value.stats.forEach { (statName, statValue) ->
+
+                        MultiColorText(
+                            text1 = "$statName: ",
+                            color1 = MaterialTheme.colorScheme.primary,
+                            text2 = "$statValue",
+                            color2 = Color.White,
+                            fontSize = TextSettings.TEXT_FONT_SIZE_MEDIUM,
+                            modifier = Modifier
+                        )
+                    };
+                }
 
             }
 
@@ -469,7 +522,10 @@ fun StatAllocation(statName : String, statPoint : Int, creationViewModel : Creat
             IconButton(onClick = { creationViewModel.subStat(statName) },
                 modifier = Modifier
                     .size(20.dp) // Set the size of the IconButton
-                    .background(MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(10.dp))
+                    .background(
+                        MaterialTheme.colorScheme.primary,
+                        shape = RoundedCornerShape(10.dp)
+                    )
             ) {
                 Icon(Icons.Default.ArrowBack,"Subtract", tint = Color.White)
             }
@@ -483,11 +539,90 @@ fun StatAllocation(statName : String, statPoint : Int, creationViewModel : Creat
             IconButton(onClick = { creationViewModel.addStat(statName) },
                 modifier = Modifier
                     .size(20.dp) // Set the size of the IconButton
-                    .background(MaterialTheme.colorScheme.primary, shape =RoundedCornerShape(10.dp)) // Set a round background
+                    .background(
+                        MaterialTheme.colorScheme.primary,
+                        shape = RoundedCornerShape(10.dp)
+                    ) // Set a round background
             ) {
                 Icon(Icons.Default.ArrowForward,"Add", tint = Color.White)
             }
         }
     }
+
+}
+
+@Composable
+fun StepFourTutorial(creationViewModel: CreationViewModel) {
+
+    val state = creationViewModel.creationViewState.collectAsState()
+
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        // Background image
+        Image(
+            painter = painterResource(id = R.drawable.wander_woman),
+            colorFilter = ColorFilter.tint(Color(0f, 0f, 0f, 0.15f)),
+            contentDescription = "Background Image for Character Creation",
+            modifier = Modifier
+                .fillMaxSize()
+                .offset(x = 100.dp, y = (150).dp),
+        )
+
+        Column (
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(start = 20.dp, end = 20.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Text(text = "Tutorial", fontSize = 40.sp, color =  MaterialTheme.colorScheme.primary)
+            Spacer(modifier = Modifier.height(48.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(
+                    checked = state.value.tutorial,
+                    onCheckedChange = { creationViewModel.toggleTutorial() }
+                )
+
+                Text(text = "Enable Tutorial", fontSize = 24.sp, color =  Color.White)
+
+            }
+
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            MultiColorText(text1 = "HINT: ", color1 = MaterialTheme.colorScheme.primary, text2 = "If you turn off the tutorial, don't worry. You can turn it back on later from the character page.", color2 = Color.White,  fontSize = 20.sp)
+
+            Column(modifier = Modifier.padding(bottom = 28.dp)) {
+
+                WanderButton(
+                    text = "Next Step",
+                    color = MaterialTheme.colorScheme.primary,
+                    onClickEvent = { creationViewModel.nextStep(); },
+                    fontSize = ButtonSettings.BUTTON_FONT_SIZE_BIG,
+                    textColor = Color.White,
+                )
+
+                WanderButton(
+                    text = "Previous Step",
+                    color = MaterialTheme.colorScheme.tertiary,
+                    onClickEvent = {
+                        creationViewModel.previousStep();
+                    },
+                    fontSize = ButtonSettings.BUTTON_FONT_SIZE_BIG,
+                    textColor = Color.White
+                )
+            }
+
+        }
+    }
+
 
 }
